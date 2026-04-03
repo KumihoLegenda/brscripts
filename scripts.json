@@ -10,7 +10,7 @@
     {
       "id": "forumSneg",
       "name": "Форум | Зимняя тема (тёмная)",
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forumsneg.js",
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/snow-forum.js",
       "matches": [
         "https://forum.blackrussia.online/threads/*"
       ],
@@ -52,7 +52,7 @@
       "id": "sneg",
       "name": "Логи | Зимняя тема (тёмная)",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/New2026.js",
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/snow-logs.js",
       "enabledDefault": true
     },
     
