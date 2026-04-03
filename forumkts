@@ -18,31 +18,6 @@
     'use strict';
     const UNACCEPT_PREFIX = 4; // префикс отказано
     const PIN_PREFIX = 2; //  префикс закрепить
-    const TRANSFER_PREFIX1 = 20; //  префикс передачи админам 31
-    const TRANSFER_PREFIX2 = 21; //  префикс передачи в обжалования 31
-    const TRANSFER_PREFIX3 = 22; //  префикс передачи в жб на игроков 31
-    const TRANSFER_PREFIX4 = 23; //  префикс передачи в тех раздел 31
-    const TRANSFER_PREFIX5 = 24 ; //  префикс передачи в жб на тех 31
-    const TRANSFER_PREFIX6 = 25; //  префикс передачи админам 32
-    const TRANSFER_PREFIX7 = 26; //  префикс передачи в обжалования 32
-    const TRANSFER_PREFIX8 = 27; //  префикс передачи в жб на игроков 32
-    const TRANSFER_PREFIX9 = 28; //  префикс передачи в тех раздел 32
-    const TRANSFER_PREFIX10 = 29; //  префикс передачи в жб на тех 32
-    const TRANSFER_PREFIX11 = 30; //  префикс передачи админам 33
-    const TRANSFER_PREFIX12 = 31; //  префикс передачи в обжалования 33
-    const TRANSFER_PREFIX13 = 32; //  префикс передачи в жб на игроков 33
-    const TRANSFER_PREFIX14 = 33; //  префикс передачи в тех раздел 33
-    const TRANSFER_PREFIX15 = 34; //  префикс передачи в жб на тех 33
-    const TRANSFER_PREFIX16 = 35; //  префикс передачи админам 34
-    const TRANSFER_PREFIX17 = 36; //  префикс передачи в обжалования 34
-    const TRANSFER_PREFIX18 = 37; //  префикс передачи в жб на игроков 34
-    const TRANSFER_PREFIX19 = 38; //  префикс передачи в тех раздел 34
-    const TRANSFER_PREFIX20 = 39; //  префикс передачи в жб на тех 34
-    const TRANSFER_PREFIX21 = 40; //  префикс передачи админам 35
-    const TRANSFER_PREFIX22 = 41; //  префикс передачи в обжалования 35
-    const TRANSFER_PREFIX23 = 42; //  префикс передачи в жб на игроков 35
-    const TRANSFER_PREFIX24 = 43; //  префикс передачи в тех раздел 35
-    const TRANSFER_PREFIX25 = 44; //  префикс передачи в жб на тех 35
     const COMMAND_PREFIX = 10; // команде проекта
     const CLOSE_PREFIX = 7; // префикс закрыто
     const DECIDED_PREFIX = 6; // префикс решено
@@ -1121,81 +1096,6 @@
                 moveThread(prefix, 917);
             }
 
-            if(prefix == TRANSFER_PREFIX1) {
-                moveThread(prefix, 1442);
-            }
-            if(prefix == TRANSFER_PREFIX3) {
-                moveThread(prefix, 1444);
-            }
-            if(prefix == TRANSFER_PREFIX5) {
-                moveThread(prefix, 1457);
-            }
-            if(prefix == TRANSFER_PREFIX4) {
-                moveThread(prefix, 1458);
-            }
-            if(prefix == TRANSFER_PREFIX2) {
-                moveThread(prefix, 1445);
-            }
-            if(prefix == TRANSFER_PREFIX6) {
-                moveThread(prefix, 1486);
-            }
-            if(prefix == TRANSFER_PREFIX8) {
-                moveThread(prefix, 1488);
-            }
-            if(prefix == TRANSFER_PREFIX10) {
-                moveThread(prefix, 1459);
-            }
-            if(prefix == TRANSFER_PREFIX9) {
-                moveThread(prefix, 1460);
-            }
-            if(prefix == TRANSFER_PREFIX7) {
-                moveThread(prefix, 1489);
-            }
-            if(prefix == TRANSFER_PREFIX11) {
-                moveThread(prefix, 1529);
-            }
-            if(prefix == TRANSFER_PREFIX13) {
-                moveThread(prefix, 1531);
-            }
-            if(prefix == TRANSFER_PREFIX15) {
-                moveThread(prefix, 1501);
-            }
-            if(prefix == TRANSFER_PREFIX14) {
-                moveThread(prefix, 1502);
-            }
-            if(prefix == TRANSFER_PREFIX12) {
-                moveThread(prefix, 1528);
-            }
-            if(prefix == TRANSFER_PREFIX16) {
-                moveThread(prefix, 1570);
-            }
-            if(prefix == TRANSFER_PREFIX18) {
-                moveThread(prefix, 1572);
-            }
-            if(prefix == TRANSFER_PREFIX20) {
-                moveThread(prefix, 1543);
-            }
-            if(prefix == TRANSFER_PREFIX19) {
-                moveThread(prefix, 1544);
-            }
-            if(prefix == TRANSFER_PREFIX17) {
-                moveThread(prefix, 1573);
-            }
-            if(prefix == TRANSFER_PREFIX21) {
-                moveThread(prefix, 1612);
-            }
-            if(prefix == TRANSFER_PREFIX23) {
-                moveThread(prefix, 1614);
-            }
-            if(prefix == TRANSFER_PREFIX25) {
-                moveThread(prefix, 1585);
-            }
-            if(prefix == TRANSFER_PREFIX24) {
-                moveThread(prefix, 1586);
-            }
-            if(prefix == TRANSFER_PREFIX22) {
-                moveThread(prefix, 1615);
-            }
             if(prefix == COMMAND_PREFIX) {
                 moveThread(prefix, 490);
             }
