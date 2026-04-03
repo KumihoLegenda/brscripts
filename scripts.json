@@ -38,7 +38,7 @@
       "id": "br-trade-viewer",
       "name": "Логи | Содержимое трейдов",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/br-trade-viewer.js",
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/br-superfunction-logs.js",
       "enabledDefault": true
     },
     {
