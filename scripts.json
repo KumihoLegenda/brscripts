@@ -1,6 +1,40 @@
 {
   "scripts": [
     {
+      "id": "batton",
+      "name": "Форум | Кнопки переходники",
+      "matches": ["https://forum.blackrussia.online/*"],
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/button",
+      "enabledDefault": true
+    },
+    {
+      "id": "forumSneg",
+      "name": "Форум | Тёмная тема + снег",
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forumsneg.js",
+      "matches": [
+        "https://forum.blackrussia.online/threads/*"
+      ],
+      "enabledDefault": true
+    },
+    {
+      "id": "forumbtns",
+      "name": "Форум | Скрипт для специалистов",
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forum-buttons.js",
+      "matches": [
+        "https://forum.blackrussia.online/threads/*"
+      ],
+      "enabledDefault": true
+    },
+    {
+      "id": "forumkts",
+      "name": "Форум | Скрипт для КТС/ЗКТС" ,
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forumkts",
+      "matches": [
+        "https://forum.blackrussia.online/*"
+      ],
+      "enabledDefault": true
+    },
+    {
       "id": "br-trade-viewer",
       "name": "Логи | Содержимое трейдов",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
@@ -29,45 +63,11 @@
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/poisk",
       "enabledDefault": true
     },
-  {
-      "id": "batton",
-      "name": "Форум | Кнопки переходники",
-      "matches": ["https://forum.blackrussia.online/*"],
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/batton",
-      "enabledDefault": true
-    },
-    {
-      "id": "forumbtns",
-      "name": "Форумный скрипт для специалистов",
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forum-buttons.js",
-      "matches": [
-        "https://forum.blackrussia.online/threads/*"
-      ],
-      "enabledDefault": true
-    },
     {
       "id": "time",
       "name": "Логи | Минимальное время автоматически – 7 месяцев",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/time",
-      "enabledDefault": true
-    },
-    {
-      "id": "forumSneg",
-      "name": "Форум | Тёмная тема + снег",
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forumsneg.js",
-      "matches": [
-        "https://forum.blackrussia.online/threads/*"
-      ],
-      "enabledDefault": true
-    },
-        {
-      "id": "forumkts",
-      "name": "Форумный скрипт для КТС/ЗКТС" ,
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forumkts",
-      "matches": [
-        "https://forum.blackrussia.online/*"
-      ],
       "enabledDefault": true
     }
   ]
