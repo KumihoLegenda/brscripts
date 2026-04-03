@@ -1,18 +1,22 @@
 // ==UserScript==
 // @name        IP Info Viewer для Black Logs
 // @namespace   http://tampermonkey.net/
-// @version     1.4
+// @version     1.5
 // @description Просмотр информации об IP адресе на logs.blackrussia.online
 // @match       https://logs.blackrussia.online/gslogs/*
+// @grant       GM_xmlhttpRequest
+// @grant       GM_addStyle
+// @connect     ip-api.com
+// @connect     ipwhois.app
+// @connect     ipapi.co
 // @run-at      document-end
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    // Добавляем стили для кнопки прямо в head
-    const style = document.createElement('style');
-    style.textContent = `
+    // Добавляем стили
+    GM_addStyle(`
         .ip-info-btn-custom {
             background: transparent !important;
             color: #fff !important;
@@ -108,7 +112,6 @@
             color: #aaa;
         }
         .ip-info-value {
-            font-family: monospace;
             word-break: break-word;
             text-align: right;
         }
@@ -121,61 +124,134 @@
             padding: 30px 20px;
             color: #ff6b6b;
         }
-    `;
-    document.head.appendChild(style);
+        .success-message {
+            color: #00ff88;
+        }
+    `);
 
-    // Функция для получения информации об IP с использованием JSONP (обходит CORS)
+    // Функция для получения информации об IP через GM_xmlhttpRequest
     function getIPInfo(ip) {
         return new Promise((resolve) => {
-            const services = [
-                // ip-api.com - самый надежный, не требует ключа
-                {
-                    url: `https://ip-api.com/json/${ip}?fields=status,country,regionName,city,timezone,isp,as,lat,lon,query`,
-                    parse: (data) => {
-                        if (data.status === 'success') {
-                            return {
-                                ip: data.query,
-                                country: data.country,
-                                city: data.city,
-                                region: data.regionName,
-                                timezone: data.timezone,
-                                org: data.isp,
-                                asn: data.as,
-                                latitude: data.lat,
-                                longitude: data.lon,
-                                success: true
-                            };
+            // Используем ip-api.com (самый надежный, не требует ключа)
+            const url = `http://ip-api.com/json/${ip}?fields=status,country,regionName,city,timezone,isp,as,lat,lon,query`;
+            
+            console.log(`[IP Info] Запрос информации для IP: ${ip}`);
+            
+            GM_xmlhttpRequest({
+                method: "GET",
+                url: url,
+                headers: {
+                    "Accept": "application/json"
+                },
+                onload: function(response) {
+                    try {
+                        console.log(`[IP Info] Статус ответа: ${response.status}`);
+                        
+                        if (response.status === 200) {
+                            const data = JSON.parse(response.responseText);
+                            console.log(`[IP Info] Данные:`, data);
+                            
+                            if (data.status === 'success') {
+                                resolve({
+                                    ip: data.query || ip,
+                                    country: data.country || 'Неизвестно',
+                                    city: data.city || 'Неизвестно',
+                                    region: data.regionName || 'Неизвестно',
+                                    timezone: data.timezone || 'Неизвестно',
+                                    org: data.isp || 'Неизвестно',
+                                    asn: data.as || 'Неизвестно',
+                                    latitude: data.lat,
+                                    longitude: data.lon,
+                                    success: true
+                                });
+                                return;
+                            }
                         }
-                        return { success: false };
+                        
+                        // Если первый сервис не сработал, пробуем запасной
+                        getIPInfoAlternative(ip).then(resolve);
+                        
+                    } catch (e) {
+                        console.error('[IP Info] Ошибка парсинга:', e);
+                        getIPInfoAlternative(ip).then(resolve);
                     }
                 },
-                // ipwhois.app как запасной
-                {
-                    url: `https://ipwhois.app/json/${ip}`,
-                    parse: (data) => {
-                        if (data && data.success !== false) {
-                            return {
-                                ip: data.ip,
-                                country: data.country,
-                                city: data.city,
-                                region: data.region,
-                                timezone: data.timezone,
-                                org: data.isp,
-                                asn: data.asn,
-                                latitude: data.latitude,
-                                longitude: data.longitude,
-                                success: true
-                            };
+                onerror: function(error) {
+                    console.error('[IP Info] Ошибка запроса:', error);
+                    getIPInfoAlternative(ip).then(resolve);
+                },
+                ontimeout: function() {
+                    console.error('[IP Info] Таймаут запроса');
+                    getIPInfoAlternative(ip).then(resolve);
+                },
+                timeout: 10000
+            });
+        });
+    }
+    
+    // Запасной сервис
+    function getIPInfoAlternative(ip) {
+        return new Promise((resolve) => {
+            const url = `https://ipwhois.app/json/${ip}`;
+            
+            GM_xmlhttpRequest({
+                method: "GET",
+                url: url,
+                headers: {
+                    "Accept": "application/json"
+                },
+                onload: function(response) {
+                    try {
+                        if (response.status === 200) {
+                            const data = JSON.parse(response.responseText);
+                            
+                            if (data && data.success !== false && data.country) {
+                                resolve({
+                                    ip: data.ip || ip,
+                                    country: data.country || 'Неизвестно',
+                                    city: data.city || 'Неизвестно',
+                                    region: data.region || 'Неизвестно',
+                                    timezone: data.timezone || 'Неизвестно',
+                                    org: data.isp || 'Неизвестно',
+                                    asn: data.asn || 'Неизвестно',
+                                    latitude: data.latitude,
+                                    longitude: data.longitude,
+                                    success: true
+                                });
+                                return;
+                            }
                         }
-                        return { success: false };
+                        
+                        // Если ничего не сработало
+                        resolve({
+                            ip: ip,
+                            country: 'Не удалось определить',
+                            city: 'Неизвестно',
+                            region: 'Неизвестно',
+                            timezone: 'Неизвестно',
+                            org: 'Неизвестно',
+                            asn: 'Неизвестно',
+                            latitude: null,
+                            longitude: null,
+                            success: false
+                        });
+                        
+                    } catch (e) {
+                        resolve({
+                            ip: ip,
+                            country: 'Не удалось определить',
+                            city: 'Неизвестно',
+                            region: 'Неизвестно',
+                            timezone: 'Неизвестно',
+                            org: 'Неизвестно',
+                            asn: 'Неизвестно',
+                            latitude: null,
+                            longitude: null,
+                            success: false
+                        });
                     }
-                }
-            ];
-
-            let currentIndex = 0;
-
-            function tryNextService() {
-                if (currentIndex >= services.length) {
+                },
+                onerror: function() {
                     resolve({
                         ip: ip,
                         country: 'Не удалось определить',
@@ -188,48 +264,9 @@
                         longitude: null,
                         success: false
                     });
-                    return;
-                }
-
-                const service = services[currentIndex];
-                currentIndex++;
-
-                const script = document.createElement('script');
-                script.src = service.url;
-                script.onload = () => {
-                    // JSONP не сработает, используем fetch как fallback
-                    fetch(service.url)
-                        .then(response => response.json())
-                        .then(data => {
-                            const result = service.parse(data);
-                            if (result.success) {
-                                resolve(result);
-                            } else {
-                                tryNextService();
-                            }
-                        })
-                        .catch(() => {
-                            tryNextService();
-                        });
-                };
-                script.onerror = () => {
-                    tryNextService();
-                };
-                
-                // Таймаут на случай зависания
-                setTimeout(() => {
-                    if (script.parentNode) {
-                        script.onerror = null;
-                        script.onload = null;
-                        script.remove();
-                        tryNextService();
-                    }
-                }, 8000);
-                
-                document.head.appendChild(script);
-            }
-
-            tryNextService();
+                },
+                timeout: 10000
+            });
         });
     }
 
@@ -290,16 +327,19 @@
         overlay.onclick = closeModal;
         
         // Escape
-        document.addEventListener('keydown', function onEsc(e) {
+        const onEsc = (e) => {
             if (e.key === 'Escape') {
                 closeModal();
                 document.removeEventListener('keydown', onEsc);
             }
-        });
+        };
+        document.addEventListener('keydown', onEsc);
         
         // Загружаем данные
         getIPInfo(ip).then(ipInfo => {
-            if (ipInfo.success || (ipInfo.country && ipInfo.country !== 'Не удалось определить')) {
+            console.log('[IP Info] Результат:', ipInfo);
+            
+            if (ipInfo.success && ipInfo.country && ipInfo.country !== 'Не удалось определить') {
                 content.innerHTML = `
                     <div class="ip-info-row">
                         <span class="ip-info-label">🌐 IP адрес:</span>
@@ -323,9 +363,9 @@
                     </div>
                     <div class="ip-info-row">
                         <span class="ip-info-label">🏢 Провайдер:</span>
-                        <span class="ip-info-value">${ipInfo.org || '—'}</span>
+                        <span class="ip-info-value" style="font-size: 12px;">${ipInfo.org || '—'}</span>
                     </div>
-                    ${ipInfo.asn ? `
+                    ${ipInfo.asn && ipInfo.asn !== 'Неизвестно' ? `
                     <div class="ip-info-row">
                         <span class="ip-info-label">🔗 ASN:</span>
                         <span class="ip-info-value">${ipInfo.asn}</span>
@@ -341,17 +381,18 @@
                     <div class="error-message">
                         <div style="font-size: 48px; margin-bottom: 15px;">🌐</div>
                         <div style="margin-bottom: 10px;">Не удалось получить информацию об IP</div>
-                        <div style="font-size: 12px; color: #aaa;">IP: ${ip}</div>
-                        <div style="margin-top: 20px; font-size: 11px; color: #666;">Попробуйте проверить другой IP</div>
+                        <div style="font-size: 12px; color: #aaa; font-family: monospace;">IP: ${ip}</div>
+                        <div style="margin-top: 20px; font-size: 11px; color: #666;">Возможные причины:<br>• Сервисы геолокации временно недоступны<br>• IP адрес принадлежит частной сети<br>• Проблемы с подключением</div>
                     </div>
                 `;
             }
-        }).catch(() => {
+        }).catch(err => {
+            console.error('[IP Info] Ошибка:', err);
             content.innerHTML = `
                 <div class="error-message">
                     <div style="font-size: 48px; margin-bottom: 15px;">⚠️</div>
                     <div>Ошибка при загрузке данных</div>
-                    <div style="font-size: 12px; color: #aaa; margin-top: 10px;">Проверьте подключение к интернету</div>
+                    <div style="font-size: 12px; color: #aaa; margin-top: 10px;">${err.message || 'Проверьте консоль для деталей'}</div>
                 </div>
             `;
         });
@@ -365,9 +406,18 @@
             // Проверяем, есть ли уже кнопка
             if (cell.querySelector('.ip-info-btn-custom')) return;
             
-            // Получаем текст IP
-            let ipText = cell.childNodes[0]?.nodeValue || cell.textContent;
-            ipText = ipText.trim();
+            // Получаем текст IP (берем первый текстовый узел)
+            let ipText = '';
+            for (const node of cell.childNodes) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    ipText = node.textContent.trim();
+                    break;
+                }
+            }
+            if (!ipText) ipText = cell.textContent.trim();
+            
+            // Очищаем от лишних символов
+            ipText = ipText.replace(/[^\d\.]/g, '');
             
             // Проверяем валидность IP
             const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
@@ -381,34 +431,36 @@
                     showIPInfo(ipText);
                 };
                 cell.appendChild(btn);
+                console.log(`[IP Info] Добавлена кнопка для IP: ${ipText}`);
             }
         });
     }
 
-    // Запускаем добавление кнопок с задержкой и повторением
-    let attempts = 0;
-    const maxAttempts = 20;
-    
-    function initButtons() {
-        const ipCells = document.querySelectorAll('td.td-player-ip');
-        if (ipCells.length > 0) {
-            addIPInfoButtons();
-        } else if (attempts < maxAttempts) {
-            attempts++;
-            setTimeout(initButtons, 500);
-        }
+    // Запускаем добавление кнопок
+    function init() {
+        console.log('[IP Info] Скрипт запущен');
+        
+        // Проверяем наличие таблицы
+        const checkInterval = setInterval(() => {
+            const ipCells = document.querySelectorAll('td.td-player-ip');
+            if (ipCells.length > 0) {
+                clearInterval(checkInterval);
+                addIPInfoButtons();
+            }
+        }, 500);
+        
+        // Останавливаем проверку через 30 секунд
+        setTimeout(() => clearInterval(checkInterval), 30000);
     }
     
-    // Ждем загрузку страницы
+    // Запуск
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(initButtons, 1000);
-        });
+        document.addEventListener('DOMContentLoaded', init);
     } else {
-        setTimeout(initButtons, 1000);
+        init();
     }
     
-    // Наблюдаем за изменениями (для пагинации)
+    // Наблюдаем за изменениями
     const observer = new MutationObserver(() => {
         addIPInfoButtons();
     });
