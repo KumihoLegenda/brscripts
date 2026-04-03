@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BR Panel (Integrated Header)
 // @namespace    http://tampermonkey.net/
-// @version      3.0
+// @version      3.1
 // @description  Floating panel replaced with header buttons. Dynamic server selection, IP comparison tool.
 // @author       Black Russia & kumiho
 // @match        https://forum.blackrussia.online/*
@@ -326,26 +326,55 @@
 
             // --- Функция для создания кнопок в стиле второго скрипта ---
             function createHeaderButtons() {
-                // Ищем контейнер для кнопок (как во втором скрипте)
-                let targetContainer = document.querySelector('.pageContent');
+                // Ищем контейнер для кнопок (как во втором скрипте - справа от навигации)
+                // Пробуем разные возможные контейнеры в правой части шапки
+                let targetContainer = null;
+                
+                // Вариант 1: ищем блок с навигацией и вставляем после него
+                const navContainer = document.querySelector('.p-nav-list');
+                if (navContainer && navContainer.parentElement) {
+                    targetContainer = navContainer.parentElement;
+                }
+                
+                // Вариант 2: ищем блок с пользовательским меню
                 if (!targetContainer) {
-                    // Если .pageContent не найден, пробуем найти другой подходящий контейнер
-                    targetContainer = document.querySelector('.p-body-header') || document.querySelector('.p-body-main');
+                    const userMenu = document.querySelector('.p-nav-opposite');
+                    if (userMenu) {
+                        targetContainer = userMenu;
+                    }
+                }
+                
+                // Вариант 3: ищем .p-body-header .p-title
+                if (!targetContainer) {
+                    const titleBlock = document.querySelector('.p-body-header');
+                    if (titleBlock) {
+                        targetContainer = titleBlock;
+                    }
+                }
+                
+                // Вариант 4: ищем .pageContent (как во втором скрипте)
+                if (!targetContainer) {
+                    targetContainer = document.querySelector('.pageContent');
                 }
                 
                 if (!targetContainer) {
                     console.warn('[BR Script] Не найден контейнер для кнопок');
                     return;
                 }
-
+                
                 // Удаляем старый контейнер, если есть
                 const oldContainer = document.querySelector('.br-header-buttons-container');
                 if (oldContainer) oldContainer.remove();
-
-                // Создаем новый контейнер
+                
+                // Создаем обертку для горизонтальной прокрутки
+                const scrollWrapper = document.createElement('div');
+                scrollWrapper.className = 'br-header-buttons-scroll';
+                scrollWrapper.style.cssText = 'overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: thin; margin: 10px 0;';
+                
+                // Создаем контейнер с кнопками
                 const container = document.createElement('div');
-                container.className = 'br-header-buttons-container bgButtonsContainer'; // Добавляем класс bgButtonsContainer для стилей из второго скрипта
-                container.style.cssText = 'display: flex; gap: 4px; flex-wrap: wrap; margin: 10px 0; padding: 5px 0;';
+                container.className = 'br-header-buttons-container bgButtonsContainer';
+                container.style.cssText = 'display: flex; gap: 4px; flex-wrap: nowrap; min-width: min-content;';
                 
                 // Получаем выбранные серверы
                 const selectedIds = getSelectedServers();
@@ -354,7 +383,7 @@
                 const createButton = (text, link, color = '#2563eb', isGlow = false) => {
                     const btn = document.createElement('button');
                     btn.textContent = text;
-                    btn.className = 'bgButton'; // Используем стиль из второго скрипта
+                    btn.className = 'bgButton';
                     if (isGlow) {
                         btn.style.background = 'rgba(245, 158, 11, 0.15)';
                         btn.style.color = '#fbbf24';
@@ -416,8 +445,25 @@
                 settingsBtn.addEventListener('click', openSettings);
                 container.appendChild(settingsBtn);
                 
-                // Добавляем контейнер на страницу
-                targetContainer.insertBefore(container, targetContainer.firstChild);
+                // Собираем структуру
+                scrollWrapper.appendChild(container);
+                
+                // Вставляем в нужное место (в правую часть, перед противоположными элементами)
+                if (targetContainer.classList.contains('p-nav-opposite')) {
+                    // Вставляем в начало правого блока
+                    targetContainer.insertBefore(scrollWrapper, targetContainer.firstChild);
+                } else if (targetContainer.classList.contains('p-nav-list') && targetContainer.parentElement) {
+                    // Вставляем после навигации, но перед противоположными элементами
+                    const opposite = targetContainer.parentElement.querySelector('.p-nav-opposite');
+                    if (opposite) {
+                        targetContainer.parentElement.insertBefore(scrollWrapper, opposite);
+                    } else {
+                        targetContainer.parentElement.appendChild(scrollWrapper);
+                    }
+                } else {
+                    // Вставляем в начало найденного контейнера
+                    targetContainer.insertBefore(scrollWrapper, targetContainer.firstChild);
+                }
             }
             
             // --- Функция открытия настроек (из первого скрипта, адаптированная) ---
@@ -466,13 +512,39 @@
             // --- Стили (объединенные из обоих скриптов) ---
             const style = document.createElement('style');
             style.textContent = `
-                /* Стили для контейнера с кнопками */
+                /* Стили для контейнера с кнопками и горизонтальной прокруткой */
+                .br-header-buttons-scroll {
+                    overflow-x: auto;
+                    overflow-y: hidden;
+                    -webkit-overflow-scrolling: touch;
+                    scrollbar-width: thin;
+                    margin: 10px 0;
+                    white-space: nowrap;
+                }
+                
+                .br-header-buttons-scroll::-webkit-scrollbar {
+                    height: 4px;
+                }
+                
+                .br-header-buttons-scroll::-webkit-scrollbar-track {
+                    background: #2a2a2a;
+                    border-radius: 2px;
+                }
+                
+                .br-header-buttons-scroll::-webkit-scrollbar-thumb {
+                    background: #555;
+                    border-radius: 2px;
+                }
+                
+                .br-header-buttons-scroll::-webkit-scrollbar-thumb:hover {
+                    background: #777;
+                }
+                
                 .bgButtonsContainer {
                     display: flex;
                     gap: 4px;
-                    flex-wrap: wrap;
-                    margin: 10px 0;
-                    padding: 5px 0;
+                    flex-wrap: nowrap;
+                    min-width: min-content;
                 }
                 
                 /* Стиль кнопок из второго скрипта */
@@ -497,6 +569,7 @@
                     line-height: 1.1;
                     word-break: break-word;
                     white-space: normal;
+                    flex-shrink: 0;
                 }
                 
                 .bgButton:hover {
@@ -1138,13 +1211,13 @@
             }
             
             // --- Инициализация ---
-            // Ждем загрузки DOM
+            // Ждем полной загрузки DOM
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => {
-                    createHeaderButtons();
+                    setTimeout(createHeaderButtons, 100);
                 });
             } else {
-                createHeaderButtons();
+                setTimeout(createHeaderButtons, 100);
             }
             
             // Наблюдатель за изменениями DOM на случай динамической подгрузки контента
