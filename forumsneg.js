@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         Секси форум
+// @name         Snow theme for forum
 // @namespace    https://forum.blackrussia.online
 // @version      1893248239.00001
-// @description  секси форум 
-// @author       Dont Sorry
+// @description  Snow forum
+// @author       kumiho
 // @match        *://forum.blackrussia.online/*
 // @icon         https://forum.blackrussia.online/favicon.ico
 // @grant        GM_addStyle
