@@ -70,7 +70,7 @@
             content: "[CENTER][COLOR=rgb(209, 213, 216)][FONT=Verdana][SIZE=15px][CENTER]{{ greeting }}, уважаемый [/COLOR][COLOR=rgb(255, 204, 0)]{{ user.name }}[/COLOR].[/CENTER][/CENTER]<br><br>[CENTER][img]https://i.postimg.cc/tgD5Xwhj/1618083711121.png[/img][/CENTER]<br>[CENTER][B][FONT=verdana]Данная тема никак не относится к этому разделу.[/FONT][/B][CENTER][B][FONT=verdana]Переношу ваше обращение в соответствующий для этого раздел.[/FONT][/B][/CENTER][CENTER][img]https://i.postimg.cc/tgD5Xwhj/1618083711121.png[/img][/CENTER]<br>",
         },
         {
-            title: 'ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ  ᅠᅠ ᅠ ЖАЛОБЫ НА ТЕХ. СПЕЦОВ ᅠ ᅠ ᅠᅠ ᅠ ᅠ ᅠ ᅠᅠ ᅠ ᅠ ᅠ ᅠ  ᅠ ',
+            title: '(<--<---<--- Жалобы на Тех. спецов --->--->-->)',
             dpstyle: 'oswald: 3px; color: #fff; background: #db2309; box-shadow: 0 0 2px 0 rgba(0,0,0,0.14),0 2px 2px 0 rgba(0,0,0,0.12),0 1px 3px 0 rgba(0,0,0,0.2); border: none; border-color: #f53317',
         },
         {
@@ -140,7 +140,7 @@
             status: true,
         },
         {
-            title: 'ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠᅠ ᅠ Технический раздел ᅠ ᅠ ᅠᅠ ᅠ ᅠ ᅠ ᅠᅠ  ᅠ ᅠ ᅠ ᅠ ᅠ  ᅠ ᅠ ',
+            title: '(<--<--<--<-- Технический раздел -->-->-->-->)',
             dpstyle: 'oswald: 3px; color: #fff; background: #db2309; box-shadow: 0 0 2px 0 rgba(0,0,0,0.14),0 2px 2px 0 rgba(0,0,0,0.12),0 1px 3px 0 rgba(0,0,0,0.2); border: none; border-color: #f53317',
         },
         {
@@ -342,7 +342,7 @@
             status: true,
         },
         {
-            title: 'ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠᅠ ᅠ ЖАЛОБЫ НА ИГРОКОВ ᅠ ᅠ ᅠᅠ ᅠ ᅠ ᅠ ᅠᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ     ',
+            title: '(<--<--<--<-- Жалобы на игроков -->-->-->-->)',
             dpstyle: 'oswald: 3px; color: #fff; background: #db2309; box-shadow: 0 0 2px 0 rgba(0,0,0,0.14),0 2px 2px 0 rgba(0,0,0,0.12),0 1px 3px 0 rgba(0,0,0,0.2); border: none; border-color: #f53317',
         },
         {
@@ -486,7 +486,7 @@
         return `<div class="select_answer">${buttons
             .map(
                 (btn, i) =>
-                    `<button id="answers-${i}" class="button--primary button rippleButton" style="margin:4px; border-radius: 13px; ${btn.dpstyle || ''}"><span class="button-text">${btn.title}</span></button>`,
+                    `<button id="answers-${i}" class="button--primary button rippleButton" style="margin:4px; ${btn.dpstyle || ''}"><span class="button-text">${btn.title}</span></button>`,
             )
             .join('')}</div>`;
     }
