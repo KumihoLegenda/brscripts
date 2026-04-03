@@ -1,10 +1,9 @@
 // ==UserScript==
-// @name        IP Info Viewer
+// @name        IP Info Viewer для Black Logs
 // @namespace   http://tampermonkey.net/
-// @version     1.0
-// @description Просмотр информации об IP адресе
-// @author      Based on BR Logs script
-// @match       *://*/*
+// @version     1.1
+// @description Просмотр информации об IP адресе на logs.blackrussia.online
+// @match       https://logs.blackrussia.online/gslogs/*
 // @grant       GM_xmlhttpRequest
 // @connect     ipapi.co
 // @connect     ipwhois.app
@@ -19,14 +18,12 @@
 
     // Функция для получения информации об IP с несколькими сервисами
     async function getIPInfo(ip) {
-        // Проверяем валидность IP
         const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
         if (!ipRegex.test(ip)) {
             throw new Error(`Неверный формат IP: ${ip}`);
         }
 
         return new Promise((resolve, reject) => {
-            // Сначала пробуем ipapi.co
             GM_xmlhttpRequest({
                 method: "GET",
                 url: `https://ipapi.co/${ip}/json/`,
@@ -38,7 +35,7 @@
                     try {
                         if (response.status === 200) {
                             const data = JSON.parse(response.responseText);
-                            
+
                             if (data.error || data.reserved) {
                                 getIPInfoAlternative(ip).then(resolve).catch(reject);
                             } else {
@@ -229,9 +226,8 @@
 
     // Функция для отображения информации об IP в модальном окне
     async function showIPInfo(ip) {
-        // Создаем модальное окно
         const modalId = 'ip-info-modal-' + Date.now();
-        
+
         const overlay = document.createElement("div");
         overlay.style.cssText = `
             position: fixed;
@@ -277,6 +273,7 @@
             align-items: center;
             padding: 12px 16px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
+            cursor: move;
         `;
 
         const title = document.createElement("h3");
@@ -309,7 +306,7 @@
             max-height: 60vh;
             overflow-y: auto;
         `;
-        content.innerHTML = '<div style="text-align: center; padding: 20px;">Загрузка информации об IP...</div>';
+        content.innerHTML = '<div style="text-align: center; padding: 20px;">⏳ Загрузка информации об IP...</div>';
 
         header.appendChild(title);
         header.appendChild(closeBtn);
@@ -319,14 +316,12 @@
         document.body.appendChild(overlay);
         document.body.appendChild(wrapper);
 
-        // Анимация появления
         setTimeout(() => {
             overlay.style.opacity = '1';
             modal.style.opacity = '1';
             modal.style.transform = 'scale(1)';
         }, 10);
 
-        // Закрытие модального окна
         const closeModal = () => {
             overlay.style.opacity = '0';
             modal.style.opacity = '0';
@@ -340,10 +335,42 @@
         closeBtn.onclick = closeModal;
         overlay.onclick = closeModal;
 
-        // Загружаем информацию об IP
+        // Drag functionality
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+
+        const dragStart = (e) => {
+            if (e.target === closeBtn) return;
+            initialX = e.clientX - modal.offsetLeft;
+            initialY = e.clientY - modal.offsetTop;
+            isDragging = true;
+        };
+
+        const drag = (e) => {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                modal.style.position = 'relative';
+                modal.style.left = `${currentX}px`;
+                modal.style.top = `${currentY}px`;
+            }
+        };
+
+        const dragEnd = () => {
+            isDragging = false;
+        };
+
+        header.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+
         try {
             const ipInfo = await getIPInfo(ip);
-            
+
             const hasRealData = ipInfo.country &&
                                ipInfo.country !== 'Неизвестно' &&
                                ipInfo.country !== 'Не удалось определить' &&
@@ -354,35 +381,35 @@
                 content.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 12px;">
                         <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <strong><i style="width: 20px; display: inline-block;">🌐</i> IP адрес:</strong>
+                            <strong>🌐 IP адрес:</strong>
                             <span>${ipInfo.ip}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <strong><i style="width: 20px; display: inline-block;">🇺🇳</i> Страна:</strong>
+                            <strong>🇺🇳 Страна:</strong>
                             <span>${ipInfo.country}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <strong><i style="width: 20px; display: inline-block;">🏙️</i> Город:</strong>
+                            <strong>🏙️ Город:</strong>
                             <span>${ipInfo.city || 'Неизвестно'}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <strong><i style="width: 20px; display: inline-block;">🗺️</i> Регион:</strong>
+                            <strong>🗺️ Регион:</strong>
                             <span>${ipInfo.region || 'Неизвестно'}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <strong><i style="width: 20px; display: inline-block;">⏰</i> Временная зона:</strong>
+                            <strong>⏰ Временная зона:</strong>
                             <span>${ipInfo.timezone || 'Неизвестно'}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <strong><i style="width: 20px; display: inline-block;">🏢</i> Организация:</strong>
+                            <strong>🏢 Организация:</strong>
                             <span>${ipInfo.org || 'Неизвестно'}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <strong><i style="width: 20px; display: inline-block;">🔗</i> ASN:</strong>
+                            <strong>🔗 ASN:</strong>
                             <span>${ipInfo.asn || 'Неизвестно'}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-                            <strong><i style="width: 20px; display: inline-block;">📍</i> Координаты:</strong>
+                            <strong>📍 Координаты:</strong>
                             <span>${ipInfo.latitude ? ipInfo.latitude + ', ' + ipInfo.longitude : 'Неизвестно'}</span>
                         </div>
                         ${ipInfo.note ? `<div style="padding: 8px 0; color: #ffd700; font-style: italic;">ℹ️ ${ipInfo.note}</div>` : ''}
@@ -411,17 +438,18 @@
         }
     }
 
-    // Функция для добавления кнопок информации об IP на страницу
+    // Функция для добавления кнопок информации об IP
     function addIPInfoButtons() {
-        // Ищем все элементы с IP адресами (можно настроить селектор под ваш сайт)
-        const ipElements = document.querySelectorAll('td.ip-address, .ip-cell, [data-ip]');
-        
-        ipElements.forEach(el => {
-            const ip = el.textContent.trim() || el.getAttribute('data-ip');
-            if (ip && ip !== 'N/A' && ip !== '' && !el.querySelector('.ip-info-btn')) {
+        // Ищем все ячейки с IP адресами на странице логов
+        const ipElements = document.querySelectorAll('td.td-player-ip');
+
+        ipElements.forEach(td => {
+            const ip = td.textContent.trim();
+            // Проверяем, что IP валидный и кнопка еще не добавлена
+            if (ip && ip !== 'N/A' && ip !== '' && ip !== '—' && !td.querySelector('.ip-info-btn-custom')) {
                 const btn = document.createElement('button');
                 btn.textContent = 'ℹ️';
-                btn.className = 'ip-info-btn';
+                btn.className = 'ip-info-btn-custom';
                 btn.style.cssText = `
                     background: transparent;
                     color: #fff;
@@ -438,22 +466,37 @@
                     e.stopPropagation();
                     showIPInfo(ip);
                 };
-                el.appendChild(btn);
+                td.appendChild(btn);
             }
         });
     }
 
-    // Запускаем добавление кнопок
-    addIPInfoButtons();
-    
-    // Наблюдаем за изменениями на странице для динамически добавляемых элементов
-    const observer = new MutationObserver(() => {
+    // Ждем загрузки страницы
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            addIPInfoButtons();
+
+            // Наблюдаем за изменениями на странице (пагинация, фильтры)
+            const observer = new MutationObserver(() => {
+                addIPInfoButtons();
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+    } else {
         addIPInfoButtons();
-    });
-    
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
+
+        const observer = new MutationObserver(() => {
+            addIPInfoButtons();
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
 
 })();
