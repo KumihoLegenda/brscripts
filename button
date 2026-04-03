@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BR Panel (Integrated Header)
 // @namespace    http://tampermonkey.net/
-// @version      3.0
+// @version      3.2
 // @description  Floating panel replaced with header buttons. Dynamic server selection, IP comparison tool.
 // @author       Black Russia & kumiho
 // @match        https://forum.blackrussia.online/*
@@ -30,7 +30,7 @@
         (function() {
             const STORAGE_PREFIX = 'br_panel_header_';
 
-            // --- ДАННЫЕ О РАЗДЕЛАХ (из первого скрипта) ---
+            // --- ДАННЫЕ О РАЗДЕЛАХ ---
             const DATA_TECH = [
                 { text: 'RED (1)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-red.226/', color: '#8B008B' },
                 { text: 'GREEN (2)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-green.227/', color: '#8B008B' },
@@ -324,37 +324,19 @@
                 return saved ? JSON.parse(saved) : [31, 32, 33, 34, 35];
             }
 
-            // --- Функция для создания кнопок в стиле второго скрипта ---
-            function createHeaderButtons() {
-                // Ищем контейнер для кнопок (как во втором скрипте)
-                let targetContainer = document.querySelector('.pageContent');
-                if (!targetContainer) {
-                    // Если .pageContent не найден, пробуем найти другой подходящий контейнер
-                    targetContainer = document.querySelector('.p-body-header') || document.querySelector('.p-body-main');
-                }
-                
-                if (!targetContainer) {
-                    console.warn('[BR Script] Не найден контейнер для кнопок');
-                    return;
-                }
-
-                // Удаляем старый контейнер, если есть
-                const oldContainer = document.querySelector('.br-header-buttons-container');
-                if (oldContainer) oldContainer.remove();
-
-                // Создаем новый контейнер
+            // --- Функция для создания кнопок (как во втором скрипте) ---
+            function createButtonsContainer() {
                 const container = document.createElement('div');
-                container.className = 'br-header-buttons-container bgButtonsContainer'; // Добавляем класс bgButtonsContainer для стилей из второго скрипта
-                container.style.cssText = 'display: flex; gap: 4px; flex-wrap: wrap; margin: 10px 0; padding: 5px 0;';
-                
+                container.className = 'bgButtonsContainer';
+
                 // Получаем выбранные серверы
                 const selectedIds = getSelectedServers();
                 
-                // Функция создания кнопки (стиль из второго скрипта)
+                // Функция создания кнопки
                 const createButton = (text, link, color = '#2563eb', isGlow = false) => {
                     const btn = document.createElement('button');
                     btn.textContent = text;
-                    btn.className = 'bgButton'; // Используем стиль из второго скрипта
+                    btn.className = 'bgButton';
                     if (isGlow) {
                         btn.style.background = 'rgba(245, 158, 11, 0.15)';
                         btn.style.color = '#fbbf24';
@@ -399,7 +381,7 @@
                 const opsBtn = createButton('ОПС', OPS_LINK.href, OPS_LINK.color, OPS_LINK.glow);
                 container.appendChild(opsBtn);
                 
-                // Кнопка IP (функционал из второго скрипта)
+                // Кнопка IP
                 const ipBtn = document.createElement('button');
                 ipBtn.textContent = 'IP';
                 ipBtn.className = 'bgButton';
@@ -407,7 +389,7 @@
                 ipBtn.addEventListener('click', openIPModal);
                 container.appendChild(ipBtn);
                 
-                // Кнопка настроек ⚙️
+                // Кнопка настроек
                 const settingsBtn = document.createElement('button');
                 settingsBtn.textContent = '⚙️';
                 settingsBtn.className = 'bgButton';
@@ -415,12 +397,20 @@
                 settingsBtn.style.fontSize = '14px';
                 settingsBtn.addEventListener('click', openSettings);
                 container.appendChild(settingsBtn);
-                
-                // Добавляем контейнер на страницу
-                targetContainer.insertBefore(container, targetContainer.firstChild);
+
+                return container;
+            }
+
+            function initializeScript() {
+                // Всегда добавляем кнопки навигации в .pageContent (как во втором скрипте)
+                const pageContent = document.querySelector(".pageContent");
+                if (pageContent) {
+                    const buttonsContainer = createButtonsContainer();
+                    pageContent.appendChild(buttonsContainer);
+                }
             }
             
-            // --- Функция открытия настроек (из первого скрипта, адаптированная) ---
+            // --- Функция открытия настроек ---
             function openSettings() {
                 let overlay = document.querySelector('.fnp-modal-overlay');
                 if(!overlay) {
@@ -442,7 +432,13 @@
                         const checked = Array.from(overlay.querySelectorAll('input:checked')).map(el => +el.value).sort((a,b)=>a-b);
                         localStorage.setItem(STORAGE_PREFIX + 'servers', JSON.stringify(checked));
                         // Обновляем кнопки
-                        createHeaderButtons();
+                        const oldContainer = document.querySelector('.bgButtonsContainer');
+                        if (oldContainer) oldContainer.remove();
+                        const pageContent = document.querySelector(".pageContent");
+                        if (pageContent) {
+                            const buttonsContainer = createButtonsContainer();
+                            pageContent.appendChild(buttonsContainer);
+                        }
                         overlay.classList.remove('open');
                     };
                 }
@@ -463,19 +459,9 @@
                 setTimeout(() => overlay.classList.add('open'), 10);
             }
             
-            // --- Стили (объединенные из обоих скриптов) ---
+            // --- Стили (как во втором скрипте) ---
             const style = document.createElement('style');
             style.textContent = `
-                /* Стили для контейнера с кнопками */
-                .bgButtonsContainer {
-                    display: flex;
-                    gap: 4px;
-                    flex-wrap: wrap;
-                    margin: 10px 0;
-                    padding: 5px 0;
-                }
-                
-                /* Стиль кнопок из второго скрипта */
                 .bgButton {
                     background: #1a1a1a;
                     color: #ffffff;
@@ -491,20 +477,36 @@
                     min-width: 50px;
                     max-width: 55px;
                     height: 32px;
-                    display: inline-flex;
+                    display: flex;
                     align-items: center;
                     justify-content: center;
                     line-height: 1.1;
                     word-break: break-word;
                     white-space: normal;
+                    flex-shrink: 0;
                 }
-                
+
                 .bgButton:hover {
                     background: #2a2a2a;
                     border-color: #555;
                 }
-                
-                /* Стили для модального окна настроек из первого скрипта */
+
+                .bgButtonsContainer {
+                    display: flex;
+                    gap: 2px;
+                    flex-wrap: nowrap;
+                    overflow-x: auto;
+                    padding: 5px 0;
+                    margin-bottom: 10px;
+                    -webkit-overflow-scrolling: touch;
+                    scrollbar-width: none;
+                }
+
+                .bgButtonsContainer::-webkit-scrollbar {
+                    display: none;
+                }
+
+                /* Стили для модального окна настроек */
                 .fnp-modal-overlay {
                     position: fixed;
                     top: 0;
@@ -606,7 +608,7 @@
                     color: #fff;
                 }
                 
-                /* Стили для модального окна IP (из второго скрипта) */
+                /* Стили для модального окна IP */
                 .ip-modal {
                     display: none;
                     position: fixed;
@@ -840,6 +842,7 @@
                     background-color: #0069a4;
                 }
                 
+                /* Мобильная версия - горизонтальный скролл */
                 @media (max-width: 768px) {
                     .bgButton {
                         min-width: 48px;
@@ -862,10 +865,18 @@
                         border-bottom: none;
                     }
                 }
+                
+                /* ПК версия - перенос на новые строки */
+                @media (min-width: 769px) {
+                    .bgButtonsContainer {
+                        flex-wrap: wrap;
+                        overflow-x: visible;
+                    }
+                }
             `;
             document.head.appendChild(style);
             
-            // --- Функции для работы с IP (из второго скрипта) ---
+            // --- Функции для работы с IP ---
             function openIPModal() {
                 let modal = document.getElementById('ipModal');
                 if (!modal) {
@@ -1138,19 +1149,15 @@
             }
             
             // --- Инициализация ---
-            // Ждем загрузки DOM
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', () => {
-                    createHeaderButtons();
-                });
+                document.addEventListener('DOMContentLoaded', initializeScript);
             } else {
-                createHeaderButtons();
+                initializeScript();
             }
             
-            // Наблюдатель за изменениями DOM на случай динамической подгрузки контента
             const observer = new MutationObserver(() => {
-                if (!document.querySelector('.br-header-buttons-container')) {
-                    createHeaderButtons();
+                if (!document.querySelector('.bgButtonsContainer')) {
+                    initializeScript();
                 }
             });
             observer.observe(document.body, { childList: true, subtree: true });
