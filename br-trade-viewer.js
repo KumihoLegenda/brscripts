@@ -1,33 +1,9 @@
-// ==UserScript==
-// @name        Скрипт для системы логирования + TradeID Viewer (Full)
-// @namespace    https://logs.blackrussia.online/
-// @version      1.4
-// @description  TradeID Viewer + IP Checker + Vehicle Exchange (ИСПРАВЛЕНАЯ)
-// @author       Kumiho + Assistant
-// @match        https://logs.blackrussia.online/gslogs/*
-// @icon         https://freepngimg.com/thumb/eagle/20-eagle-black-siluet-png-image-download-thumb.png
-// @license      Kumiho + GNU GPLv3
-// @grant        GM_addStyle
-// @grant        GM_xmlhttpRequest
-// @connect      logs.blackrussia.online
-// @connect      2ip.ru
-// @connect      ipapi.co
-// @connect      ipwhois.app
-// @connect      ip.sb
-// @connect      freeipapi.com
-// @connect      ip-api.com
-// @connect      reallyfreegeoip.org
-// @connect      jsonip.com
-// @resource leafletCSS https://unpkg.com/leaflet@1.9.4/dist/leaflet.css
-// @resource fontAwesomeCSS https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css
-// @downloadURL https://update.greasyfork.org/scripts/487756/%D0%A1%D0%BA%D1%80%D0%B8%D0%BF%D1%82%20%D0%B4%D0%BB%D1%8F%20%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B%20%D0%BB%D0%BE%D0%B3%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F%20%2B%20TradeID%20Viewer.user.js
-// @updateURL https://update.greasyfork.org/scripts/487756/%D0%A1%D0%BA%D1%80%D0%B8%D0%BF%D1%82%20%D0%B4%D0%BB%D1%8F%20%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B%20%D0%BB%D0%BE%D0%B3%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F%20%2B%20TradeID%20Viewer.meta.js
-// ==/UserScript==
-
 (function () {
     'use strict';
 
-    // === КОНФИГУРАЦИЯ ===
+    // -------------------
+    // Настройки и константы
+    // -------------------
     const REQUEST_DELAY_MS = 4000;
     const SHOW_CONNECT_BTN_DELAY_MS = 2000;
     let lastRequestTime = 0;
@@ -36,483 +12,488 @@
     const SERVER_ID_MATCH = window.location.pathname.match(/\/gslogs\/(\d+)/);
     const SERVER_ID = SERVER_ID_MATCH ? SERVER_ID_MATCH[1] : '1';
 
-    // === ФУНКЦИИ IP ПРОВЕРКИ ===
-    function createIPCheckButton() {
-        // Ждём появления элемента
-        const checkExisting = document.getElementById('ip-check-toggle');
-        if (checkExisting) return;
-
-        const ipCheckButton = document.createElement('button');
-        ipCheckButton.className = 'ip-check-button';
-        ipCheckButton.id = 'ip-check-toggle';
-        ipCheckButton.textContent = 'ПРОВЕРКА IP';
-        ipCheckButton.style.marginLeft = '10px';
-        ipCheckButton.style.whiteSpace = 'nowrap';
-        ipCheckButton.style.minWidth = '140px';
-        ipCheckButton.style.padding = '6px 12px';
-        ipCheckButton.style.borderRadius = '8px';
-        ipCheckButton.style.border = 'none';
-        ipCheckButton.style.backgroundColor = '#2b8cff';
-        ipCheckButton.style.color = 'white';
-        ipCheckButton.style.cursor = 'pointer';
-
-        ipCheckButton.onclick = () => {
-            const modal = document.getElementById('ip-check-modal');
-            if (modal) {
-                const bsModal = new bootstrap.Modal(modal);
-                bsModal.show();
-            }
-        };
-
-        // Пытаемся найти место для кнопки
-        const insertAfterElement = () => {
-            const targetElement = document.querySelector('div.container-fluid span.badge.bg-success');
-            if (targetElement && targetElement.parentNode) {
-                targetElement.parentNode.insertBefore(ipCheckButton, targetElement.nextSibling);
-                return true;
-            }
-            return false;
-        };
-
-        if (!insertAfterElement()) {
-            const checkExist = setInterval(() => {
-                if (insertAfterElement()) {
-                    clearInterval(checkExist);
-                }
-            }, 500);
-        }
+    // -------------------
+    // Замена GM_addStyle
+    // -------------------
+    function addStyle(css) {
+        const style = document.createElement('style');
+        style.textContent = css;
+        document.head.appendChild(style);
     }
 
-    function createIPCheckModal() {
-        if (document.getElementById('ip-check-modal')) return;
-
-        const ipCheckModal = document.createElement('div');
-        ipCheckModal.className = 'modal fade';
-        ipCheckModal.id = 'ip-check-modal';
-        ipCheckModal.tabIndex = '-1';
-        ipCheckModal.setAttribute('data-bs-backdrop', 'static');
-
-        const modalDialog = document.createElement('div');
-        modalDialog.className = 'modal-dialog modal-dialog-centered modal-lg';
-        ipCheckModal.appendChild(modalDialog);
-
-        const modalContent = document.createElement('div');
-        modalContent.className = 'modal-content';
-        modalDialog.appendChild(modalContent);
-
-        const modalHeader = document.createElement('div');
-        modalHeader.className = 'modal-header';
-        modalContent.appendChild(modalHeader);
-
-        const modalTitle = document.createElement('h5');
-        modalTitle.className = 'modal-title';
-        modalTitle.textContent = 'Проверка IP адресов';
-        modalHeader.appendChild(modalTitle);
-
-        const closeButton = document.createElement('button');
-        closeButton.type = 'button';
-        closeButton.className = 'btn-close';
-        closeButton.setAttribute('data-bs-dismiss', 'modal');
-        modalHeader.appendChild(closeButton);
-
-        const modalBody = document.createElement('div');
-        modalBody.className = 'modal-body';
-        modalContent.appendChild(modalBody);
-
-        modalBody.innerHTML = `
-            <div class="ip-check-form">
-                <div class="ip-input-group">
-                    <label>Первый IP адрес:</label>
-                    <input type="text" class="form-control ip-input" id="ip1" placeholder="Введите IP адрес">
-                </div>
-                <div class="ip-input-group">
-                    <label>Второй IP адрес:</label>
-                    <input type="text" class="form-control ip-input" id="ip2" placeholder="Введите IP адрес">
-                </div>
-                <button class="btn btn-primary check-ip-btn" id="check-ip-btn">Проверить IP</button>
-            </div>
-            <div class="ip-results-container" id="ip-results">
-                <div class="loading-resp">Введите IP адреса для проверки</div>
-            </div>
-        `;
-
-        document.body.appendChild(ipCheckModal);
-
-        const checkBtn = document.getElementById('check-ip-btn');
-        if (checkBtn) {
-            checkBtn.addEventListener('click', checkIPs);
-        }
-    }
-
-    async function checkIPs() {
-        const ip1 = document.getElementById('ip1')?.value.trim();
-        const ip2 = document.getElementById('ip2')?.value.trim();
-        const resultsContainer = document.getElementById('ip-results');
-
-        if (!ip1 || !ip2) {
-            if (resultsContainer) {
-                resultsContainer.innerHTML = '<div class="error-resp">Пожалуйста, введите оба IP адреса</div>';
-            }
-            return;
+    addStyle(`
+        :root {
+            --bg-main: rgba(26, 26, 26, 0.7);
+            --bg-panel: rgba(30, 39, 46, 0.7);
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-highlight: #2b8cff;
+            --primary-gradient: linear-gradient(145deg, #2b8cff, #1f6cd9);
+            --secondary-gradient: linear-gradient(145deg, #8e2de2, #4a00e0);
+            --danger-color: #ff4757;
+            --warning-color: #ffd700;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow: 0 10px 35px rgba(0,0,0,.5);
+            --radius: 12px;
+            --font-family: 'Segoe UI', sans-serif;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        if (resultsContainer) {
-            resultsContainer.innerHTML = '<div class="loading-resp">Загрузка данных...</div>';
+        .trade-btn-resp {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            margin: 2px;
+            font-size: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform var(--transition), box-shadow var(--transition);
         }
+        .trade-btn-resp:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(43, 140, 255, 0.3);
+        }
+        .trade-modal-overlay-resp {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.6);
+            z-index: 9999;
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+        .trade-modal-overlay-resp.visible { opacity: 1; }
+        .trade-wrapper-resp {
+            position: fixed;
+            z-index: 10000;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .trade-modal-resp {
+            background: var(--bg-main);
+            color: var(--text-primary);
+            box-shadow: var(--shadow);
+            width: 95%;
+            max-width: 600px;
+            height: auto;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            font-family: var(--font-family);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(15px);
+            border-radius: var(--radius);
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity var(--transition), transform var(--transition), height var(--transition);
+        }
+        .trade-wrapper-resp.visible .trade-modal-resp {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .trade-modal-header-resp {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        .trade-modal-header-resp::before { display: none !important; }
+        .trade-modal-title-resp {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-highlight);
+            margin: 0;
+            flex-grow: 1;
+        }
+        .trade-modal-close-resp {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 28px;
+            line-height: 1;
+            padding: 0 8px;
+            cursor: pointer;
+            transition: color var(--transition), transform var(--transition);
+        }
+        .trade-modal-content-resp {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding: 8px 16px;
+        }
+        .trade-row-resp { padding: 12px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+        .trade-player-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .trade-player-resp { font-weight: 600; color: var(--text-primary); }
+        .trade-time-resp { font-size: 12px; color: var(--text-secondary); }
+        .trade-desc-resp { font-size: 14px; color: var(--text-primary); line-height: 1.5; word-break: break-word; white-space: pre-wrap; }
+        .trade-modal-footer-resp { display: flex; justify-content: center; align-items: center; padding: 12px 16px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border-color); flex-shrink: 0; background: rgba(26, 26, 26, 0.8); }
+        .both-nicks-btn-resp { background: var(--secondary-gradient); color: white; padding: 12px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; width: 100%; }
+        .connect-panel-resp { background: var(--bg-panel); padding: 16px; border-radius: var(--radius); display: flex; flex-direction: column; gap: 10px; margin: 16px 0; border: 1px solid var(--border-color); backdrop-filter: blur(15px); }
+        .connect-btn-resp { background: linear-gradient(145deg, #3742fa, #1e90ff); color: var(--text-primary); border: none; padding: 10px 14px; border-radius: 8px; font-weight: 500; text-align: left; font-size: 13px; }
+        .connect-btn-resp.empty { background: rgba(47, 53, 66, 0.7); cursor: default; }
+        @media (min-width: 800px) {
+            .trade-wrapper-resp { flex-direction: row; align-items: center; padding: 32px; }
+            .trade-modal-resp { max-width: 800px; width: 100%; height: auto; min-height: 150px; max-height: 85vh; }
+            .trade-modal-header-resp { cursor: move; padding: 16px 24px; }
+            .trade-modal-content-resp { padding: 8px 24px; }
+            .trade-modal-footer-resp { padding: 16px 24px; padding-bottom: 16px; }
+            .both-nicks-btn-resp { width: auto; }
+            .trade-row-resp { display: grid; grid-template-columns: 150px 180px 1fr; gap: 16px; }
+            .trade-player-info { display: contents; }
+            .trade-player-resp { margin-bottom: 0; }
+            .trade-desc-resp { font-size: 13px; }
+            .connect-panel-resp { width: 340px; flex-shrink: 0; margin: 0; height: auto; max-height: 85vh; overflow-y: auto; }
+        }
+    `);
 
+    // -------------------
+    // Замена GM_xmlhttpRequest
+    // -------------------
+    async function fetchJson(url) {
         try {
-            const [result1, result2] = await Promise.all([
-                getIPInfo(ip1),
-                getIPInfo(ip2)
-            ]);
-            displayIPResults(result1, result2);
-        } catch (error) {
-            if (resultsContainer) {
-                resultsContainer.innerHTML = `<div class="error-resp">Ошибка: ${error.message}</div>`;
-            }
+            const res = await fetch(url, { credentials: 'include' });
+            if (!res.ok) throw new Error(res.status);
+            return await res.json();
+        } catch(e) {
+            console.error('[BR-Viewer] Fetch error:', e);
+            return null;
         }
     }
 
-    async function getIPInfo(ip) {
-        const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-        if (!ipRegex.test(ip)) {
-            throw new Error(`Неверный формат IP: ${ip}`);
-        }
-
-        return new Promise((resolve) => {
-            GM_xmlhttpRequest({
-                method: "GET",
-                url: `https://ipapi.co/${ip}/json/`,
-                timeout: 10000,
-                onload: function(response) {
-                    try {
-                        if (response.status === 200) {
-                            const data = JSON.parse(response.responseText);
-                            if (!data.error) {
-                                resolve({
-                                    ip: data.ip || ip,
-                                    country: data.country_name || 'Неизвестно',
-                                    city: data.city || 'Неизвестно',
-                                    region: data.region || 'Неизвестно',
-                                    timezone: data.timezone || 'Неизвестно',
-                                    org: data.org || 'Неизвестно',
-                                    asn: data.asn || 'Неизвестно',
-                                    latitude: data.latitude,
-                                    longitude: data.longitude
-                                });
-                                return;
-                            }
-                        }
-                    } catch (e) {}
-                    resolve({
-                        ip: ip,
-                        country: 'Не удалось определить',
-                        city: 'Неизвестно',
-                        region: 'Неизвестно',
-                        timezone: 'Неизвестно',
-                        org: 'Неизвестно',
-                        asn: 'Неизвестно',
-                        latitude: null,
-                        longitude: null
-                    });
-                },
-                onerror: () => {
-                    resolve({
-                        ip: ip,
-                        country: 'Ошибка соединения',
-                        city: 'Неизвестно',
-                        region: 'Неизвестно',
-                        timezone: 'Неизвестно',
-                        org: 'Неизвестно',
-                        asn: 'Неизвестно',
-                        latitude: null,
-                        longitude: null
-                    });
-                }
-            });
-        });
-    }
-
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-        if (!lat1 || !lon1 || !lat2 || !lon2) return 'Недостаточно данных';
-        const R = 6371;
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return (R * c).toFixed(2) + ' км';
-    }
-
-    function displayIPResults(result1, result2) {
-        const resultsContainer = document.getElementById('ip-results');
-        if (!resultsContainer) return;
-
-        const distance = calculateDistance(result1.latitude, result1.longitude, result2.latitude, result2.longitude);
-
-        resultsContainer.innerHTML = `
-            <div class="ip-results-grid">
-                <div class="ip-result-card">
-                    <h4>📍 IP 1: ${result1.ip}</h4>
-                    <div>🌍 Страна: ${result1.country}</div>
-                    <div>🏙️ Город: ${result1.city}</div>
-                    <div>🗺️ Регион: ${result1.region}</div>
-                    <div>🕐 Часовой пояс: ${result1.timezone}</div>
-                    <div>🏢 Орг: ${result1.org}</div>
-                </div>
-                <div class="ip-result-card">
-                    <h4>📍 IP 2: ${result2.ip}</h4>
-                    <div>🌍 Страна: ${result2.country}</div>
-                    <div>🏙️ Город: ${result2.city}</div>
-                    <div>🗺️ Регион: ${result2.region}</div>
-                    <div>🕐 Часовой пояс: ${result2.timezone}</div>
-                    <div>🏢 Орг: ${result2.org}</div>
-                </div>
-                <div class="distance-info">
-                    <h4>📏 Расстояние между IP</h4>
-                    <div class="distance-value">${distance}</div>
-                </div>
-            </div>
-        `;
-    }
-
-    // === ФУНКЦИИ ДЛЯ ТРЕЙДОВ ===
-    async function loadConnectData(nick, tradeTime) {
-        await globalThrottle();
-        return new Promise((resolve) => {
-            const tradeDate = new Date(tradeTime);
-            const startDate = new Date(tradeDate.getTime() - 24 * 60 * 60 * 1000).toISOString();
-            const endDate = new Date(tradeDate.getTime() + 24 * 60 * 60 * 1000).toISOString();
-            const url = `https://logs.blackrussia.online/gslogs/${SERVER_ID}/api/list-game-logs/?category_id__exact=38&player_name__exact=${encodeURIComponent(nick)}&time__gte=${startDate}&time__lte=${endDate}&order_by=time&offset=0&auto=false`;
-
-            GM_xmlhttpRequest({
-                method: "GET",
-                url: url,
-                timeout: 15000,
-                onload: (res) => {
-                    try {
-                        if (res.status !== 200) {
-                            resolve({ nick, appmdid: null, level: null, playerIp: null });
-                            return;
-                        }
-                        const data = JSON.parse(res.responseText);
-                        if (!Array.isArray(data) || data.length === 0) {
-                            resolve({ nick, appmdid: null, level: null, playerIp: null });
-                            return;
-                        }
-
-                        let appmdid = null, level = null, playerIp = null;
-                        let closestConnectTime = null;
-
-                        for (const item of data) {
-                            const itemTime = new Date(item.time).getTime();
-                            if (/подключился/i.test(item.transaction_desc)) {
-                                if (itemTime <= tradeDate.getTime() && (!closestConnectTime || itemTime > closestConnectTime)) {
-                                    const m = item.transaction_desc.match(/APPMDID:\s*([A-Za-z0-9_-]+)/i);
-                                    if (m) {
-                                        appmdid = m[1];
-                                        playerIp = item.player_ip;
-                                        closestConnectTime = itemTime;
-                                    }
-                                }
-                            }
-                            if (/отключился/i.test(item.transaction_desc) && !level) {
-                                const m = item.transaction_desc.match(/Уровень:\s*(\d+)/i);
-                                if (m) {
-                                    level = m[1];
-                                    if (!playerIp) playerIp = item.player_ip;
-                                }
-                            }
-                        }
-                        resolve({ nick, appmdid, level, playerIp });
-                    } catch (e) {
-                        resolve({ nick, appmdid: null, level: null, playerIp: null });
-                    }
-                },
-                onerror: () => resolve({ nick, appmdid: null, level: null, playerIp: null })
-            });
-        });
+    // -------------------
+    // Вспомогательные функции
+    // -------------------
+    function formatTime(iso) {
+        const d = new Date(iso);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} | ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
     }
 
     async function globalThrottle() {
         const now = Date.now();
         const timeSinceLastRequest = now - lastRequestTime;
         if (timeSinceLastRequest < REQUEST_DELAY_MS) {
-            await new Promise(resolve => setTimeout(resolve, REQUEST_DELAY_MS - timeSinceLastRequest));
+            const delay = REQUEST_DELAY_MS - timeSinceLastRequest;
+            showGlobalWaitMessage(delay);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            hideGlobalWaitMessage();
         }
         lastRequestTime = Date.now();
     }
 
-    function createModal(tradeID) {
-        if (openModals[tradeID]) return;
-
-        const modalId = `trade-modal-${tradeID}`;
-        let existingModal = document.getElementById(modalId);
-        if (existingModal) {
-            existingModal.style.display = 'flex';
-            return;
-        }
-
-        const modalHtml = `
-            <div id="${modalId}" class="trade-modal-overlay-resp" style="display: none;">
-                <div class="trade-wrapper-resp">
-                    <div class="trade-modal-resp">
-                        <div class="trade-modal-header-resp">
-                            <h3 class="trade-modal-title-resp">Логи трейда #${tradeID}</h3>
-                            <button class="trade-modal-close-resp">&times;</button>
-                        </div>
-                        <div class="trade-modal-content-resp">
-                            <div class="loading-resp">Загрузка логов...</div>
-                        </div>
-                        <div class="trade-modal-footer-resp"></div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        const modal = document.getElementById(modalId);
-        const wrapper = modal.querySelector('.trade-wrapper-resp');
-        const content = modal.querySelector('.trade-modal-content-resp');
-        const footer = modal.querySelector('.trade-modal-footer-resp');
-        const closeBtn = modal.querySelector('.trade-modal-close-resp');
-
-        openModals[tradeID] = modal;
-
-        const closeModal = () => {
-            modal.style.display = 'none';
-            setTimeout(() => {
-                if (modal.parentNode) modal.remove();
-                delete openModals[tradeID];
-            }, 300);
-        };
-
-        closeBtn.onclick = closeModal;
-        modal.onclick = (e) => {
-            if (e.target === modal) closeModal();
-        };
-
-        modal.style.display = 'flex';
-
-        // Загрузка данных
-        (async () => {
-            await globalThrottle();
-            const startDate = new Date(Date.now() - 5 * 30 * 24 * 60 * 1000).toISOString();
-            const endDate = new Date().toISOString();
-            const url = `https://logs.blackrussia.online/gslogs/${SERVER_ID}/api/list-game-logs/?transaction_desc__ilike=%25TradeID%3A+${tradeID}%25&time__gte=${startDate}&time__lte=${endDate}&order_by=time&offset=0&auto=false`;
-
-            GM_xmlhttpRequest({
-                method: "GET",
-                url: url,
-                timeout: 15000,
-                onload: (res) => {
-                    try {
-                        if (res.status !== 200) {
-                            content.innerHTML = `<div class="error-resp">Ошибка: ${res.status}</div>`;
-                            return;
-                        }
-                        const data = JSON.parse(res.responseText);
-                        if (!Array.isArray(data) || data.length === 0) {
-                            content.innerHTML = '<div class="error-resp">Логи не найдены</div>';
-                            return;
-                        }
-
-                        content.innerHTML = '';
-                        const tradeTime = data[0].time;
-                        data.forEach(item => {
-                            content.innerHTML += `
-                                <div class="trade-row-resp">
-                                    <div class="trade-player-info">
-                                        <span class="trade-player-resp">${escapeHtml(item.player_name)}</span>
-                                        <span class="trade-time-resp">${formatTime(item.time)}</span>
-                                    </div>
-                                    <div class="trade-desc-resp">${escapeHtml(item.transaction_desc)}</div>
-                                </div>
-                            `;
-                        });
-
-                        const uniquePlayers = [...new Set(data.map(i => i.player_name))].slice(0, 2);
-                        if (uniquePlayers.length >= 2) {
-                            footer.innerHTML = '<button class="both-nicks-btn-resp">Загрузить данные игроков</button>';
-                            const connectBtn = footer.querySelector('.both-nicks-btn-resp');
-                            connectBtn.onclick = async () => {
-                                connectBtn.disabled = true;
-                                connectBtn.textContent = "Загрузка...";
-                                const results = await Promise.all([
-                                    loadConnectData(uniquePlayers[0], tradeTime),
-                                    loadConnectData(uniquePlayers[1], tradeTime)
-                                ]);
-                                createConnectPanel(results, wrapper, modal);
-                                connectBtn.remove();
-                            };
-                        }
-                    } catch (e) {
-                        content.innerHTML = '<div class="error-resp">Ошибка обработки</div>';
-                    }
-                },
-                onerror: () => {
-                    content.innerHTML = '<div class="error-resp">Ошибка соединения</div>';
+    function showGlobalWaitMessage(delayMs) {
+        Object.values(openModals).forEach(modal => {
+            const contentArea = modal.querySelector('.trade-modal-content-resp');
+            if (contentArea) {
+                let waitMsg = contentArea.querySelector('.request-waiting-resp');
+                if (!waitMsg) {
+                    waitMsg = document.createElement('div');
+                    waitMsg.className = 'request-waiting-resp';
+                    contentArea.insertBefore(waitMsg, contentArea.firstChild);
                 }
-            });
-        })();
+                waitMsg.textContent = `Ожидание ${Math.ceil(delayMs / 1000)}с перед запросом...`;
+            }
+        });
     }
 
-    function createConnectPanel(players, wrapper, modal) {
-        const existingPanel = wrapper.querySelector('.connect-panel-resp');
-        if (existingPanel) existingPanel.remove();
+    function hideGlobalWaitMessage() {
+        Object.values(openModals).forEach(modal => {
+            const waitMsg = modal.querySelector('.request-waiting-resp');
+            if (waitMsg) waitMsg.remove();
+        });
+    }
 
-        const panel = document.createElement('div');
-        panel.className = 'connect-panel-resp';
+    // -------------------
+    // Загрузка данных подключения
+    // -------------------
+    async function loadConnectData(nick, tradeTime) {
+        await globalThrottle();
+        const tradeDate = new Date(tradeTime);
+        const startDate = new Date(tradeDate.getTime() - 24*60*60*1000).toISOString();
+        const endDate = new Date(tradeDate.getTime() + 24*60*60*1000).toISOString();
+        const url = `https://logs.blackrussia.online/gslogs/${SERVER_ID}/api/list-game-logs/?category_id__exact=38&player_name__exact=${encodeURIComponent(nick)}&time__gte=${startDate}&time__lte=${endDate}&order_by=time&offset=0&auto=false`;
+
+        const data = await fetchJson(url);
+        if (!Array.isArray(data) || data.length === 0) return { nick, appmdid: null, level: null, playerIp: null };
+
+        let appmdid = null, level = null, playerIp = null;
+        let closestConnectTime = null, closestDisconnectTime = null;
+
+        for (const item of data) {
+            const itemTime = new Date(item.time).getTime();
+            if (/подключился/i.test(item.transaction_desc)) {
+                if (itemTime <= tradeDate.getTime() && (!closestConnectTime || itemTime > closestConnectTime)) {
+                    const m = item.transaction_desc.match(/APPMDID:\s*([A-Za-z0-9_-]+)/i);
+                    if (m) { appmdid = m[1]; playerIp = item.player_ip; closestConnectTime = itemTime; }
+                }
+            }
+            if (/отключился/i.test(item.transaction_desc)) {
+                const timeDiff = Math.abs(itemTime - tradeDate.getTime());
+                if (!closestDisconnectTime || timeDiff < Math.abs(closestDisconnectTime - tradeDate.getTime())) {
+                    const m = item.transaction_desc.match(/Уровень:\s*(\d+)/i);
+                    if (m) { level = m[1]; if (!playerIp) playerIp = item.player_ip; closestDisconnectTime = itemTime; }
+                }
+            }
+        }
+        return { nick, appmdid, level, playerIp };
+    }
+
+    // -------------------
+    // Создание панели подключения
+    // -------------------
+    function createConnectPanel(players, wrapper) {
+        wrapper.querySelectorAll(".connect-panel-resp").forEach(el => el.remove());
+        const panel = document.createElement("div");
+        panel.className = "connect-panel-resp";
+        let hasData = false;
 
         players.forEach(p => {
             if (p.appmdid) {
-                const btn = document.createElement('button');
-                btn.className = 'connect-btn-resp';
-                btn.textContent = `${p.nick} | APPMDID: ${p.appmdid}`;
-                btn.onclick = () => {
-                    navigator.clipboard.writeText(p.appmdid);
-                    btn.textContent = `${p.nick} | Скопировано!`;
-                    setTimeout(() => btn.textContent = `${p.nick} | APPMDID: ${p.appmdid}`, 1500);
+                hasData = true;
+                const btnApp = document.createElement("button");
+                btnApp.className = "connect-btn-resp";
+                btnApp.textContent = `${p.nick} | APPMDID: ${p.appmdid}`;
+                btnApp.onclick = () => {
+                    navigator.clipboard.writeText(p.appmdid).then(() => {
+                        const originalText = btnApp.textContent;
+                        btnApp.textContent = `${p.nick} | Скопировано!`;
+                        setTimeout(() => btnApp.textContent = originalText, 1500);
+                    }).catch(err => console.error('[BR-Viewer] Could not copy APPMDID: ', err));
                 };
-                panel.appendChild(btn);
+                panel.appendChild(btnApp);
             }
             if (p.level) {
-                const btn = document.createElement('button');
-                btn.className = 'connect-btn-resp';
-                btn.textContent = `${p.nick} | Уровень: ${p.level}`;
-                panel.appendChild(btn);
+                hasData = true;
+                const btnLvl = document.createElement("button");
+                btnLvl.className = "connect-btn-resp empty";
+                btnLvl.textContent = `${p.nick} | Уровень: ${p.level}`;
+                panel.appendChild(btnLvl);
             }
             if (p.playerIp) {
-                const btn = document.createElement('button');
-                btn.className = 'connect-btn-resp';
-                btn.textContent = `${p.nick} | IP: ${p.playerIp}`;
-                panel.appendChild(btn);
+                hasData = true;
+                const btnIp = document.createElement("button");
+                btnIp.className = "connect-btn-resp empty";
+                btnIp.textContent = `${p.nick} | IP: ${p.playerIp}`;
+                panel.appendChild(btnIp);
             }
         });
 
-        wrapper.appendChild(panel);
+        if (!hasData) {
+            panel.innerHTML = '<div class="loading-resp">Данные подключения не найдены.</div>';
+        }
+
+        const modal = wrapper.querySelector('.trade-modal-resp');
+        const content = modal.querySelector('.trade-modal-content-resp');
+
+        if (window.innerWidth < 800) {
+            content.appendChild(panel);
+        } else {
+            wrapper.appendChild(panel);
+        }
     }
 
+    // -------------------
+    // Создание модального окна
+    // -------------------
+    function createModal(tradeID) {
+        if (openModals[tradeID]) return;
+
+        const overlay = document.createElement("div");
+        overlay.className = "trade-modal-overlay-resp";
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "trade-wrapper-resp";
+        wrapper.dataset.tradeId = tradeID;
+
+        const modal = document.createElement("div");
+        modal.className = "trade-modal-resp";
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', `trade-modal-title-${tradeID}`);
+
+        const header = document.createElement("div");
+        header.className = "trade-modal-header-resp";
+
+        const title = document.createElement("h3");
+        title.className = "trade-modal-title-resp";
+        title.id = `trade-modal-title-${tradeID}`;
+        title.textContent = "Логи трейда #" + tradeID;
+
+        const closeBtn = document.createElement("button");
+        closeBtn.className = "trade-modal-close-resp";
+        closeBtn.innerHTML = "&times;";
+        closeBtn.setAttribute('aria-label', 'Закрыть окно');
+
+        let handleEscKey;
+        let handleClickOutside;
+
+        const closeModal = () => {
+            wrapper.classList.remove('visible');
+            overlay.classList.remove('visible');
+            setTimeout(() => {
+                wrapper.remove();
+                overlay.remove();
+                delete openModals[tradeID];
+                document.removeEventListener('keydown', handleEscKey);
+                document.removeEventListener('mousedown', handleClickOutside);
+            }, 300);
+        };
+
+        handleEscKey = (event) => {
+            if (event.key === 'Escape' || event.keyCode === 27) closeModal();
+        };
+
+        handleClickOutside = (event) => {
+            if (modal && !modal.contains(event.target)) {
+                closeModal();
+            }
+        };
+
+        closeBtn.onclick = closeModal;
+
+        header.appendChild(title);
+        header.appendChild(closeBtn);
+
+        const content = document.createElement("div");
+        content.className = "trade-modal-content-resp";
+        content.innerHTML = '<div class="loading-resp">Загрузка логов...</div>';
+
+        const footer = document.createElement("div");
+        footer.className = "trade-modal-footer-resp";
+
+        modal.appendChild(header);
+        modal.appendChild(content);
+        modal.appendChild(footer);
+        wrapper.appendChild(modal);
+        document.body.appendChild(overlay);
+        document.body.appendChild(wrapper);
+        openModals[tradeID] = wrapper;
+
+        requestAnimationFrame(() => {
+            overlay.classList.add('visible');
+            wrapper.classList.add('visible');
+        });
+
+        // -------------------
+        // Drag & Drop
+        // -------------------
+        (function makeDraggable(modalWrapper, headerElement) {
+            let isDragging = false, initialX, initialY;
+            const dragStart = (e) => {
+                if (window.innerWidth < 800 || e.target === closeBtn) return;
+                const rect = modalWrapper.getBoundingClientRect();
+                initialX = e.clientX - rect.left;
+                initialY = e.clientY - rect.top;
+                isDragging = true;
+                document.body.style.userSelect = 'none';
+            };
+            const drag = (e) => {
+                if (isDragging) {
+                    e.preventDefault();
+                    modalWrapper.style.left = `${e.clientX - initialX}px`;
+                    modalWrapper.style.top = `${e.clientY - initialY}px`;
+                    modalWrapper.style.transform = 'none';
+                }
+            };
+            const dragEnd = () => {
+                isDragging = false;
+                document.body.style.userSelect = '';
+            };
+            headerElement.addEventListener('mousedown', dragStart);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', dragEnd);
+        })(wrapper, header);
+
+        document.addEventListener('keydown', handleEscKey);
+        document.addEventListener('mousedown', handleClickOutside);
+
+        // -------------------
+        // Загрузка логов трейда
+        // -------------------
+        (async () => {
+            await globalThrottle();
+            const startDate = new Date(Date.now() - 5*30*24*60*60*1000).toISOString();
+            const endDate = new Date().toISOString();
+            const url = `https://logs.blackrussia.online/gslogs/${SERVER_ID}/api/list-game-logs/?transaction_desc__ilike=%25TradeID%3A+${tradeID}%25&time__gte=${startDate}&time__lte=${endDate}&order_by=time&offset=0&auto=false`;
+            
+            const data = await fetchJson(url);
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                content.innerHTML = '<div class="loading-resp">Логи трейда не найдены.</div>';
+                return;
+            }
+
+            content.innerHTML = '';
+            const tradeTime = data[0].time;
+            data.forEach(item => {
+                const row = document.createElement("div");
+                row.className = "trade-row-resp";
+                row.innerHTML = `
+                    <div class="trade-player-info">
+                        <span class="trade-player-resp">${item.player_name}</span>
+                        <span class="trade-time-resp">${formatTime(item.time)}</span>
+                    </div>
+                    <div class="trade-desc-resp">${item.transaction_desc}</div>
+                `;
+                content.appendChild(row);
+            });
+
+            const uniquePlayers = [...new Set(data.map(i => i.player_name))].slice(0, 2);
+            if (uniquePlayers.length === 2) {
+                footer.innerHTML = `<span style="color:var(--text-secondary); font-size:12px; font-style:italic;">Кнопка загрузки данных появится через ${SHOW_CONNECT_BTN_DELAY_MS/1000} сек...</span>`;
+                setTimeout(() => {
+                    footer.innerHTML = '';
+                    const connectBtn = document.createElement("button");
+                    connectBtn.className = "both-nicks-btn-resp";
+                    connectBtn.textContent = `Загрузить данные игроков`;
+                    footer.appendChild(connectBtn);
+
+                    connectBtn.onclick = async () => {
+                        connectBtn.disabled = true;
+                        connectBtn.textContent = "Загрузка...";
+                        try {
+                            const results = await Promise.allSettled([
+                                loadConnectData(uniquePlayers[0], tradeTime),
+                                loadConnectData(uniquePlayers[1], tradeTime)
+                            ]);
+                            const playerData = results.map(r => r.status === 'fulfilled' ? r.value : null).filter(Boolean);
+                            createConnectPanel(playerData, wrapper);
+                            connectBtn.remove();
+                        } catch (error) {
+                            console.error('[BR-Viewer] Error loading connection data:', error);
+                            connectBtn.textContent = "Ошибка загрузки";
+                            setTimeout(() => {
+                                connectBtn.disabled = false;
+                                connectBtn.textContent = `Повторить загрузку`;
+                            }, 3000);
+                        }
+                    };
+                }, SHOW_CONNECT_BTN_DELAY_MS);
+            } else {
+                footer.innerHTML = `<span style="color:#777; font-size:12px;">Участники трейда не определены (${uniquePlayers.length} найдено).</span>`;
+            }
+        })();
+    }
+
+    // -------------------
+    // Кнопки трейдов
+    // -------------------
     function attachTradeButtons() {
         const tradeRegex = /TradeID:\s*(\d+)/g;
-        const allCells = document.querySelectorAll('td');
-        
-        allCells.forEach(td => {
-            if (td.innerHTML && td.innerHTML.includes('TradeID:')) {
-                const matches = [...td.innerHTML.matchAll(tradeRegex)];
-                matches.forEach(match => {
-                    const tradeID = match[1];
-                    if (!td.querySelector(`.details-btn-resp[data-trade="${tradeID}"]`)) {
+        document.querySelectorAll('td:not([class*="-resp"])').forEach(td => {
+            if (td.innerHTML.includes('TradeID:') && !td.querySelector('.trade-btn-resp')) {
+                const uniqueIds = [...new Set(Array.from(td.innerHTML.matchAll(tradeRegex), m => m[1]))];
+                uniqueIds.forEach(tradeID => {
+                    if (!td.querySelector(`.trade-btn-resp[data-trade='${tradeID}']`)) {
                         const btn = document.createElement('button');
-                        btn.className = 'details-btn-resp';
+                        btn.className = 'trade-btn-resp';
                         btn.dataset.trade = tradeID;
-                        btn.textContent = `Детали #${tradeID}`;
-                        btn.style.marginLeft = '10px';
-                        btn.onclick = (e) => {
-                            e.stopPropagation();
-                            createModal(tradeID);
-                        };
+                        btn.textContent = `Трейд #${tradeID}`;
+                        btn.onclick = (e) => { e.stopPropagation(); createModal(tradeID); };
                         td.appendChild(btn);
                     }
                 });
@@ -520,271 +501,7 @@
         });
     }
 
-    function attachVehicleExchangeButtons() {
-        const rows = document.querySelectorAll('tr');
-        rows.forEach(row => {
-            const categoryCell = row.querySelector('.td-category a');
-            if (categoryCell && categoryCell.textContent === 'Личное транспортное средство') {
-                const transactionCell = row.querySelector('.td-transaction-desc');
-                if (transactionCell && transactionCell.textContent) {
-                    const desc = transactionCell.textContent;
-                    if ((desc.includes('Доплата за обмен') || desc.includes('Обменялся с')) && 
-                        desc.includes('Авто') && 
-                        !transactionCell.querySelector('.vehicle-details-btn')) {
-                        
-                        const btn = document.createElement('button');
-                        btn.className = 'details-btn-resp vehicle-details-btn';
-                        btn.textContent = 'Детали обмена';
-                        btn.style.marginLeft = '10px';
-                        btn.onclick = (e) => {
-                            e.stopPropagation();
-                            alert('Детали обмена транспорта\n\n' + desc);
-                        };
-                        transactionCell.appendChild(btn);
-                    }
-                }
-            }
-        });
-    }
-
-    function attachIPInfoButtons() {
-        const ipCells = document.querySelectorAll('.td-player-ip');
-        ipCells.forEach(td => {
-            const ip = td.textContent.trim();
-            if (ip && ip !== 'N/A' && ip !== '' && !td.querySelector('.ip-info-btn')) {
-                const btn = document.createElement('button');
-                btn.className = 'ip-info-btn-resp';
-                btn.textContent = 'ℹ️';
-                btn.style.marginLeft = '5px';
-                btn.style.cursor = 'pointer';
-                btn.title = 'Информация об IP';
-                btn.onclick = async (e) => {
-                    e.stopPropagation();
-                    const info = await getIPInfo(ip);
-                    alert(`IP: ${info.ip}\nСтрана: ${info.country}\nГород: ${info.city}\nОрг: ${info.org}`);
-                };
-                td.appendChild(btn);
-            }
-        });
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    // === СТИЛИ ===
-    GM_addStyle(`
-        .details-btn-resp, .ip-info-btn-resp, .both-nicks-btn-resp, .connect-btn-resp, .ip-check-button {
-            background: #2b8cff;
-            color: white;
-            border: none;
-            padding: 4px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        .details-btn-resp:hover, .ip-info-btn-resp:hover, .both-nicks-btn-resp:hover, .ip-check-button:hover {
-            background: #1f6cd9;
-            transform: translateY(-1px);
-        }
-        .vehicle-details-btn {
-            background: #8e2de2 !important;
-        }
-        .vehicle-details-btn:hover {
-            background: #6a1fb5 !important;
-        }
-        .trade-modal-overlay-resp {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 10000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .trade-wrapper-resp {
-            background: #1e1e23;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 700px;
-            max-height: 80vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .trade-modal-resp {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-        .trade-modal-header-resp {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            border-bottom: 1px solid #333;
-        }
-        .trade-modal-title-resp {
-            color: #2b8cff;
-            margin: 0;
-            font-size: 18px;
-        }
-        .trade-modal-close-resp {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-        }
-        .trade-modal-content-resp {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-        }
-        .trade-modal-footer-resp {
-            padding: 12px 16px;
-            border-top: 1px solid #333;
-        }
-        .trade-row-resp {
-            padding: 10px 0;
-            border-bottom: 1px solid #2a2a2a;
-        }
-        .trade-player-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-        .trade-player-resp {
-            font-weight: bold;
-            color: #2b8cff;
-        }
-        .trade-time-resp {
-            color: #888;
-            font-size: 12px;
-        }
-        .trade-desc-resp {
-            color: #ddd;
-            font-size: 13px;
-            word-break: break-word;
-        }
-        .connect-panel-resp {
-            margin-top: 16px;
-            padding: 12px;
-            background: #2a2a2f;
-            border-radius: 8px;
-        }
-        .connect-btn-resp {
-            display: block;
-            width: 100%;
-            margin: 5px 0;
-            text-align: left;
-        }
-        .both-nicks-btn-resp {
-            width: 100%;
-            padding: 8px;
-            font-size: 14px;
-        }
-        .loading-resp {
-            color: #2b8cff;
-            text-align: center;
-            padding: 20px;
-        }
-        .error-resp {
-            color: #ff4757;
-            text-align: center;
-            padding: 20px;
-        }
-        .ip-results-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-        .ip-result-card {
-            background: #2a2a2f;
-            padding: 12px;
-            border-radius: 8px;
-        }
-        .ip-result-card h4 {
-            margin: 0 0 10px 0;
-            color: #2b8cff;
-        }
-        .distance-info {
-            grid-column: span 2;
-            background: #2a2a2f;
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .distance-value {
-            font-size: 20px;
-            font-weight: bold;
-            color: #ffd700;
-        }
-        .ip-input-group {
-            margin-bottom: 12px;
-        }
-        .ip-input-group label {
-            display: block;
-            margin-bottom: 4px;
-            color: white;
-        }
-        .ip-input-group input {
-            width: 100%;
-            padding: 8px;
-            border-radius: 6px;
-            border: 1px solid #444;
-            background: #2a2a2f;
-            color: white;
-        }
-        .check-ip-btn {
-            background: #2b8cff;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        @media (max-width: 768px) {
-            .ip-results-grid {
-                grid-template-columns: 1fr;
-            }
-            .distance-info {
-                grid-column: span 1;
-            }
-        }
-    `);
-
-    // === ИНИЦИАЛИЗАЦИЯ ===
-    function init() {
-        createIPCheckButton();
-        createIPCheckModal();
-        attachTradeButtons();
-        attachVehicleExchangeButtons();
-        attachIPInfoButtons();
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-
-    // Наблюдатель за изменениями DOM
-    const observer = new MutationObserver(() => {
-        attachTradeButtons();
-        attachVehicleExchangeButtons();
-        attachIPInfoButtons();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    attachTradeButtons();
+    setInterval(attachTradeButtons, 1000);
 
 })();
