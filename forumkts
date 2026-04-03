@@ -430,8 +430,7 @@
             "[CENTER][IMG width=695px]https://i.postimg.cc/mrhcH5vR/1621526767066.png[/IMG]<br>"+
             "[COLOR=rgb(209, 213, 216)][FONT=Arial][size=15px][CENTER]Доброго времени суток, уважаемый(-ая) {{ user.mention }}[/CENTER]<br><br>" +
             '[CENTER][COLOR=rgb(209, 213, 216)][FONT=Arial][size=15px]Пожалуйста, обратитесь в Техническую поддежку проекта.<br><br>[COLOR=rgb(255, 255, 0)]Конктактная информация:[/COLOR][/CENTER]<br>'+
-            '[CENTER]Телеграмм -  [URL=http://t.me/br_techBot]t.me/br_techBot[/URL][/CENTER]<br>'+
-            '[CENTER]ВКонтакте - [URL= https://forum.blackrussia.online/redirect?to=aHR0cHM6Ly92ay5jb20vYnJfdGVjaA==]vk.com/br_tech[/URL] [/CENTER]<br>'+
+            '[CENTER]Сайт - [URL=https://blackrussia.online]https://blackrussia.online[/URL] (виджет в нижнем правом углу)[/CENTER]<br>'+
             "[CENTER][IMG width=695px]https://i.postimg.cc/tgD5Xwhj/1618083711121.png[/IMG]<br>" +
             '[COLOR=rgb(127, 255, 0)][ICODE]Рассмотрено.[/ICODE][/size][/CENTER][/COLOR]',
             prefix: WATCHED_PREFIX,
