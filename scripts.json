@@ -35,16 +35,7 @@
       "matches": ["https://forum.blackrussia.online/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/batton",
       "enabledDefault": true
-    },
-    {
-      "id": "forumbtns",
-      "name": "Форумный скрипт для специалистов",
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscript/main/forum-buttons.js",
-      "matches": [
-        "https://forum.blackrussia.online/threads/*"
-      ],
-      "enabledDefault": true
-    },
+  },
     {
       "id": "time",
       "name": "Логи | Минимальное время автоматически – 7 месяцев",
@@ -56,6 +47,15 @@
       "id": "forumSneg",
       "name": "Форум | Тёмная тема + снег (не работает)",
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forumsneg.js",
+      "matches": [
+        "https://forum.blackrussia.online/threads/*"
+      ],
+      "enabledDefault": true
+    },
+    {
+      "id": "forumbtns",
+      "name": "Форумный скрипт для специалистов",
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forum-buttons.js",
       "matches": [
         "https://forum.blackrussia.online/threads/*"
       ],
