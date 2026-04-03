@@ -36,7 +36,7 @@
     },
     {
       "id": "br-trade-viewer",
-      "name": "Логи | Содержимое трейдов",
+      "name": "Логи | Дополнительный функционал",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/br-superfunction-logs.js",
       "enabledDefault": true
