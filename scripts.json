@@ -54,7 +54,7 @@
     },
     {
       "id": "forumSneg",
-      "name": "Форум | Тёмная тема + снег (не работает)",
+      "name": "Форум | Тёмная тема + снег",
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forumsneg.js",
       "matches": [
         "https://forum.blackrussia.online/threads/*"
