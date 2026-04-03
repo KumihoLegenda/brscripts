@@ -336,7 +336,7 @@
         bugReportBlock.appendChild(bugReportVK);
 
         const bugReportGF = document.createElement('a');
-        bugReportGF.href = 'https://greasyfork.org/ru/scripts/475162-theme-font-changer/feedback'
+        bugReportGF.href = 'https://greasyfork.org/ru/scripts/487756-скрипт-для-системы-логирования-tradeid-viewer/feedback'
         bugReportGF.target = '_blank';
         bugReportGF.innerHTML = `<img class="bug-report-button" src="https://raw.githubusercontent.com/JasonBarnabe/greasyfork/master/public/images/blacklogo512.png"></img>`;
         bugReportBlock.appendChild(bugReportGF);
