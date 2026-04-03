@@ -1,35 +1,29 @@
 // ==UserScript==
-// @name         BR Panel (Header Right Side)
+// @name         BR Panel (Menu Only)
 // @namespace    http://tampermonkey.net/
-// @version      3.2
-// @description  Header buttons on the right side. Dynamic server selection, IP comparison tool.
-// @author       Black Russia & kumiho
+// @version      2.0
+// @description  Only floating menu with servers
+// @author       Black Russia
 // @match        https://forum.blackrussia.online/*
 // @grant        none
-// @connect      2ip.ru
-// @connect      ipapi.co
-// @connect      ipwhois.app
-// @connect      ip.sb
-// @connect      freeipapi.com
-// @connect      ip-api.com
-// @connect      reallyfreegeoip.org
-// @connect      jsonip.com
 // ==/UserScript==
 
 (function () {
     'use strict';
 
-    // --- Предотвращение двойной загрузки ---
-    if (document.body.getAttribute('data-br-script-header-right')) {
+    // --- ИСПРАВЛЕНИЕ ОШИБКИ ---
+    // Используем setAttribute вместо dataset с дефисами, чтобы избежать SyntaxError
+    if (document.body.getAttribute('data-br-script-injected-panel')) {
         return;
     }
-    document.body.setAttribute('data-br-script-header-right', 'true');
+    document.body.setAttribute('data-br-script-injected-panel', 'true');
+    // ---------------------------
 
     try {
         (function() {
-            const STORAGE_PREFIX = 'br_panel_header_';
+            const STORAGE_PREFIX = 'br_panel_mix_';
 
-            // --- ДАННЫЕ О РАЗДЕЛАХ ---
+            // Ссылки на тех. разделы
             const DATA_TECH = [
                 { text: 'RED (1)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-red.226/', color: '#8B008B' },
                 { text: 'GREEN (2)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-green.227/', color: '#8B008B' },
@@ -317,105 +311,75 @@
                 };
             });
 
-            // --- Функции для работы с выбранными серверами ---
-            function getSelectedServers() {
+            function getSelected() {
                 const saved = localStorage.getItem(STORAGE_PREFIX + 'servers');
-                return saved ? JSON.parse(saved) : [31, 32, 33, 34, 35];
+                return saved ? JSON.parse(saved) : [76, 77, 78, 79, 80];
             }
 
-            // --- Функция для создания кнопок в правой части шапки ---
-            function createHeaderButtons() {
-                // Ищем контейнер для кнопок в правой части шапки (как во втором скрипте)
-                let targetContainer = document.querySelector('.p-nav-opposite');
-                
-                if (!targetContainer) {
-                    console.warn('[BR Script] Не найден контейнер .p-nav-opposite');
-                    return;
+            function renderMenu() {
+                const menu = document.querySelector('.fnp-menu');
+                if(!menu) return;
+
+                menu.innerHTML = '';
+                const selectedIds = getSelected();
+
+                if (selectedIds.length === 0) {
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.style.cssText = 'color:#888; text-align:center; padding:10px; font-size:12px;';
+                    emptyMsg.textContent = 'Серверы не выбраны. Нажмите настройки.';
+                    menu.appendChild(emptyMsg);
+                } else {
+                    const createBtn = (dataArray, serverId, label) => {
+                        const item = dataArray[serverId - 1];
+                        if (!item) return null;
+                        const a = document.createElement('a');
+                        a.className = 'fnp-link';
+                        if (window.location.href.includes(item.link)) a.classList.add('active-page');
+                        a.href = item.link; a.textContent = label; a.target = '_blank';
+                        a.style.borderBottom = `2px solid ${item.color}`;
+                        a.addEventListener('pointerdown', e => e.stopPropagation());
+                        return a;
+                    };
+
+                    const addGroup = (data, labelPrefix) => {
+                        const group = document.createElement('div');
+                        group.className = 'fnp-grid';
+                        selectedIds.forEach(id => {
+                            const btn = createBtn(data, id, labelPrefix + id);
+                            if(btn) group.appendChild(btn);
+                        });
+                        menu.appendChild(group);
+                    };
+
+                    addGroup(DATA_TECH_COMPLAINT, 'тЖБ');
+                    menu.appendChild(Object.assign(document.createElement('div'), {className:'fnp-divider'}));
+                    addGroup(DATA_TECH, 'Тех');
+                    menu.appendChild(Object.assign(document.createElement('div'), {className:'fnp-divider'}));
+                    addGroup(DATA_PLAYER_COMPLAINT, 'Ж');
+                    menu.appendChild(Object.assign(document.createElement('div'), {className:'fnp-divider'}));
+
+                    const ops = document.createElement('a');
+                    ops.className = 'fnp-link glow';
+                    ops.href = OPS_LINK.href; ops.textContent = OPS_LINK.text; ops.target = '_blank';
+                    ops.style.borderBottom = `2px solid ${OPS_LINK.color}`;
+                    ops.addEventListener('pointerdown', e => e.stopPropagation());
+                    menu.appendChild(ops);
                 }
-                
-                // Удаляем старый контейнер, если есть
-                const oldContainer = document.querySelector('.br-header-buttons-container');
-                if (oldContainer) oldContainer.remove();
-                
-                // Создаем контейнер с кнопками
-                const container = document.createElement('div');
-                container.className = 'br-header-buttons-container bgButtonsContainer';
-                
-                // Получаем выбранные серверы
-                const selectedIds = getSelectedServers();
-                
-                // Функция создания кнопки
-                const createButton = (text, link, color = '#2563eb', isGlow = false) => {
-                    const btn = document.createElement('button');
-                    btn.textContent = text;
-                    btn.className = 'bgButton';
-                    if (isGlow) {
-                        btn.style.background = 'rgba(245, 158, 11, 0.15)';
-                        btn.style.color = '#fbbf24';
-                        btn.style.borderColor = 'rgba(245, 158, 11, 0.3)';
-                    } else {
-                        btn.style.borderBottom = `2px solid ${color}`;
-                    }
-                    btn.addEventListener('click', () => {
-                        window.location.href = link;
-                    });
-                    return btn;
-                };
-                
-                // Добавляем кнопки ЖБТ для выбранных серверов
-                selectedIds.forEach(id => {
-                    const serverData = DATA_TECH_COMPLAINT[id - 1];
-                    if (serverData) {
-                        const btn = createButton(`ЖБТ ${id}`, serverData.link, serverData.color);
-                        container.appendChild(btn);
-                    }
-                });
-                
-                // Добавляем кнопки ТР для выбранных серверов
-                selectedIds.forEach(id => {
-                    const serverData = DATA_TECH[id - 1];
-                    if (serverData) {
-                        const btn = createButton(`ТР ${id}`, serverData.link, serverData.color);
-                        container.appendChild(btn);
-                    }
-                });
-                
-                // Добавляем кнопки ЖБИ для выбранных серверов
-                selectedIds.forEach(id => {
-                    const serverData = DATA_PLAYER_COMPLAINT[id - 1];
-                    if (serverData) {
-                        const btn = createButton(`ЖБИ ${id}`, serverData.link, serverData.color);
-                        container.appendChild(btn);
-                    }
-                });
-                
-                // Кнопка ОПС
-                const opsBtn = createButton('ОПС', OPS_LINK.href, OPS_LINK.color, OPS_LINK.glow);
-                container.appendChild(opsBtn);
-                
-                // Кнопка IP
-                const ipBtn = document.createElement('button');
-                ipBtn.textContent = 'IP';
-                ipBtn.className = 'bgButton';
-                ipBtn.style.borderBottom = '2px solid #888';
-                ipBtn.addEventListener('click', openIPModal);
-                container.appendChild(ipBtn);
-                
-                // Кнопка настроек ⚙️
-                const settingsBtn = document.createElement('button');
-                settingsBtn.textContent = '⚙️';
-                settingsBtn.className = 'bgButton';
-                settingsBtn.style.borderBottom = '2px solid #aaa';
-                settingsBtn.style.fontSize = '14px';
-                settingsBtn.addEventListener('click', openSettings);
-                container.appendChild(settingsBtn);
-                
-                // Добавляем контейнер в правую часть шапки
-                targetContainer.appendChild(container);
+
+                const settingsBtn = document.createElement('div');
+                settingsBtn.className = 'fnp-settings-btn';
+                settingsBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`;
+                settingsBtn.addEventListener('click', (e) => { e.stopPropagation(); openSettings(); });
+                menu.appendChild(settingsBtn);
             }
-            
-            // --- Функция открытия настроек ---
+
             function openSettings() {
+                const menu = document.querySelector('.fnp-menu');
+                const toggleBtn = document.querySelector('.fnp-toggle');
+                if(menu) menu.classList.remove('show');
+                if(toggleBtn) toggleBtn.classList.remove('active');
+                localStorage.setItem(STORAGE_PREFIX + 'state', 'false');
+
                 let overlay = document.querySelector('.fnp-modal-overlay');
                 if(!overlay) {
                     overlay = document.createElement('div'); overlay.className = 'fnp-modal-overlay';
@@ -430,19 +394,19 @@
                         </div>
                     `;
                     document.body.appendChild(overlay);
-                    
+
                     overlay.querySelector('#fnp-cancel').onclick = () => overlay.classList.remove('open');
                     overlay.querySelector('#fnp-save').onclick = () => {
                         const checked = Array.from(overlay.querySelectorAll('input:checked')).map(el => +el.value).sort((a,b)=>a-b);
                         localStorage.setItem(STORAGE_PREFIX + 'servers', JSON.stringify(checked));
-                        createHeaderButtons();
+                        renderMenu();
                         overlay.classList.remove('open');
                     };
                 }
-                
+
                 const body = overlay.querySelector('.fnp-modal-body');
                 body.innerHTML = '';
-                const current = getSelectedServers();
+                const current = getSelected();
                 SERVER_LIST.forEach(srv => {
                     const lbl = document.createElement('label');
                     lbl.className = 'fnp-checkbox-label ' + (current.includes(srv.id) ? 'checked' : '');
@@ -452,616 +416,108 @@
                     };
                     body.appendChild(lbl);
                 });
-                
+
                 setTimeout(() => overlay.classList.add('open'), 10);
             }
-            
-            // --- СТИЛИ ---
+
             const style = document.createElement('style');
             style.textContent = `
-                /* Контейнер кнопок в правой части шапки */
-                .br-header-buttons-container {
-                    display: flex;
-                    gap: 4px;
-                    margin-left: auto;
-                }
-                
-                /* На ПК - кнопки переносятся на следующую строку */
-                @media (min-width: 769px) {
-                    .br-header-buttons-container {
-                        flex-wrap: wrap;
-                        max-width: 100%;
-                    }
-                }
-                
-                /* На мобильных устройствах - горизонтальная прокрутка */
-                @media (max-width: 768px) {
-                    .br-header-buttons-container {
-                        flex-wrap: nowrap;
-                        overflow-x: auto;
-                        -webkit-overflow-scrolling: touch;
-                        scrollbar-width: thin;
-                        max-width: calc(100vw - 120px);
-                    }
-                    
-                    .br-header-buttons-container::-webkit-scrollbar {
-                        height: 3px;
-                    }
-                    
-                    .br-header-buttons-container::-webkit-scrollbar-track {
-                        background: #2a2a2a;
-                        border-radius: 2px;
-                    }
-                    
-                    .br-header-buttons-container::-webkit-scrollbar-thumb {
-                        background: #555;
-                        border-radius: 2px;
-                    }
-                }
-                
-                /* Стиль кнопок */
-                .bgButton {
-                    background: #1a1a1a;
-                    color: #ffffff;
-                    border: 1px solid #333;
-                    border-radius: 4px;
-                    padding: 6px 8px;
-                    margin: 2px;
-                    font-size: 11px;
-                    font-weight: 500;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                    text-align: center;
-                    min-width: 50px;
-                    max-width: 55px;
-                    height: 32px;
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    line-height: 1.1;
-                    word-break: break-word;
-                    white-space: normal;
-                    flex-shrink: 0;
-                }
-                
-                .bgButton:hover {
-                    background: #2a2a2a;
-                    border-color: #555;
-                }
-                
-                /* Модальное окно настроек */
-                .fnp-modal-overlay {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0,0,0,0.7);
-                    z-index: 2147483648;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    opacity: 0;
-                    visibility: hidden;
-                    transition: 0.3s;
-                }
-                .fnp-modal-overlay.open {
-                    opacity: 1;
-                    visibility: visible;
-                }
-                .fnp-modal {
-                    background: #1a1a1a;
-                    border: 1px solid #333;
-                    border-radius: 12px;
-                    width: 90%;
-                    max-width: 500px;
-                    max-height: 85vh;
-                    display: flex;
-                    flex-direction: column;
-                    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-                }
-                .fnp-modal-header {
-                    padding: 15px;
-                    border-bottom: 1px solid #333;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    color: #fff;
-                    font-weight: bold;
-                }
-                .fnp-modal-body {
-                    padding: 15px;
-                    overflow-y: auto;
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-                    gap: 8px;
-                }
-                .fnp-modal-footer {
-                    padding: 15px;
-                    border-top: 1px solid #333;
-                    display: flex;
-                    justify-content: flex-end;
-                    gap: 10px;
-                }
-                .fnp-checkbox-label {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    background: #222;
-                    padding: 6px;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    user-select: none;
-                    color: #ccc;
-                    font-size: 12px;
-                    border: 1px solid #333;
-                }
-                .fnp-checkbox-label:hover {
-                    background: #2a2a2a;
-                }
-                .fnp-checkbox-label input {
-                    accent-color: #2563eb;
-                }
-                .fnp-checkbox-label.checked {
-                    border-color: #2563eb;
-                    background: rgba(37, 99, 235, 0.1);
-                    color: #fff;
-                }
-                .fnp-btn {
-                    padding: 8px 16px;
-                    border-radius: 6px;
-                    border: none;
-                    cursor: pointer;
-                    font-weight: bold;
-                    transition: 0.2s;
-                }
-                .fnp-btn-primary {
-                    background: #2563eb;
-                    color: #fff;
-                }
-                .fnp-btn-primary:hover {
-                    background: #1d4ed8;
-                }
-                .fnp-btn-secondary {
-                    background: #333;
-                    color: #ccc;
-                }
-                .fnp-btn-secondary:hover {
-                    background: #444;
-                    color: #fff;
-                }
-                
-                /* Модальное окно IP */
-                .ip-modal {
-                    display: none;
-                    position: fixed;
-                    z-index: 10000;
-                    left: 0;
-                    top: 0;
-                    width: 100%;
-                    height: 100%;
-                    background-color: rgba(0,0,0,0.7);
-                }
-                .ip-modal-content {
-                    background-color: #000;
-                    color: #fff;
-                    margin: 5% auto;
-                    padding: 20px;
-                    border: 1px solid #333;
-                    border-radius: 8px;
-                    width: 90%;
-                    max-width: 700px;
-                    max-height: 85vh;
-                    overflow-y: auto;
-                    position: relative;
-                }
-                .ip-modal-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 20px;
-                    padding-bottom: 10px;
-                    border-bottom: 1px solid #333;
-                }
-                .ip-modal-title {
-                    font-size: 18px;
-                    font-weight: bold;
-                    color: #fff;
-                }
-                .ip-modal-close {
-                    color: #fff;
-                    font-size: 24px;
-                    font-weight: bold;
-                    cursor: pointer;
-                    background: none;
-                    border: none;
-                    padding: 0;
-                    width: 30px;
-                    height: 30px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .ip-modal-close:hover {
-                    background-color: #333;
-                    border-radius: 50%;
-                }
-                .ip-inputs-row {
-                    display: flex;
-                    gap: 15px;
-                    margin-bottom: 20px;
-                }
-                .ip-input-container {
-                    flex: 1;
-                    min-width: 0;
-                }
-                .ip-input-label {
-                    display: block;
-                    margin-bottom: 8px;
-                    color: #fff;
-                    font-weight: bold;
-                    font-size: 16px;
-                    line-height: 1.2;
-                }
-                .ip-input {
-                    width: 100%;
-                    background-color: #1a1a1a;
-                    color: #fff;
-                    border: 1px solid #333;
-                    border-radius: 4px;
-                    padding: 6px 8px;
-                    font-size: 12px;
-                    box-sizing: border-box;
-                    height: 32px;
-                }
-                .ip-input:focus {
-                    outline: none;
-                    border-color: #555;
-                }
-                .ip-result-section {
-                    margin-top: 20px;
-                    padding: 0;
-                    border-radius: 4px;
-                    background-color: transparent;
-                    border: none;
-                }
-                .ip-comparison-result {
-                    background: #0a0a0a;
-                    border: 1px solid #333;
-                    border-radius: 6px;
-                    overflow: hidden;
-                }
-                .ip-comparison-header {
-                    background: #1a1a1a;
-                    padding: 15px 20px;
-                    font-size: 16px;
-                    font-weight: bold;
-                    border-bottom: 1px solid #333;
-                    color: #fff;
-                }
-                .ip-comparison-grid {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 0;
-                }
-                .ip-comparison-item {
-                    padding: 15px 20px;
-                    border-right: 1px solid #333;
-                }
-                .ip-comparison-item:last-child {
-                    border-right: none;
-                }
-                .ip-comparison-title {
-                    font-size: 14px;
-                    font-weight: bold;
-                    margin-bottom: 12px;
-                    color: #fff;
-                    padding-bottom: 8px;
-                    border-bottom: 1px solid #333;
-                }
-                .ip-comparison-details {
-                    font-size: 12px;
-                }
-                .ip-detail-row {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 8px;
-                    padding: 4px 0;
-                }
-                .ip-detail-label {
-                    color: #888;
-                    font-weight: 500;
-                    min-width: 80px;
-                }
-                .ip-detail-value {
-                    color: #fff;
-                    text-align: right;
-                    font-weight: 400;
-                }
-                .ip-distance-result {
-                    background: #1a1a1a;
-                    padding: 20px;
-                    text-align: center;
-                    border-top: 1px solid #333;
-                    border-bottom: 1px solid #333;
-                }
-                .ip-distance-header {
-                    font-size: 14px;
-                    color: #888;
-                    margin-bottom: 8px;
-                }
-                .ip-distance-value {
-                    font-size: 24px;
-                    font-weight: bold;
-                    color: #fff;
-                    margin-bottom: 8px;
-                }
-                .ip-distance-description {
-                    font-size: 12px;
-                    color: #aaa;
-                    font-style: italic;
-                }
-                .ip-comparison-summary {
-                    padding: 15px 20px;
-                    background: #0a0a0a;
-                }
-                .ip-summary-row {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 8px;
-                    padding: 6px 0;
-                }
-                .ip-summary-label {
-                    color: #888;
-                    font-size: 12px;
-                }
-                .ip-summary-value {
-                    font-size: 12px;
-                    font-weight: 500;
-                }
-                .ip-match {
-                    color: #4CAF50;
-                }
-                .ip-no-match {
-                    color: #f44336;
-                }
-                .ip-loading {
-                    color: #2196F3;
-                    text-align: center;
-                    padding: 20px;
-                    font-size: 14px;
-                }
-                .ip-error {
-                    color: #f44336;
-                    text-align: center;
-                    padding: 20px;
-                    font-size: 14px;
-                }
-                .ip-buttons-section {
-                    display: flex;
-                    gap: 10px;
-                    justify-content: flex-end;
-                    margin-top: 20px;
-                }
-                .ip-button {
-                    padding: 8px 16px;
-                    border: 1px solid #333;
-                    border-radius: 4px;
-                    background-color: #1a1a1a;
-                    color: #fff;
-                    cursor: pointer;
-                    font-size: 14px;
-                }
-                .ip-button:hover {
-                    background-color: #2a2a2a;
-                }
-                .ip-button-primary {
-                    background-color: #007cba;
-                    border-color: #007cba;
-                }
-                .ip-button-primary:hover {
-                    background-color: #0069a4;
-                }
-                
-                @media (max-width: 768px) {
-                    .bgButton {
-                        min-width: 46px;
-                        max-width: 50px;
-                        font-size: 9px;
-                        padding: 4px 5px;
-                    }
-                    .ip-inputs-row {
-                        flex-direction: column;
-                        gap: 15px;
-                    }
-                    .ip-comparison-grid {
-                        grid-template-columns: 1fr;
-                    }
-                    .ip-comparison-item {
-                        border-right: none;
-                        border-bottom: 1px solid #333;
-                    }
-                    .ip-comparison-item:last-child {
-                        border-bottom: none;
-                    }
-                }
+                :root { --fnp-btn: 48px; }
+                .fnp-wrapper { position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: 2147483647; }
+                .fnp-toggle { position: fixed; width: var(--fnp-btn); height: var(--fnp-btn); background: #151515; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; box-shadow: 0 6px 25px rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; color: #fff; cursor: grab; touch-action: none; user-select: none; transition: transform 0.2s; }
+                .fnp-toggle:active { transform: scale(0.9); cursor: grabbing; }
+                .fnp-toggle.active { background: #2563eb; border-color: #3b82f6; }
+                .fnp-toggle.active svg { transform: rotate(45deg); }
+                .fnp-menu { position: fixed; background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 10px; display: flex; flex-direction: column; gap: 5px; width: 300px; max-height: 70vh; overflow-y: auto; opacity: 0; visibility: hidden; transform: scale(0.9); transition: opacity 0.2s, transform 0.2s, visibility 0.2s; pointer-events: none; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+                .fnp-menu.show { opacity: 1; visibility: visible; transform: scale(1); pointer-events: auto; }
+                .fnp-menu::-webkit-scrollbar { width: 4px; }
+                .fnp-menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+                .fnp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+                .fnp-link { display: flex; align-items: center; justify-content: center; padding: 6px 2px; font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; color: #e5e5e5; text-decoration: none; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid transparent; transition: background 0.1s; white-space: nowrap; }
+                .fnp-link:active { background: rgba(255,255,255,0.2); transform: translateY(1px); }
+                .fnp-link.active-page { background: rgba(255,255,255,0.2); color: #fff; border-color: rgba(255,255,255,0.3); }
+                .fnp-link.glow { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); }
+                .fnp-divider { height: 1px; background: rgba(255,255,255,0.15); margin: 4px 0; width: 100%; }
+                .fnp-settings-btn { width: 100%; padding: 8px; margin-top: 5px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #aaa; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+                .fnp-settings-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+                .fnp-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2147483648; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.3s; }
+                .fnp-modal-overlay.open { opacity: 1; visibility: visible; }
+                .fnp-modal { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; width: 90%; max-width: 500px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+                .fnp-modal-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; color: #fff; font-weight: bold; }
+                .fnp-modal-body { padding: 15px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+                .fnp-modal-footer { padding: 15px; border-top: 1px solid #333; display: flex; justify-content: flex-end; gap: 10px; }
+                .fnp-checkbox-label { display: flex; align-items: center; gap: 8px; background: #222; padding: 6px; border-radius: 6px; cursor: pointer; user-select: none; color: #ccc; font-size: 12px; border: 1px solid #333; }
+                .fnp-checkbox-label:hover { background: #2a2a2a; }
+                .fnp-checkbox-label input { accent-color: #2563eb; }
+                .fnp-checkbox-label.checked { border-color: #2563eb; background: rgba(37, 99, 235, 0.1); color: #fff; }
+                .fnp-btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+                .fnp-btn-primary { background: #2563eb; color: #fff; }
+                .fnp-btn-primary:hover { background: #1d4ed8; }
+                .fnp-btn-secondary { background: #333; color: #ccc; }
+                .fnp-btn-secondary:hover { background: #444; color: #fff; }
             `;
             document.head.appendChild(style);
-            
-            // --- Функции IP (сокращенные из второго скрипта) ---
-            let ipModal = null;
-            
-            function openIPModal() {
-                if (!ipModal) {
-                    ipModal = createIPModal();
-                    document.body.appendChild(ipModal);
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'fnp-wrapper';
+            const toggleBtn = document.createElement('div');
+            toggleBtn.className = 'fnp-toggle';
+            toggleBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
+            const menu = document.createElement('div');
+            menu.className = 'fnp-menu';
+            wrapper.appendChild(menu);
+            wrapper.appendChild(toggleBtn);
+            document.body.appendChild(wrapper);
+
+            let savedPos = localStorage.getItem(STORAGE_PREFIX + 'pos');
+            let pos = savedPos ? JSON.parse(savedPos) : {x: window.innerWidth - 60, y: window.innerHeight * 0.6};
+            let isDragging = false;
+
+            const updatePos = (x, y) => {
+                pos.x = Math.min(Math.max(0, x), window.innerWidth - 50);
+                pos.y = Math.min(Math.max(0, y), window.innerHeight - 50);
+                toggleBtn.style.left = pos.x + 'px';
+                toggleBtn.style.top = pos.y + 'px';
+
+                const rect = toggleBtn.getBoundingClientRect();
+                menu.style.left = (rect.right + 310 > window.innerWidth ? rect.left - 310 : rect.right + 10) + 'px';
+                menu.style.top = (rect.bottom + 300 > window.innerHeight ? rect.top - 300 : rect.top) + 'px';
+            };
+
+            toggleBtn.addEventListener('pointerdown', (e) => {
+                isDragging = true;
+                toggleBtn.setPointerCapture(e.pointerId);
+                toggleBtn.style.transition = 'none';
+            });
+
+            toggleBtn.addEventListener('pointermove', (e) => {
+                if(!isDragging) return;
+                updatePos(e.clientX - 24, e.clientY - 24);
+            });
+
+            toggleBtn.addEventListener('pointerup', (e) => {
+                isDragging = false;
+                toggleBtn.releasePointerCapture(e.pointerId);
+                toggleBtn.style.transition = 'all 0.3s';
+                pos.x = pos.x < window.innerWidth/2 ? 10 : window.innerWidth - 60;
+                updatePos(pos.x, pos.y);
+                localStorage.setItem(STORAGE_PREFIX + 'pos', JSON.stringify(pos));
+
+                if(Math.abs(e.clientX - 24 - pos.x) < 10) {
+                    const show = menu.classList.toggle('show');
+                    toggleBtn.classList.toggle('active', show);
+                    localStorage.setItem(STORAGE_PREFIX + 'state', show);
+                    if(show) updatePos(pos.x, pos.y);
                 }
-                loadIPSavedData();
-                const resultSection = ipModal.querySelector('#ipResult');
-                if (resultSection) resultSection.style.display = 'none';
-                ipModal.style.display = 'block';
+            });
+
+            updatePos(pos.x, pos.y);
+            renderMenu();
+            if(localStorage.getItem(STORAGE_PREFIX + 'state') === 'true') {
+                menu.classList.add('show');
+                toggleBtn.classList.add('active');
             }
-            
-            function createIPModal() {
-                const modal = document.createElement('div');
-                modal.className = 'ip-modal';
-                modal.innerHTML = `
-                    <div class="ip-modal-content">
-                        <div class="ip-modal-header">
-                            <div class="ip-modal-title">Сравнение IP-адресов</div>
-                            <button class="ip-modal-close">&times;</button>
-                        </div>
-                        <div class="ip-inputs-row">
-                            <div class="ip-input-container">
-                                <label class="ip-input-label">Первый IP-адрес:</label>
-                                <input type="text" class="ip-input" id="ipAddress1" placeholder="Введите первый IP-адрес">
-                            </div>
-                            <div class="ip-input-container">
-                                <label class="ip-input-label">Второй IP-адрес:</label>
-                                <input type="text" class="ip-input" id="ipAddress2" placeholder="Введите второй IP-адрес">
-                            </div>
-                        </div>
-                        <div class="ip-result-section" id="ipResult" style="display: none;">
-                            <div id="ipResultText"></div>
-                        </div>
-                        <div class="ip-buttons-section">
-                            <button class="ip-button" id="ipClearBtn">Очистить</button>
-                            <button class="ip-button ip-button-primary" id="ipCompareBtn">Сравнить</button>
-                        </div>
-                    </div>
-                `;
-                modal.querySelector('.ip-modal-close').onclick = () => modal.style.display = 'none';
-                modal.querySelector('#ipClearBtn').onclick = () => {
-                    document.getElementById('ipAddress1').value = '';
-                    document.getElementById('ipAddress2').value = '';
-                    localStorage.removeItem('forum_ip_data_1');
-                    localStorage.removeItem('forum_ip_data_2');
-                    const rs = document.getElementById('ipResult');
-                    if (rs) rs.style.display = 'none';
-                };
-                modal.querySelector('#ipCompareBtn').onclick = () => compareIPAddresses();
-                modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
-                return modal;
-            }
-            
-            function loadIPSavedData() {
-                const ip1 = localStorage.getItem('forum_ip_data_1');
-                const ip2 = localStorage.getItem('forum_ip_data_2');
-                if (ip1) document.getElementById('ipAddress1').value = ip1;
-                if (ip2) document.getElementById('ipAddress2').value = ip2;
-            }
-            
-            async function compareIPAddresses() {
-                const ip1 = document.getElementById('ipAddress1').value.trim();
-                const ip2 = document.getElementById('ipAddress2').value.trim();
-                const resultDiv = document.getElementById('ipResult');
-                const resultText = document.getElementById('ipResultText');
-                
-                if (!ip1 || !ip2) {
-                    resultText.innerHTML = '<div class="ip-error">Введите оба IP-адреса</div>';
-                    resultDiv.style.display = 'block';
-                    return;
-                }
-                
-                resultText.innerHTML = '<div class="ip-loading">Загрузка...</div>';
-                resultDiv.style.display = 'block';
-                
-                try {
-                    const [geo1, geo2] = await Promise.all([getGeoData(ip1), getGeoData(ip2)]);
-                    if (!geo1 || !geo2) throw new Error('Не удалось получить данные');
-                    
-                    const distance = calculateDistance(geo1, geo2);
-                    resultText.innerHTML = `
-                        <div class="ip-comparison-result">
-                            <div class="ip-comparison-header">Результат сравнения</div>
-                            <div class="ip-comparison-grid">
-                                <div class="ip-comparison-item">
-                                    <div class="ip-comparison-title">IP 1: ${ip1}</div>
-                                    <div>Страна: ${geo1.country}</div>
-                                    <div>Город: ${geo1.city}</div>
-                                    <div>Регион: ${geo1.region}</div>
-                                    <div>Провайдер: ${geo1.isp}</div>
-                                </div>
-                                <div class="ip-comparison-item">
-                                    <div class="ip-comparison-title">IP 2: ${ip2}</div>
-                                    <div>Страна: ${geo2.country}</div>
-                                    <div>Город: ${geo2.city}</div>
-                                    <div>Регион: ${geo2.region}</div>
-                                    <div>Провайдер: ${geo2.isp}</div>
-                                </div>
-                            </div>
-                            <div class="ip-distance-result">
-                                <div class="ip-distance-header">Расстояние</div>
-                                <div class="ip-distance-value">${distance} км</div>
-                            </div>
-                            <div class="ip-comparison-summary">
-                                <div>Совпадение страны: ${geo1.country === geo2.country ? '✅ Да' : '❌ Нет'}</div>
-                                <div>Совпадение города: ${geo1.city === geo2.city ? '✅ Да' : '❌ Нет'}</div>
-                            </div>
-                        </div>
-                    `;
-                } catch(e) {
-                    resultText.innerHTML = `<div class="ip-error">Ошибка: ${e.message}</div>`;
-                }
-            }
-            
-            async function getGeoData(ip) {
-                const endpoints = [
-                    `https://ipapi.co/${ip}/json/`,
-                    `https://ipwhois.app/json/${ip}`,
-                    `http://ip-api.com/json/${ip}`
-                ];
-                for (const url of endpoints) {
-                    try {
-                        const resp = await fetch(url);
-                        if (resp.ok) {
-                            const data = await resp.json();
-                            if (data.country || data.country_name) {
-                                return {
-                                    country: data.country_name || data.country || 'Неизвестно',
-                                    city: data.city || 'Неизвестно',
-                                    region: data.region || data.regionName || 'Неизвестно',
-                                    isp: data.org || data.isp || 'Неизвестно',
-                                    latitude: parseFloat(data.latitude || data.lat || 0),
-                                    longitude: parseFloat(data.longitude || data.lon || 0)
-                                };
-                            }
-                        }
-                    } catch(e) { continue; }
-                }
-                return null;
-            }
-            
-            function calculateDistance(geo1, geo2) {
-                if (!geo1.latitude || !geo2.latitude) return '?';
-                const R = 6371;
-                const dLat = (geo2.latitude - geo1.latitude) * Math.PI / 180;
-                const dLon = (geo2.longitude - geo1.longitude) * Math.PI / 180;
-                const a = Math.sin(dLat/2)**2 + Math.cos(geo1.latitude * Math.PI/180) * Math.cos(geo2.latitude * Math.PI/180) * Math.sin(dLon/2)**2;
-                return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(0);
-            }
-            
-            // --- Инициализация ---
-            function init() {
-                createHeaderButtons();
-                
-                // Сохраняем введенные IP
-                document.addEventListener('input', (e) => {
-                    if (e.target.id === 'ipAddress1') localStorage.setItem('forum_ip_data_1', e.target.value);
-                    if (e.target.id === 'ipAddress2') localStorage.setItem('forum_ip_data_2', e.target.value);
-                });
-            }
-            
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', init);
-            } else {
-                init();
-            }
-            
+
         })();
-    } catch (e) {
-        console.error('[BR Script] Error:', e);
-    }
+    } catch (e) { console.error('[BR Script] Panel Error:', e); }
 })();
