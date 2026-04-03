@@ -17,9 +17,9 @@
       "enabledDefault": true
     },
     {
-      "id": "forumbtns",
+      "id": "forumtech",
       "name": "Форум | Скрипт для специалистов",
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forum-buttons.js",
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forum-tech.js",
       "matches": [
         "https://forum.blackrussia.online/threads/*"
       ],
@@ -28,7 +28,7 @@
     {
       "id": "forumkts",
       "name": "Форум | Скрипт для КТС/ЗКТС" ,
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forumkts",
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forum-kts",
       "matches": [
         "https://forum.blackrussia.online/*"
       ],
