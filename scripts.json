@@ -2,7 +2,7 @@
   "scripts": [
     {
       "id": "br-trade-viewer",
-      "name": "Логи | Содержимое трейдов",
+      "name": "Логии | Содержимое трейдов",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/br-trade-viewer.js",
       "enabledDefault": true
@@ -46,19 +46,19 @@
       "enabledDefault": true
     },
     {
+      "id": "time",
+      "name": "Логи | Минимальное время автоматически – 7 месяцев",
+      "matches": ["https://logs.blackrussia.online/gslogs/*"],
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/time",
+      "enabledDefault": true
+    },
+    {
       "id": "forumSneg",
       "name": "Форум | Тёмная тема + снег (не работает)",
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forumsneg.js",
       "matches": [
         "https://forum.blackrussia.online/threads/*"
       ],
-      "enabledDefault": true
-    },
-    {
-      "id": "time",
-      "name": "Логи | Минимальное время автоматически – 7 месяцев",
-      "matches": ["https://logs.blackrussia.online/gslogs/*"],
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/time",
       "enabledDefault": true
     },
         {
