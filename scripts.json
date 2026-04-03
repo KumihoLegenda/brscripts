@@ -63,10 +63,10 @@
       "enabledDefault": true
     },
     {
-      "id": "logsip",
+      "id": "check-logsip",
       "name": "Логи | Просмотр информации об IP адресах",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/logs-ip.js",
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/check-logs-ip.js",
       "enabledDefault": true
     },
     {
