@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         BR Panel (Integrated Header)
 // @namespace    http://tampermonkey.net/
-// @version      3.0
-// @description  Floating panel replaced with header buttons. Dynamic server selection, IP comparison tool.
+// @version      3.1
+// @description  Floating panel replaced with header buttons. Dynamic server selection, IP comparison tool. Mobile scrollable buttons.
 // @author       Black Russia & kumiho
 // @match        https://forum.blackrussia.online/*
 // @grant        none
@@ -324,13 +324,26 @@
                 return saved ? JSON.parse(saved) : [31, 32, 33, 34, 35];
             }
 
-            // --- Функция для создания кнопок в стиле второго скрипта ---
+            // --- Функция для создания кнопок в стиле второго скрипта с правильным позиционированием ---
             function createHeaderButtons() {
-                // Ищем контейнер для кнопок (как во втором скрипте)
-                let targetContainer = document.querySelector('.pageContent');
-                if (!targetContainer) {
-                    // Если .pageContent не найден, пробуем найти другой подходящий контейнер
-                    targetContainer = document.querySelector('.p-body-header') || document.querySelector('.p-body-main');
+                // Находим контейнер, куда будем вставлять кнопки (справа от существующих кнопок навигации)
+                // Пробуем найти разные возможные контейнеры для навигации
+                let targetContainer = null;
+                
+                // Ищем контейнер с кнопками навигации форума (обычно это .p-nav-opposite или .p-navList)
+                const navOpposite = document.querySelector('.p-nav-opposite');
+                const navList = document.querySelector('.p-nav-list');
+                const navEnd = document.querySelector('.p-nav-end');
+                
+                if (navOpposite) {
+                    targetContainer = navOpposite;
+                } else if (navEnd) {
+                    targetContainer = navEnd;
+                } else if (navList) {
+                    targetContainer = navList;
+                } else {
+                    // Если не нашли, ищем .pageContent как запасной вариант
+                    targetContainer = document.querySelector('.pageContent');
                 }
                 
                 if (!targetContainer) {
@@ -344,8 +357,7 @@
 
                 // Создаем новый контейнер
                 const container = document.createElement('div');
-                container.className = 'br-header-buttons-container bgButtonsContainer'; // Добавляем класс bgButtonsContainer для стилей из второго скрипта
-                container.style.cssText = 'display: flex; gap: 4px; flex-wrap: wrap; margin: 10px 0; padding: 5px 0;';
+                container.className = 'br-header-buttons-container bgButtonsContainer';
                 
                 // Получаем выбранные серверы
                 const selectedIds = getSelectedServers();
@@ -354,7 +366,7 @@
                 const createButton = (text, link, color = '#2563eb', isGlow = false) => {
                     const btn = document.createElement('button');
                     btn.textContent = text;
-                    btn.className = 'bgButton'; // Используем стиль из второго скрипта
+                    btn.className = 'bgButton';
                     if (isGlow) {
                         btn.style.background = 'rgba(245, 158, 11, 0.15)';
                         btn.style.color = '#fbbf24';
@@ -416,8 +428,14 @@
                 settingsBtn.addEventListener('click', openSettings);
                 container.appendChild(settingsBtn);
                 
-                // Добавляем контейнер на страницу
-                targetContainer.insertBefore(container, targetContainer.firstChild);
+                // Вставляем контейнер в целевой элемент
+                // Если целевой контейнер - это .p-nav-opposite или подобный, добавляем в конец (справа)
+                // Иначе вставляем в начало
+                if (navOpposite || navEnd) {
+                    targetContainer.appendChild(container);
+                } else {
+                    targetContainer.insertBefore(container, targetContainer.firstChild);
+                }
             }
             
             // --- Функция открытия настроек (из первого скрипта, адаптированная) ---
@@ -471,7 +489,7 @@
                     display: flex;
                     gap: 4px;
                     flex-wrap: wrap;
-                    margin: 10px 0;
+                    margin: 0;
                     padding: 5px 0;
                 }
                 
@@ -502,6 +520,52 @@
                 .bgButton:hover {
                     background: #2a2a2a;
                     border-color: #555;
+                }
+                
+                /* Для мобильной версии - горизонтальный скролл, без переноса на новые строки */
+                @media (max-width: 768px) {
+                    .bgButtonsContainer {
+                        flex-wrap: nowrap;
+                        overflow-x: auto;
+                        overflow-y: hidden;
+                        -webkit-overflow-scrolling: touch;
+                        scrollbar-width: thin;
+                        gap: 6px;
+                        padding: 8px 0;
+                        margin: 0;
+                        max-width: 100%;
+                    }
+                    
+                    .bgButtonsContainer::-webkit-scrollbar {
+                        height: 3px;
+                    }
+                    
+                    .bgButtonsContainer::-webkit-scrollbar-track {
+                        background: #2a2a2a;
+                        border-radius: 3px;
+                    }
+                    
+                    .bgButtonsContainer::-webkit-scrollbar-thumb {
+                        background: #555;
+                        border-radius: 3px;
+                    }
+                    
+                    .bgButton {
+                        min-width: 48px;
+                        max-width: 52px;
+                        font-size: 10px;
+                        padding: 5px 6px;
+                        flex-shrink: 0;
+                        margin: 0;
+                    }
+                }
+                
+                /* Для ПК версии - перенос на новые строки при необходимости */
+                @media (min-width: 769px) {
+                    .bgButtonsContainer {
+                        flex-wrap: wrap;
+                        overflow-x: visible;
+                    }
                 }
                 
                 /* Стили для модального окна настроек из первого скрипта */
@@ -841,12 +905,6 @@
                 }
                 
                 @media (max-width: 768px) {
-                    .bgButton {
-                        min-width: 48px;
-                        max-width: 52px;
-                        font-size: 10px;
-                        padding: 5px 6px;
-                    }
                     .ip-inputs-row {
                         flex-direction: column;
                         gap: 15px;
