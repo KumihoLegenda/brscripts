@@ -1,13 +1,6 @@
 {
   "scripts": [
     {
-      "id": "br-trade-viewer",
-      "name": "Логи | Содержимое трейдов",
-      "matches": ["https://logs.blackrussia.online/gslogs/*"],
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/br-trade-viewer.js",
-      "enabledDefault": true
-    },
-    {
       "id": "set-tstart",
       "name": "Логи | Последняя блокировка/разблокировка",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
