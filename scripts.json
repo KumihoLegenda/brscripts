@@ -42,6 +42,13 @@
       "enabledDefault": true
     },
     {
+      "id": "infoip",
+      "name": "Логи | Информация об IP адресе",
+      "matches": ["https://logs.blackrussia.online/gslogs/*"],
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/dop-functional-logs/main/info-ip.js",
+      "enabledDefault": true
+    },
+    {
       "id": "set-tstart",
       "name": "Логи | Последняя блокировка/разблокировка",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
