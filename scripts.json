@@ -1,7 +1,7 @@
 {
   "scripts": [
     {
-      "id": "batton",
+      "id": "button",
       "name": "Форум | Кнопки переходники",
       "matches": ["https://forum.blackrussia.online/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/button",
@@ -50,7 +50,7 @@
     },
     {
       "id": "sneg",
-      "name": "Логи | Тёмные тема + снег",
+      "name": "Логи | Зимняя тема (темная)",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/New2026.js",
       "enabledDefault": true
