@@ -2,7 +2,7 @@
   "scripts": [
     {
       "id": "br-trade-viewer",
-      "name": "Логи | Содержимое трейдов",
+      "name": "Логии | Содержимое трейдов",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/br-trade-viewer.js",
       "enabledDefault": true
