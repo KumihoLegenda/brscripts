@@ -63,13 +63,6 @@
       "enabledDefault": true
     },
     {
-      "id": "check-logsip",
-      "name": "Логи | Узнать расстояние между IP адресами",
-      "matches": ["https://logs.blackrussia.online/gslogs/*"],
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/check-logs-ip.js",
-      "enabledDefault": true
-    },
-    {
       "id": "search",
       "name": "Логи | Поиск по серверам (Для ЗГТС)",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
