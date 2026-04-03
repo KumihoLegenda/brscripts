@@ -6,7 +6,7 @@
 // @author       Kumiho
 // @match        https://logs.blackrussia.online/gslogs/*
 // @icon         https://freepngimg.com/thumb/eagle/20-eagle-black-siluet-png-image-download-thumb.png
-// @license      Arirang
+// @license      Lukky
 // @downloadURL none
 // ==/UserScript==
 (function () {
@@ -324,19 +324,19 @@
         styleContBody.appendChild(bugReportBlock);
 
         const bugReportTG = document.createElement('a');
-        bugReportTG.href = 'https://t.me/rupcak''
+        bugReportTG.href = 'https://t.me/rupcak'
         bugReportTG.target = '_blank';
         bugReportTG.innerHTML = `<img class="bug-report-button" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/512px-Telegram_logo.svg.png"></img>`;
         bugReportBlock.appendChild(bugReportTG);
 
         const bugReportVK = document.createElement('a');
-        bugReportVK.href = 'https://vk.ru/paul.pasha'
+        bugReportVK.href = 'https://vk.me/paul.pasha'
         bugReportVK.target = '_blank';
         bugReportVK.innerHTML = `<img class="bug-report-button" src="https://cdn-icons-png.flaticon.com/512/145/145813.png"></img>`;
         bugReportBlock.appendChild(bugReportVK);
 
         const bugReportGF = document.createElement('a');
-        bugReportGF.href ='https://greasyfork.org/ru/scripts/487756-%D1%81%D0%BA%D1%80%D0%B8%D0%BF%D1%82-%D0%B4%D0%BB%D1%8F-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B-%D0%BB%D0%BE%D0%B3%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F-tradeid-viewer'
+        bugReportGF.href = 'https://greasyfork.org/ru/scripts/475162-theme-font-changer/feedback'
         bugReportGF.target = '_blank';
         bugReportGF.innerHTML = `<img class="bug-report-button" src="https://raw.githubusercontent.com/JasonBarnabe/greasyfork/master/public/images/blacklogo512.png"></img>`;
         bugReportBlock.appendChild(bugReportGF);
