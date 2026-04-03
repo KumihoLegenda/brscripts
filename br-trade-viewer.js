@@ -1,29 +1,3 @@
-// ==UserScript==
-// @name        Скрипт для системы логирования + TradeID Viewer (Light)
-// @namespace    https://logs.blackrussia.online/
-// @version      1.3
-// @description  TradeID Viewer + IP Checker + Vehicle Exchange (без изменения стилей)
-// @author       Kumiho + Assistant
-// @match        https://logs.blackrussia.online/gslogs/*
-// @icon         https://freepngimg.com/thumb/eagle/20-eagle-black-siluet-png-image-download-thumb.png
-// @license      Kumiho + GNU GPLv3
-// @grant        GM_addStyle
-// @grant        GM_xmlhttpRequest
-// @connect      logs.blackrussia.online
-// @connect      2ip.ru
-// @connect      ipapi.co
-// @connect      ipwhois.app
-// @connect      ip.sb
-// @connect      freeipapi.com
-// @connect      ip-api.com
-// @connect      reallyfreegeoip.org
-// @connect      jsonip.com
-// @resource leafletCSS https://unpkg.com/leaflet@1.9.4/dist/leaflet.css
-// @resource fontAwesomeCSS https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css
-// @downloadURL https://update.greasyfork.org/scripts/487756/%D0%A1%D0%BA%D1%80%D0%B8%D0%BF%D1%82%20%D0%B4%D0%BB%D1%8F%20%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B%20%D0%BB%D0%BE%D0%B3%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F%20%2B%20TradeID%20Viewer.user.js
-// @updateURL https://update.greasyfork.org/scripts/487756/%D0%A1%D0%BA%D1%80%D0%B8%D0%BF%D1%82%20%D0%B4%D0%BB%D1%8F%20%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B%20%D0%BB%D0%BE%D0%B3%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F%20%2B%20TradeID%20Viewer.meta.js
-// ==/UserScript==
-
 (function () {
     'use strict';
 
