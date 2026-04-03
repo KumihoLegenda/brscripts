@@ -313,7 +313,7 @@
 
             function getSelected() {
                 const saved = localStorage.getItem(STORAGE_PREFIX + 'servers');
-                return saved ? JSON.parse(saved) : [76, 77, 78, 79, 80];
+                return saved ? JSON.parse(saved) : [31, 32, 33, 34, 35];
             }
 
             function renderMenu() {
@@ -351,11 +351,11 @@
                         menu.appendChild(group);
                     };
 
-                    addGroup(DATA_TECH_COMPLAINT, 'тЖБ');
+                    addGroup(DATA_TECH_COMPLAINT, 'ЖБТ ');
                     menu.appendChild(Object.assign(document.createElement('div'), {className:'fnp-divider'}));
-                    addGroup(DATA_TECH, 'Тех');
+                    addGroup(DATA_TECH, 'ТР ');
                     menu.appendChild(Object.assign(document.createElement('div'), {className:'fnp-divider'}));
-                    addGroup(DATA_PLAYER_COMPLAINT, 'Ж');
+                    addGroup(DATA_PLAYER_COMPLAINT, 'ЖБИ ');
                     menu.appendChild(Object.assign(document.createElement('div'), {className:'fnp-divider'}));
 
                     const ops = document.createElement('a');
