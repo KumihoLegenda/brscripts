@@ -1,239 +1,133 @@
 // ==UserScript==
 // @name        IP Info Viewer для Black Logs
 // @namespace   http://tampermonkey.net/
-// @version     1.1
+// @version     1.3
 // @description Просмотр информации об IP адресе на logs.blackrussia.online
 // @match       https://logs.blackrussia.online/gslogs/*
-// @grant       GM_xmlhttpRequest
-// @connect     ipapi.co
-// @connect     ipwhois.app
-// @connect     ip.sb
-// @connect     ip-api.com
-// @connect     freeipapi.com
-// @connect     reallyfreegeoip.org
+// @grant       GM_addStyle
+// @run-at      document-end
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    // Функция для получения информации об IP с несколькими сервисами
+    // Добавляем стили для кнопки
+    GM_addStyle(`
+        .ip-info-btn-custom {
+            background: transparent !important;
+            color: #fff !important;
+            border: 1px solid #fff !important;
+            padding: 2px 8px !important;
+            margin-left: 8px !important;
+            font-size: 12px !important;
+            border-radius: 4px !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            display: inline-block !important;
+        }
+        .ip-info-btn-custom:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border-color: #2b8cff !important;
+        }
+    `);
+
+    // Функция для получения информации об IP с использованием fetch
     async function getIPInfo(ip) {
         const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
         if (!ipRegex.test(ip)) {
             throw new Error(`Неверный формат IP: ${ip}`);
         }
 
-        return new Promise((resolve, reject) => {
-            GM_xmlhttpRequest({
-                method: "GET",
+        const services = [
+            {
                 url: `https://ipapi.co/${ip}/json/`,
-                headers: {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                    "Accept": "application/json"
-                },
-                onload: function(response) {
-                    try {
-                        if (response.status === 200) {
-                            const data = JSON.parse(response.responseText);
-                            
-                            if (data.error || data.reserved) {
-                                getIPInfoAlternative(ip).then(resolve).catch(reject);
-                            } else {
-                                const result = {
-                                    ip: data.ip || ip,
-                                    country: data.country_name || 'Неизвестно',
-                                    city: data.city || 'Неизвестно',
-                                    region: data.region || 'Неизвестно',
-                                    timezone: data.timezone || 'Неизвестно',
-                                    org: data.org || 'Неизвестно',
-                                    asn: data.asn || 'Неизвестно',
-                                    latitude: data.latitude,
-                                    longitude: data.longitude
-                                };
-
-                                if (result.country !== 'Неизвестно' && result.city !== 'Неизвестно') {
-                                    resolve(result);
-                                } else {
-                                    getIPInfoAlternative(ip).then(resolve).catch(reject);
-                                }
-                            }
-                        } else {
-                            getIPInfoAlternative(ip).then(resolve).catch(reject);
-                        }
-                    } catch (e) {
-                        getIPInfoAlternative(ip).then(resolve).catch(reject);
-                    }
-                },
-                onerror: function(error) {
-                    getIPInfoAlternative(ip).then(resolve).catch(reject);
-                },
-                timeout: 10000
-            });
-        });
-    }
-
-    // Альтернативная функция для получения информации об IP
-    function getIPInfoAlternative(ip) {
-        return new Promise((resolve, reject) => {
-            const services = [
-                {
-                    url: `https://ipwhois.app/json/${ip}`,
-                    parser: (data) => ({
-                        ip: data.ip,
-                        country: data.country,
-                        city: data.city,
-                        region: data.region,
-                        timezone: data.timezone,
-                        org: data.isp,
-                        asn: data.asn,
-                        latitude: data.latitude,
-                        longitude: data.longitude
-                    }),
-                    check: (data) => data.success !== false
-                },
-                {
-                    url: `https://api.ip.sb/geoip/${ip}`,
-                    parser: (data) => ({
-                        ip: data.ip,
-                        country: data.country,
-                        city: data.city,
-                        region: data.region,
-                        timezone: data.timezone,
-                        org: data.organization,
-                        asn: data.asn,
-                        latitude: data.latitude,
-                        longitude: data.longitude
-                    }),
-                    check: (data) => !!data.ip
-                },
-                {
-                    url: `http://ip-api.com/json/${ip}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query`,
-                    parser: (data) => ({
-                        ip: data.query,
-                        country: data.country,
-                        city: data.city,
-                        region: data.regionName,
-                        timezone: data.timezone,
-                        org: data.isp,
-                        asn: data.as,
-                        latitude: data.lat,
-                        longitude: data.lon
-                    }),
-                    check: (data) => data.status === 'success'
-                },
-                {
-                    url: `https://freeipapi.com/api/json/${ip}`,
-                    parser: (data) => ({
-                        ip: data.ipAddress,
-                        country: data.countryName,
-                        city: data.cityName,
-                        region: data.regionName,
-                        timezone: data.timeZone,
-                        org: data.isp,
-                        asn: '',
-                        latitude: data.latitude,
-                        longitude: data.longitude
-                    }),
-                    check: (data) => !!data.ipAddress
-                },
-                {
-                    url: `https://reallyfreegeoip.org/json/${ip}`,
-                    parser: (data) => ({
-                        ip: data.ip,
-                        country: data.country_name,
-                        city: data.city,
-                        region: data.region_name,
-                        timezone: data.time_zone,
-                        org: '',
-                        asn: '',
-                        latitude: data.latitude,
-                        longitude: data.longitude
-                    }),
-                    check: (data) => !!data.ip
-                }
-            ];
-
-            let currentServiceIndex = 0;
-
-            function tryNextService() {
-                if (currentServiceIndex >= services.length) {
-                    const fallbackResult = {
-                        ip: ip,
-                        country: 'Не удалось определить',
-                        city: 'Неизвестно',
-                        region: 'Неизвестно',
-                        timezone: 'Неизвестно',
-                        org: 'Неизвестно',
-                        asn: 'Неизвестно',
-                        latitude: null,
-                        longitude: null,
-                        note: 'Сервисы геолокации временно недоступны'
-                    };
-                    resolve(fallbackResult);
-                    return;
-                }
-
-                const service = services[currentServiceIndex];
-                currentServiceIndex++;
-
-                GM_xmlhttpRequest({
-                    method: "GET",
-                    url: service.url,
-                    headers: {
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                        "Accept": "application/json"
-                    },
-                    onload: function(response) {
-                        try {
-                            if (response.status === 200) {
-                                const data = JSON.parse(response.responseText);
-
-                                if (service.check(data)) {
-                                    const result = service.parser(data);
-                                    const hasRealData = result.country &&
-                                                       result.country !== 'Неизвестно' &&
-                                                       result.country !== 'Undefined' &&
-                                                       result.country !== '';
-
-                                    if (hasRealData) {
-                                        resolve(result);
-                                    } else {
-                                        tryNextService();
-                                    }
-                                } else {
-                                    tryNextService();
-                                }
-                            } else {
-                                tryNextService();
-                            }
-                        } catch (e) {
-                            tryNextService();
-                        }
-                    },
-                    onerror: function(error) {
-                        tryNextService();
-                    },
-                    ontimeout: function() {
-                        tryNextService();
-                    },
-                    timeout: 15000
-                });
+                parser: (data) => ({
+                    ip: data.ip || ip,
+                    country: data.country_name || 'Неизвестно',
+                    city: data.city || 'Неизвестно',
+                    region: data.region || 'Неизвестно',
+                    timezone: data.timezone || 'Неизвестно',
+                    org: data.org || 'Неизвестно',
+                    asn: data.asn || 'Неизвестно',
+                    latitude: data.latitude,
+                    longitude: data.longitude
+                }),
+                check: (data) => data && !data.error && data.country_name
+            },
+            {
+                url: `https://ipwhois.app/json/${ip}`,
+                parser: (data) => ({
+                    ip: data.ip || ip,
+                    country: data.country || 'Неизвестно',
+                    city: data.city || 'Неизвестно',
+                    region: data.region || 'Неизвестно',
+                    timezone: data.timezone || 'Неизвестно',
+                    org: data.isp || 'Неизвестно',
+                    asn: data.asn || 'Неизвестно',
+                    latitude: data.latitude,
+                    longitude: data.longitude
+                }),
+                check: (data) => data && data.success !== false && data.country
+            },
+            {
+                url: `https://ip-api.com/json/${ip}?fields=status,country,regionName,city,timezone,isp,as,lat,lon,query`,
+                parser: (data) => ({
+                    ip: data.query || ip,
+                    country: data.country || 'Неизвестно',
+                    city: data.city || 'Неизвестно',
+                    region: data.regionName || 'Неизвестно',
+                    timezone: data.timezone || 'Неизвестно',
+                    org: data.isp || 'Неизвестно',
+                    asn: data.as || 'Неизвестно',
+                    latitude: data.lat,
+                    longitude: data.lon
+                }),
+                check: (data) => data && data.status === 'success'
             }
+        ];
 
-            tryNextService();
-        });
+        for (const service of services) {
+            try {
+                const response = await fetch(service.url, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    signal: AbortSignal.timeout(8000)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (service.check(data)) {
+                        const result = service.parser(data);
+                        return result;
+                    }
+                }
+            } catch (error) {
+                continue;
+            }
+        }
+
+        return {
+            ip: ip,
+            country: 'Не удалось определить',
+            city: 'Неизвестно',
+            region: 'Неизвестно',
+            timezone: 'Неизвестно',
+            org: 'Неизвестно',
+            asn: 'Неизвестно',
+            latitude: null,
+            longitude: null,
+            note: 'Сервисы геолокации временно недоступны'
+        };
     }
 
     // Функция для отображения информации об IP в модальном окне
     async function showIPInfo(ip) {
-        const modalId = 'ip-info-modal-' + Date.now();
-        
         const overlay = document.createElement("div");
         overlay.style.cssText = `
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,.8);
-            z-index: 9999;
+            background: rgba(0,0,0,.85);
+            z-index: 99999;
             backdrop-filter: blur(4px);
             opacity: 0;
             transition: opacity 0.3s ease;
@@ -242,7 +136,7 @@
         const wrapper = document.createElement("div");
         wrapper.style.cssText = `
             position: fixed;
-            z-index: 10000;
+            z-index: 100000;
             inset: 0;
             display: flex;
             justify-content: center;
@@ -252,15 +146,14 @@
 
         const modal = document.createElement("div");
         modal.style.cssText = `
-            background: rgba(26, 26, 26, 0.95);
+            background: rgba(20, 20, 30, 0.98);
             color: #ffffff;
-            box-shadow: 0 10px 35px rgba(0,0,0,.5);
-            width: 95%;
+            box-shadow: 0 20px 40px rgba(0,0,0,.5);
+            width: 90%;
             max-width: 500px;
-            border-radius: 12px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            border: 1px solid rgba(255,255,255,0.15);
             opacity: 0;
             transform: scale(0.95);
             transition: opacity 0.3s ease, transform 0.3s ease;
@@ -271,42 +164,52 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
+            padding: 16px 20px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            cursor: move;
         `;
 
         const title = document.createElement("h3");
         title.style.cssText = `
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             color: #2b8cff;
             margin: 0;
         `;
-        title.textContent = `Информация об IP: ${ip}`;
+        title.textContent = `ℹ️ Информация об IP: ${ip}`;
 
         const closeBtn = document.createElement("button");
-        closeBtn.innerHTML = "&times;";
+        closeBtn.innerHTML = "✕";
         closeBtn.style.cssText = `
             background: transparent;
             border: none;
-            color: #cccccc;
-            font-size: 28px;
+            color: #999;
+            font-size: 24px;
             line-height: 1;
-            padding: 0 8px;
+            padding: 0;
+            width: 32px;
+            height: 32px;
             cursor: pointer;
-            transition: color 0.3s ease;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         `;
-        closeBtn.onmouseover = () => closeBtn.style.color = '#ffffff';
-        closeBtn.onmouseout = () => closeBtn.style.color = '#cccccc';
+        closeBtn.onmouseover = () => {
+            closeBtn.style.color = '#fff';
+            closeBtn.style.background = 'rgba(255,255,255,0.1)';
+        };
+        closeBtn.onmouseout = () => {
+            closeBtn.style.color = '#999';
+            closeBtn.style.background = 'transparent';
+        };
 
         const content = document.createElement("div");
         content.style.cssText = `
-            padding: 16px;
+            padding: 20px;
             max-height: 60vh;
             overflow-y: auto;
         `;
-        content.innerHTML = '<div style="text-align: center; padding: 20px;">⏳ Загрузка информации об IP...</div>';
+        content.innerHTML = '<div style="text-align: center; padding: 30px;">⏳ Загрузка информации...</div>';
 
         header.appendChild(title);
         header.appendChild(closeBtn);
@@ -316,11 +219,11 @@
         document.body.appendChild(overlay);
         document.body.appendChild(wrapper);
 
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             overlay.style.opacity = '1';
             modal.style.opacity = '1';
             modal.style.transform = 'scale(1)';
-        }, 10);
+        });
 
         const closeModal = () => {
             overlay.style.opacity = '0';
@@ -334,169 +237,141 @@
 
         closeBtn.onclick = closeModal;
         overlay.onclick = closeModal;
-
-        // Drag functionality
-        let isDragging = false;
-        let currentX;
-        let currentY;
-        let initialX;
-        let initialY;
-
-        const dragStart = (e) => {
-            if (e.target === closeBtn) return;
-            initialX = e.clientX - modal.offsetLeft;
-            initialY = e.clientY - modal.offsetTop;
-            isDragging = true;
-        };
-
-        const drag = (e) => {
-            if (isDragging) {
-                e.preventDefault();
-                currentX = e.clientX - initialX;
-                currentY = e.clientY - initialY;
-                modal.style.position = 'relative';
-                modal.style.left = `${currentX}px`;
-                modal.style.top = `${currentY}px`;
+        
+        document.addEventListener('keydown', function onEsc(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+                document.removeEventListener('keydown', onEsc);
             }
-        };
-
-        const dragEnd = () => {
-            isDragging = false;
-        };
-
-        header.addEventListener('mousedown', dragStart);
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('mouseup', dragEnd);
+        });
 
         try {
             const ipInfo = await getIPInfo(ip);
             
             const hasRealData = ipInfo.country &&
                                ipInfo.country !== 'Неизвестно' &&
-                               ipInfo.country !== 'Не удалось определить' &&
-                               ipInfo.country !== 'Undefined' &&
-                               ipInfo.country !== '';
+                               ipInfo.country !== 'Не удалось определить';
 
             if (hasRealData) {
                 content.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <strong>🌐 IP адрес:</strong>
-                            <span>${ipInfo.ip}</span>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                            <span style="font-weight: 600; color: #aaa;">🌐 IP:</span>
+                            <span style="font-family: monospace;">${ipInfo.ip}</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <strong>🇺🇳 Страна:</strong>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                            <span style="font-weight: 600; color: #aaa;">🌍 Страна:</span>
                             <span>${ipInfo.country}</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <strong>🏙️ Город:</strong>
-                            <span>${ipInfo.city || 'Неизвестно'}</span>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                            <span style="font-weight: 600; color: #aaa;">🏙️ Город:</span>
+                            <span>${ipInfo.city || '—'}</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <strong>🗺️ Регион:</strong>
-                            <span>${ipInfo.region || 'Неизвестно'}</span>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                            <span style="font-weight: 600; color: #aaa;">🗺️ Регион:</span>
+                            <span>${ipInfo.region || '—'}</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <strong>⏰ Временная зона:</strong>
-                            <span>${ipInfo.timezone || 'Неизвестно'}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <strong>🏢 Организация:</strong>
-                            <span>${ipInfo.org || 'Неизвестно'}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <strong>🔗 ASN:</strong>
-                            <span>${ipInfo.asn || 'Неизвестно'}</span>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                            <span style="font-weight: 600; color: #aaa;">⏰ Часовой пояс:</span>
+                            <span>${ipInfo.timezone || '—'}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-                            <strong>📍 Координаты:</strong>
-                            <span>${ipInfo.latitude ? ipInfo.latitude + ', ' + ipInfo.longitude : 'Неизвестно'}</span>
+                            <span style="font-weight: 600; color: #aaa;">🏢 Провайдер:</span>
+                            <span style="font-size: 12px;">${ipInfo.org || '—'}</span>
                         </div>
-                        ${ipInfo.note ? `<div style="padding: 8px 0; color: #ffd700; font-style: italic;">ℹ️ ${ipInfo.note}</div>` : ''}
+                        ${ipInfo.note ? `<div style="margin-top: 15px; padding: 10px; background: rgba(255,215,0,0.1); border-radius: 8px; color: #ffd700; font-size: 12px; text-align: center;">
+                            ℹ️ ${ipInfo.note}
+                        </div>` : ''}
                     </div>
                 `;
             } else {
                 content.innerHTML = `
-                    <div style="text-align: center; padding: 20px; color: #ff4757;">
-                        <strong>❌ Не удалось получить информацию об IP адресе ${ip}</strong>
-                        <div style="margin-top: 15px; font-size: 14px; color: #cccccc;">
-                            Возможные причины:<br>
-                            • IP адрес принадлежит частной сети<br>
-                            • Сервисы геолокации временно недоступны<br>
-                            • IP адрес зарезервирован или не существует
+                    <div style="text-align: center; padding: 30px 20px;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">🌐</div>
+                        <div style="color: #ff6b6b; margin-bottom: 15px;">Не удалось получить информацию</div>
+                        <div style="color: #aaa; font-size: 13px;">
+                            IP: <strong style="color: #fff;">${ip}</strong>
                         </div>
                     </div>
                 `;
             }
         } catch (error) {
             content.innerHTML = `
-                <div style="text-align: center; padding: 20px; color: #ff4757;">
-                    <strong>⚠️ Ошибка при получении информации об IP</strong>
-                    <div style="margin-top: 10px; font-size: 14px;">${error.message}</div>
+                <div style="text-align: center; padding: 30px 20px;">
+                    <div style="font-size: 48px; margin-bottom: 15px;">⚠️</div>
+                    <div style="color: #ff6b6b;">Ошибка загрузки</div>
+                    <div style="color: #aaa; font-size: 12px; margin-top: 10px;">${error.message}</div>
                 </div>
             `;
         }
     }
 
-    // Функция для добавления кнопок информации об IP
+    // Функция для добавления кнопок - более агрессивный поиск
     function addIPInfoButtons() {
-        // Ищем все ячейки с IP адресами на странице логов
-        const ipElements = document.querySelectorAll('td.td-player-ip');
+        // Ищем все ячейки с IP адресами
+        const ipCells = document.querySelectorAll('td.td-player-ip');
         
-        ipElements.forEach(td => {
-            const ip = td.textContent.trim();
-            // Проверяем, что IP валидный и кнопка еще не добавлена
-            if (ip && ip !== 'N/A' && ip !== '' && ip !== '—' && !td.querySelector('.ip-info-btn-custom')) {
+        ipCells.forEach(cell => {
+            // Получаем текст IP (может быть вложен в другие элементы)
+            let ipText = cell.textContent || cell.innerText;
+            ipText = ipText.trim();
+            
+            // Очищаем от лишних символов
+            ipText = ipText.replace(/[^\d\.]/g, '');
+            
+            // Проверяем, что это похоже на IP и кнопка еще не добавлена
+            const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+            if (ipText && ipRegex.test(ipText) && !cell.querySelector('.ip-info-btn-custom')) {
                 const btn = document.createElement('button');
                 btn.textContent = 'ℹ️';
                 btn.className = 'ip-info-btn-custom';
-                btn.style.cssText = `
-                    background: transparent;
-                    color: #fff;
-                    border: 1px solid #fff;
-                    padding: 2px 8px;
-                    margin-left: 8px;
-                    font-size: 12px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                `;
-                btn.title = 'Информация об IP';
+                btn.title = `Информация об IP: ${ipText}`;
                 btn.onclick = (e) => {
                     e.stopPropagation();
-                    showIPInfo(ip);
+                    showIPInfo(ipText);
                 };
-                td.appendChild(btn);
+                cell.appendChild(btn);
             }
         });
     }
 
-    // Ждем загрузки страницы
+    // Функция для поиска таблицы и ожидания её загрузки
+    function waitForTableAndAddButtons() {
+        // Проверяем каждые 500ms, появилась ли таблица
+        const interval = setInterval(() => {
+            const table = document.querySelector('#log-table');
+            const ipCells = document.querySelectorAll('td.td-player-ip');
+            
+            if (table && ipCells.length > 0) {
+                clearInterval(interval);
+                addIPInfoButtons();
+            }
+        }, 500);
+        
+        // Останавливаем проверку через 30 секунд, чтобы не весить вечно
+        setTimeout(() => clearInterval(interval), 30000);
+    }
+
+    // Запуск после полной загрузки страницы
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-            addIPInfoButtons();
-            
-            // Наблюдаем за изменениями на странице (пагинация, фильтры)
-            const observer = new MutationObserver(() => {
-                addIPInfoButtons();
-            });
-            
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true
-            });
+            setTimeout(waitForTableAndAddButtons, 1000);
         });
     } else {
+        setTimeout(waitForTableAndAddButtons, 1000);
+    }
+
+    // Наблюдаем за изменениями (пагинация, фильтры)
+    const observer = new MutationObserver(() => {
         addIPInfoButtons();
-        
-        const observer = new MutationObserver(() => {
-            addIPInfoButtons();
-        });
-        
+    });
+    
+    // Запускаем observer после загрузки страницы
+    window.addEventListener('load', () => {
         observer.observe(document.body, {
             childList: true,
             subtree: true
         });
-    }
+    });
 
 })();
