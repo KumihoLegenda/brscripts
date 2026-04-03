@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Forum Script for Support Team (Chief)
 // @namespace    https://forum.blackrussia.online
-// @version      1.3
+// @version      1.4
 // @description  Forum script for curator and deputy curator
 // @author       kumiho
 // @match        https://forum.blackrussia.online/*
@@ -9,7 +9,6 @@
 // @grant        none
 // @license      MIT
 // @icon         https://sun6-23.userapi.com/s/v1/ig1/Bg7Sgc3yqNZ1F5YedeolIhnyRKIclMmKRAjpf9Rzj0XKAsgR9fLgLgNB3TUBDBF_N7XKKgPK.jpg?size=2155x2155&quality=96&crop=2,2,2155,2155&ava=1
-
 // @downloadURL https://update.greasyfork.org/scripts/556527/Forum%20Script%20for%20Support%20Team%20%28%D0%A1%20IP%29.user.js
 // @updateURL https://update.greasyfork.org/scripts/556527/Forum%20Script%20for%20Support%20Team%20%28%D0%A1%20IP%29.meta.js
 // ==/UserScript==
@@ -682,8 +681,7 @@
             "[CENTER][IMG width=695px]https://i.postimg.cc/mrhcH5vR/1621526767066.png[/IMG]<br>"+
             "[COLOR=rgb(209, 213, 216)][FONT=Arial][size=15px][CENTER]Доброго времени суток, уважаемый(-ая) {{ user.mention }}[/CENTER]<br><br>" +
             '[CENTER][COLOR=rgb(209, 213, 216)][FONT=Arial][size=15px]Пожалуйста, обратитесь в Техническую поддежку проекта.<br><br>[COLOR=rgb(255, 255, 0)]Конктактная информация:[/COLOR][/CENTER]<br>'+
-            '[CENTER]Телеграмм -  [URL=http://t.me/br_techBot]t.me/br_techBot[/URL][/CENTER]<br>'+
-            '[CENTER]ВКонтакте - [URL= https://forum.blackrussia.online/redirect?to=aHR0cHM6Ly92ay5jb20vYnJfdGVjaA==]vk.com/br_tech[/URL] [/CENTER]<br>'+
+            '[CENTER]Сайт - [URL=https://blackrussia.online]https://blackrussia.online[/URL] (виджет в нижнем правом углу)[/CENTER]<br>'+
             "[CENTER][IMG width=695px]https://i.postimg.cc/tgD5Xwhj/1618083711121.png[/IMG]<br>" +
             '[COLOR=rgb(127, 255, 0)][ICODE]Рассмотрено.[/ICODE][/size][/CENTER][/COLOR]',
             prefix: WATCHED_PREFIX,
@@ -843,8 +841,7 @@
                 "[CENTER][COLOR=rgb(209, 213, 216)][FONT=Arial][SIZE=15px]Если не были зачислены [COLOR=rgb(255,207,64)]BLACK COINS[/color] — вероятнее всего, была допущена ошибка при вводе реквизитов. К нашему сожалению, из-за большого количества попыток обмана, мы перестали рассматривать подобные обращения. Для проверки зачисления [COLOR=rgb(255,207,64)]BLACK COINS[/color] необходимо ввести в игре команду: [COLOR=rgb(255,207,64)]/donat.[/color][/SIZE][/FONT][/COLOR][/CENTER]<br>" +
                 "[CENTER][COLOR=rgb(209, 213, 216)][FONT=Arial][SIZE=15px]Вам необходимо быть внимательными при осуществлении покупок.[/SIZE][/FONT][/COLOR][/CENTER]<br>" +
                 "[CENTER][COLOR=rgb(209, 213, 216)][FONT=Arial][SIZE=15px]Если Вы считаете, что ошибки быть не может и с момента оплаты не прошло более 14 дней — в обязательном порядке обратитесь в службу поддержки для дальнейшего решения:[/SIZE][/FONT][/COLOR][/CENTER]<br>" +
-                '[CENTER][COLOR=rgb(30, 144, 255)]Телеграмм[/color] -  [URL=http://t.me/br_techBot]t.me/br_techBot[/URL][/CENTER]<br>'+
-                '[CENTER][COLOR=rgb(65, 105, 225)]ВКонтакте[/color] - [URL= https://forum.blackrussia.online/redirect?to=aHR0cHM6Ly92ay5jb20vYnJfdGVjaA==]vk.com/br_tech[/URL] [/CENTER]<br>'+
+                '[CENTER][COLOR=rgb(30, 144, 255)]Сайт[/color] - [URL=https://blackrussia.online]https://blackrussia.online[/URL] (виджет в нижнем правом углу)[/CENTER]<br>'+
                 '[CENTER][url=https://postimages.org/][img]https://i.postimg.cc/tgD5Xwhj/1618083711121.png[/img][/url][/CENTER]<br>' +
                 '[CENTER][SIZE=15px][COLOR=rgb(255, 0, 0)][ICODE]Закрыто.[/ICODE][/SIZE][/CENTER][/COLOR]',
                 prefix: DECIDED_PREFIX,
@@ -930,12 +927,22 @@
     `;
     document.head.appendChild(style);
 
+    // Флаг для отслеживания инициализации
+    let isInitialized = false;
+
     function initializeScript() {
         // Добавляем функциональные кнопки только на страницах с threads
         if (window.location.href.includes('threads')) {
+            // Проверяем, не добавлены ли уже кнопки
+            if (document.getElementById('selectAnswer')) {
+                return; // Кнопки уже добавлены, выходим
+            }
+            
             $(document).ready(() => {
-                // Загрузка скрипта для обработки шаблонов
-                $('body').append('<script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>');
+                // Загрузка скрипта для обработки шаблонов (только если его еще нет)
+                if (typeof Handlebars === 'undefined') {
+                    $('body').append('<script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>');
+                }
 
                 // Добавление кнопок при загрузке страницы
                 addButton('На рассмотрении', 'pin', 'border-radius: 13px; margin-right: 5px; border: 2px solid; border-color: rgb(255, 215, 0, 0.8);');
@@ -954,31 +961,6 @@
                 $(`button#zhb`).click(() => pasteContent(21, threadData, true));
                 $('button#unaccept').click(() => editThreadData(UNACCEPT_PREFIX, false));
                 $('button#pin').click(() => editThreadData(PIN_PREFIX, true));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX1, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX2, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX3, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX4, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX5, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX6, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX7, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX8, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX9, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX10, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX11, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX12, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX13, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX14, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX15, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX16, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX17, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX18, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX19, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX20, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX21, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX22, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX23, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX24, false));
-                $('button#transfer').click(() => editThreadData(TRANSFER_PREFIX25, false));
                 $('button#teamProject').click(() => editThreadData(COMMAND_PREFIX, true));
                 $('button#watched').click(() => editThreadData(WATCHED_PREFIX, false));
                 $('button#decided').click(() => editThreadData(DECIDED_PREFIX, false));
@@ -995,20 +977,27 @@
                         }
                     });
                 });
+                
+                isInitialized = true;
             });
         }
     }
 
     // Вспомогательные функции
     function addButton(name, id, style) {
-        $('.button--icon--reply').before(
-            `<button type="button" class="button--primary button rippleButton" id="${id}" style="${style}">${name}</button>`,
-        );
+        // Проверяем, не существует ли уже кнопка
+        if ($(`button#${id}`).length === 0) {
+            $('.button--icon--reply').before(
+                `<button type="button" class="button--primary button rippleButton" id="${id}" style="${style}">${name}</button>`,
+            );
+        }
     }
 
     function addAnswers() {
-        $('.button--icon--reply').after(`<button type="button" class="button--cta uix_quickReply--button button button--icon button--icon--write rippleButton" id="selectAnswer" style="oswald: 3px; margin-left: 5px; margin-top: 10px; border-radius: 13px;">ОТВЕТЫ</button>`,
-        );
+        // Проверяем, не существует ли уже кнопка
+        if ($('button#selectAnswer').length === 0) {
+            $('.button--icon--reply').after(`<button type="button" class="button--cta uix_quickReply--button button button--icon button--icon--write rippleButton" id="selectAnswer" style="oswald: 3px; margin-left: 5px; margin-top: 10px; border-radius: 13px;">ОТВЕТЫ</button>`);
+        }
     }
 
     function buttonsMarkup(buttons) {
