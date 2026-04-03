@@ -43,12 +43,12 @@
             align-items: center;
             justify-content: center;
         }
-
+        
         .ip-check-fab:hover {
             transform: scale(1.1);
             box-shadow: 0 6px 20px rgba(0,0,0,0.4);
         }
-
+        
         .ip-modal-overlay {
             position: fixed;
             top: 0;
@@ -64,12 +64,12 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             animation: fadeIn 0.3s ease;
         }
-
+        
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
-
+        
         .ip-modal-content {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             border-radius: 20px;
@@ -82,26 +82,26 @@
             color: white;
             animation: slideUp 0.3s ease;
         }
-
+        
         @keyframes slideUp {
             from { transform: translateY(50px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
-
+        
         .ip-modal-content::-webkit-scrollbar {
             width: 8px;
         }
-
+        
         .ip-modal-content::-webkit-scrollbar-track {
             background: rgba(255,255,255,0.1);
             border-radius: 10px;
         }
-
+        
         .ip-modal-content::-webkit-scrollbar-thumb {
             background: rgba(255,255,255,0.3);
             border-radius: 10px;
         }
-
+        
         .ip-input-field {
             width: 100%;
             padding: 12px;
@@ -113,17 +113,17 @@
             transition: all 0.3s ease;
             box-sizing: border-box;
         }
-
+        
         .ip-input-field:focus {
             outline: none;
             border-color: #667eea;
             background: rgba(255,255,255,0.15);
         }
-
+        
         .ip-input-field::placeholder {
             color: rgba(255,255,255,0.5);
         }
-
+        
         .check-ip-btn {
             width: 100%;
             padding: 12px;
@@ -136,19 +136,19 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-
+        
         .check-ip-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
-
+        
         .ip-result-card {
             background: rgba(255,255,255,0.1);
             padding: 20px;
             border-radius: 15px;
             margin-bottom: 20px;
         }
-
+        
         .ip-result-title {
             margin: 0 0 15px 0;
             display: flex;
@@ -156,12 +156,12 @@
             gap: 10px;
             font-size: 18px;
         }
-
+        
         .ip-info-grid {
             display: grid;
             gap: 10px;
         }
-
+        
         .ip-info-row {
             display: flex;
             justify-content: space-between;
@@ -169,30 +169,30 @@
             padding: 8px 0;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-
+        
         .ip-info-row:last-child {
             border-bottom: none;
         }
-
+        
         .distance-card {
             background: rgba(255,255,255,0.1);
             padding: 20px;
             border-radius: 15px;
             text-align: center;
         }
-
+        
         .distance-value {
             font-size: 36px;
             font-weight: bold;
             color: #ffd700;
             margin: 10px 0;
         }
-
+        
         .loading-spinner {
             text-align: center;
             padding: 40px;
         }
-
+        
         .loading-spinner::after {
             content: '';
             display: inline-block;
@@ -203,11 +203,11 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-
+        
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
+        
         .error-message {
             background: rgba(255,68,68,0.2);
             border: 1px solid #ff4444;
@@ -216,7 +216,7 @@
             text-align: center;
             color: #ff8888;
         }
-
+        
         .close-modal-btn {
             background: rgba(255,255,255,0.2);
             border: none;
@@ -231,12 +231,12 @@
             justify-content: center;
             transition: all 0.3s ease;
         }
-
+        
         .close-modal-btn:hover {
             background: rgba(255,255,255,0.3);
             transform: rotate(90deg);
         }
-
+        
         #ip-map-container {
             margin-top: 20px;
             height: 300px;
@@ -255,11 +255,11 @@
         button.innerHTML = '🔍';
         button.title = 'Проверка IP адресов';
         document.body.appendChild(button);
-
+        
         button.addEventListener('click', () => {
             createIPCheckModal();
         });
-
+        
         return button;
     }
 
@@ -272,7 +272,7 @@
 
         const modal = document.createElement('div');
         modal.className = 'ip-modal-overlay';
-
+        
         modal.innerHTML = `
             <div class="ip-modal-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid rgba(255,255,255,0.3);">
@@ -281,7 +281,7 @@
                     </h2>
                     <button class="close-modal-btn">×</button>
                 </div>
-
+                
                 <div style="margin-bottom: 25px;">
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; font-weight: bold;">Первый IP адрес:</label>
@@ -293,7 +293,7 @@
                     </div>
                     <button id="check-ip-btn" class="check-ip-btn">🔍 Проверить IP</button>
                 </div>
-
+                
                 <div id="results-container" style="background: rgba(0,0,0,0.3); border-radius: 15px; padding: 20px;">
                     <div style="text-align: center; color: rgba(255,255,255,0.7);">
                         💡 Введите два IP адреса для сравнения
@@ -301,38 +301,38 @@
                 </div>
             </div>
         `;
-
+        
         document.body.appendChild(modal);
         currentModal = modal;
-
+        
         // Закрытие модального окна
         const closeBtn = modal.querySelector('.close-modal-btn');
         closeBtn.onclick = () => closeModal(modal);
-
+        
         modal.onclick = (e) => {
             if (e.target === modal) closeModal(modal);
         };
-
+        
         // Обработчик кнопки проверки
         const checkBtn = document.getElementById('check-ip-btn');
         checkBtn.onclick = () => checkIPs();
-
+        
         // Обработка Enter
         const ip1Input = document.getElementById('ip1-input');
         const ip2Input = document.getElementById('ip2-input');
-
+        
         ip1Input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') checkIPs();
         });
-
+        
         ip2Input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') checkIPs();
         });
-
+        
         // Фокус на первое поле
         setTimeout(() => ip1Input.focus(), 100);
     }
-
+    
     function closeModal(modal) {
         modal.style.opacity = '0';
         setTimeout(() => {
@@ -413,7 +413,7 @@
                 }
 
                 const service = services[currentIndex++];
-
+                
                 GM_xmlhttpRequest({
                     method: "GET",
                     url: service.url,
@@ -423,7 +423,7 @@
                             if (response.status === 200) {
                                 const data = JSON.parse(response.responseText);
                                 const result = service.parser(data);
-
+                                
                                 if (result.country !== 'Неизвестно' && result.country !== 'Не удалось определить') {
                                     resolve(result);
                                 } else {
@@ -448,7 +448,7 @@
     // Расчет расстояния
     function calculateDistance(lat1, lon1, lat2, lon2) {
         if (!lat1 || !lon1 || !lat2 || !lon2) return 'Недостаточно данных';
-
+        
         const R = 6371;
         const dLat = (lat2 - lat1) * Math.PI / 180;
         const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -457,7 +457,7 @@
                   Math.sin(dLon/2) * Math.sin(dLon/2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         const distance = R * c;
-
+        
         return distance.toFixed(2) + ' км';
     }
 
@@ -465,14 +465,14 @@
     async function displayResults(result1, result2) {
         const container = document.getElementById('results-container');
         const distance = calculateDistance(result1.latitude, result1.longitude, result2.latitude, result2.longitude);
-
+        
         const formatValue = (value) => {
             if (!value || value === 'Неизвестно' || value === 'Не удалось определить') {
                 return '<span style="color: #ff8888;">Неизвестно</span>';
             }
             return value;
         };
-
+        
         container.innerHTML = `
             <div class="ip-result-card">
                 <div class="ip-result-title">
@@ -488,7 +488,7 @@
                     <div class="ip-info-row"><strong>📍 Координаты:</strong> ${result1.latitude ? result1.latitude + ', ' + result1.longitude : 'Неизвестно'}</div>
                 </div>
             </div>
-
+            
             <div class="ip-result-card">
                 <div class="ip-result-title">
                     <span>🖥️</span> IP 2: ${result2.ip}
@@ -503,28 +503,28 @@
                     <div class="ip-info-row"><strong>📍 Координаты:</strong> ${result2.latitude ? result2.latitude + ', ' + result2.longitude : 'Неизвестно'}</div>
                 </div>
             </div>
-
+            
             <div class="distance-card">
                 <div style="font-size: 18px; margin-bottom: 10px;">📏 Расстояние между IP</div>
                 <div class="distance-value">${distance}</div>
                 ${distance !== 'Недостаточно данных' ? '<div style="font-size: 12px;">Прямое расстояние по поверхности Земли</div>' : ''}
             </div>
         `;
-
+        
         // Показываем карту если есть координаты
         if (result1.latitude && result1.longitude && result2.latitude && result2.longitude) {
             await loadMap(result1, result2);
         }
     }
-
+    
     // Загрузка карты
     async function loadMap(ip1, ip2) {
         const container = document.getElementById('results-container');
-
+        
         const mapContainer = document.createElement('div');
         mapContainer.id = 'ip-map-container';
         container.appendChild(mapContainer);
-
+        
         // Проверяем загружена ли Leaflet
         if (typeof L === 'undefined') {
             const script = document.createElement('script');
@@ -535,26 +535,26 @@
             initMap(ip1, ip2);
         }
     }
-
+    
     function initMap(ip1, ip2) {
         const container = document.getElementById('ip-map-container');
         if (!container) return;
-
+        
         try {
             const map = L.map(container).setView([ip1.latitude, ip1.longitude], 3);
-
+            
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
-
+            
             L.marker([ip1.latitude, ip1.longitude])
                 .addTo(map)
                 .bindPopup(`<b>IP 1</b><br>${ip1.ip}<br>${ip1.city}, ${ip1.country}`);
-
+            
             L.marker([ip2.latitude, ip2.longitude])
                 .addTo(map)
                 .bindPopup(`<b>IP 2</b><br>${ip2.ip}<br>${ip2.city}, ${ip2.country}`);
-
+            
             L.polyline([
                 [ip1.latitude, ip1.longitude],
                 [ip2.latitude, ip2.longitude]
@@ -564,13 +564,13 @@
                 opacity: 0.8,
                 dashArray: '5, 10'
             }).addTo(map);
-
+            
             const bounds = L.latLngBounds([
                 [ip1.latitude, ip1.longitude],
                 [ip2.latitude, ip2.longitude]
             ]);
             map.fitBounds(bounds.pad(0.1));
-
+            
         } catch (error) {
             console.error('Map error:', error);
             container.innerHTML = '<div style="padding: 20px; text-align: center; color: #ff8888;">❌ Не удалось загрузить карту</div>';
@@ -582,20 +582,20 @@
         const ip1 = document.getElementById('ip1-input').value.trim();
         const ip2 = document.getElementById('ip2-input').value.trim();
         const container = document.getElementById('results-container');
-
+        
         if (!ip1 || !ip2) {
             container.innerHTML = '<div class="error-message">⚠️ Пожалуйста, введите оба IP адреса</div>';
             return;
         }
-
+        
         container.innerHTML = '<div class="loading-spinner"></div>';
-
+        
         try {
             const [result1, result2] = await Promise.all([
                 getIPInfo(ip1),
                 getIPInfo(ip2)
             ]);
-
+            
             await displayResults(result1, result2);
         } catch (error) {
             container.innerHTML = `<div class="error-message">❌ Ошибка: ${error.message}</div>`;
@@ -611,7 +611,7 @@
             document.addEventListener('DOMContentLoaded', () => createFloatingButton());
         }
     }
-
+    
     init();
-
+    
 })();
