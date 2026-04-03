@@ -61,15 +61,6 @@
       ],
       "enabledDefault": true
     },
-    {
-      "id": "forumbtns",
-      "name": "Форумный скрипт для специалистов",
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forum-buttons.js",
-      "matches": [
-        "https://forum.blackrussia.online/threads/*"
-      ],
-      "enabledDefault": true
-    },
         {
       "id": "forumkts",
       "name": "Форумный скрипт для КТС/ЗКТС" ,
