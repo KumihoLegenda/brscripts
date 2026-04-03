@@ -61,15 +61,6 @@
       ],
       "enabledDefault": true
     },
-        {
-      "id": "forumkts",
-      "name": "Форумный скрипт для КТС/ЗКТС" ,
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forumkts",
-      "matches": [
-        "https://forum.blackrussia.online/*"
-      ],
-      "enabledDefault": true
-    }
     {
       "id": "forumbtns",
       "name": "Форумный скрипт для специалистов",
@@ -79,5 +70,14 @@
       ],
       "enabledDefault": true
     },
+        {
+      "id": "forumkts",
+      "name": "Форумный скрипт для КТС/ЗКТС" ,
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forumkts",
+      "matches": [
+        "https://forum.blackrussia.online/*"
+      ],
+      "enabledDefault": true
+    }
   ]
 }
