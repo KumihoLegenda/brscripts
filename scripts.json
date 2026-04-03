@@ -33,7 +33,7 @@
         "https://forum.blackrussia.online/*"
       ],
       "enabledDefault": true
-        }
+        },
     {
       "id": "br-trade-viewer",
       "name": "Логи | Содержимое трейдов",
