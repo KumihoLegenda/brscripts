@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Forum Script for Support Team (Chief)
 // @namespace    https://forum.blackrussia.online
-// @version      2.0
+// @version      2.1
 // @description  Forum script for curator and deputy curator
 // @author       kumiho
 // @match        https://forum.blackrussia.online/*
@@ -25,6 +25,18 @@
     const WATCHED_PREFIX = 9; // префикс рассмотрено
     const WAIT_PREFIX = 14; // префикс ожидание (для переноса в баг-трекер)
     const NO_PREFIX = 0; // префикс отсутствует
+
+    // Список кнопок, которые должны только вставлять текст (НЕ отправлять)
+    const NO_AUTO_SEND_TITLES = [
+        'Приветствие',
+        'Дубликат',
+        'Покупка ИВ у бота',
+        'Покупка ИВ у игрока',
+        'Трансфер на твинк',
+        'Продажа ИВ игроку',
+        'Махинации со взломом',
+        'Переношу в нужный раздел'
+    ];
 
     const buttons = [
         {
@@ -459,7 +471,11 @@
                 $(`button#selectAnswer`).click(() => {
                     XF.alert(buttonsMarkup(buttons), null, 'ВЫБЕРИТЕ ОТВЕТ');
                     buttons.forEach((btn, id) => {
-                        $(`button#answers-${id}`).click(() => pasteContent(id, threadData, true));
+                        $(`button#answers-${id}`).click(() => {
+                            // Определяем, нужно ли автоматически отправлять
+                            const shouldAutoSend = !NO_AUTO_SEND_TITLES.includes(btn.title);
+                            pasteContent(id, threadData, shouldAutoSend);
+                        });
                     });
                 });
                 
@@ -499,12 +515,14 @@
         $('div.fr-element.fr-view p').append(template(data));
         $('a.overlay-titleCloser').trigger('click');
 
+        // Отправляем сообщение только если send = true
         if (send == true && buttons[id].prefix !== undefined) {
             editThreadData(buttons[id].prefix, buttons[id].status);
             $('.button--icon.button--icon--reply.rippleButton').trigger('click');
         } else if (send == true) {
             $('.button--icon.button--icon--reply.rippleButton').trigger('click');
         }
+        // Если send = false, то ничего не отправляем, только вставляем текст
     }
 
     function getThreadData() {
