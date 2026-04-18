@@ -8,6 +8,13 @@
       "enabledDefault": true
     },
     {
+      "id": "button-v2",
+      "name": "Форум | Кнопки переходники v2.0",
+      "matches": ["https://forum.blackrussia.online/*"],
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/button-v2",
+      "enabledDefault": true
+    },
+    {
       "id": "forumSneg",
       "name": "Форум | Зимняя тема (тёмная)",
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/snow-forum.js",
