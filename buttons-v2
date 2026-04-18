@@ -351,11 +351,11 @@
                         menu.appendChild(group);
                     };
 
-                    addGroup(DATA_TECH_COMPLAINT, 'тЖБ');
+                    addGroup(DATA_TECH_COMPLAINT, 'ЖБТ ');
                     menu.appendChild(Object.assign(document.createElement('div'), {className:'fnp-divider'}));
-                    addGroup(DATA_TECH, 'Тех');
+                    addGroup(DATA_TECH, 'ТР ');
                     menu.appendChild(Object.assign(document.createElement('div'), {className:'fnp-divider'}));
-                    addGroup(DATA_PLAYER_COMPLAINT, 'Ж');
+                    addGroup(DATA_PLAYER_COMPLAINT, 'ЖБИ ');
                     menu.appendChild(Object.assign(document.createElement('div'), {className:'fnp-divider'}));
 
                     const ops = document.createElement('a');
