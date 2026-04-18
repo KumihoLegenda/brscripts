@@ -11,7 +11,7 @@
       "id": "button-v2",
       "name": "Форум | Кнопки переходники v2.0",
       "matches": ["https://forum.blackrussia.online/*"],
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/button-v2",
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/buttons-v2",
       "enabledDefault": true
     },
     {
