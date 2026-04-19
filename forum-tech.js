@@ -127,7 +127,7 @@
             dpstyle: 'oswald: 3px; color: #fff; background: #db2309; box-shadow: 0 0 2px 0 rgba(0,0,0,0.14),0 2px 2px 0 rgba(0,0,0,0.12),0 1px 3px 0 rgba(0,0,0,0.2); border: none; border-color: #f53317',
         },
         {
-            title: 'Форма подачи ЖБ ТС',
+            title: 'Форма подачи Жалобы на ТС',
             content: "[CENTER][IMG width=695px]https://i.postimg.cc/mrhcH5vR/1621526767066.png[/IMG]<br>"+
                 "[COLOR=rgb(209, 213, 216)][FONT=Arial][size=15px][CENTER]{{ greeting }}, уважаемый(-ая) {{ user.mention }}[/CENTER]<br><br>" +
                 "[CENTER][B][COLOR=rgb(255, 255, 255)]Ваше обращение составлено не по форме.[/COLOR][/B][/CENTER]<br>" +
@@ -150,7 +150,7 @@
             dpstyle: 'border-radius: 13px; margin-right: 5px; border: 2px solid; border-color: rgba(127, 199, 255, 0.8); font-family: UtromPressKachat',
         },
         {
-            title: 'Правила раздела ЖБ ТС',
+            title: 'Правила раздела ЖАЛОБ НА ТС',
             content: "[CENTER][IMG width=695px]https://i.postimg.cc/mrhcH5vR/1621526767066.png[/IMG]<br>"+
                 "[COLOR=rgb(209, 213, 216)][FONT=Arial][size=15px][CENTER]{{ greeting }}, уважаемый(-ая) {{ user.mention }}[/CENTER]<br><br>" +
                 "[CENTER]Пожалуйста, убедительная просьба, ознакомиться с назначением данного раздела в котором Вы создали тему, так как Ваш запрос не относится к жалобам на технических специалистов.<br>Что принимается в данном разделе:<br>Жалобы на технических специалистов, оформленные по форме подачи и не нарушающие правила подачи:<br> [SIZE=7][COLOR=rgb(226, 80, 65)][U]Правила подачи жалобы на технических специалистов[/U][/COLOR][/SIZE][/CENTER]<br><br>" +
@@ -177,7 +177,7 @@
             dpstyle: 'border-radius: 13px; margin-right: 5px; border: 2px solid; border-color: rgba(127, 199, 255, 0.8); font-family: UtromPressKachat',
         },
         {
-            title: 'Имущество восстановлено',
+            title: 'Имущество БУДЕТ восстановлено',
             content: "[CENTER][IMG width=695px]https://i.postimg.cc/mrhcH5vR/1621526767066.png[/IMG]<br>"+
                 "[COLOR=rgb(209, 213, 216)][FONT=Arial][size=15px][CENTER]{{ greeting }}, уважаемый(-ая) {{ user.mention }}[/CENTER]<br><br>" +
                 "[CENTER]Убедительная просьба, <b><u>не менять никнейм до момента восстановления</u></b>.<br>[CENTER]Для активации восстановления используйте команды: [COLOR=rgb(255, 213, 51)]/roulette[/COLOR], [COLOR=rgb(255, 213, 51)]/recovery[/COLOR][/CENTER]<br>" +
