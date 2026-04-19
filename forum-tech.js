@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Forum Script for Support Team (Chief)
 // @namespace    https://forum.blackrussia.online
-// @version      2.1
+// @version      2.2
 // @description  Forum script for curator and deputy curator
 // @author       kumiho
 // @match        https://forum.blackrussia.online/*
@@ -61,7 +61,8 @@
                 "[CENTER][COLOR=rgb(255, 0, 0)]2.28[/COLOR]. Запрещена покупка/продажа внутриигровой валюты за реальные деньги в любом виде | [COLOR=rgb(255, 0, 0)]PermBan с обнулением аккаунта + ЧС проекта.[/COLOR]<br>" +
                 "[B]Примечание: любые попытки купить или продать внутриигровую валюту, интересоваться этим у других игроков или обсуждать это – наказуемо.<br>Примечание: нельзя обменивать донат валюту (например, рубли, пополненные через сайт) на игровые ценности и наоборот.<br>Пример: пополнение донат-счёта другого игрока в обмен на игровую валюту или другие ценности запрещено.<br>Примечание: продавать или обменивать игровые ценности, которые были куплены за донат-валюту, не запрещено.[/B][B]Исключение: покупка игровой валюты или ценностей через официальный сайт разрешена.[/B][/CENTER]<br>" +
                 "[CENTER][IMG width=695px]https://i.postimg.cc/tgD5Xwhj/1618083711121.png[/IMG][/CENTER]<br>" +
-                "[CENTER][B]Ваша тема закреплена и ожидает вердикта <u>Куратора Технических Специалистов / Заместителя Куратора Технических Специалистов</u>.<br><br><u>Создавать подобные темы не нужно</u>.<br>[B][COLOR=rgb(255, 255, 0)]На рассмотрении[/COLOR][/B][/CENTER]",
+                "[CENTER][B]Ваша тема закреплена и ожидает вердикта [COLOR=rgb(255, 142, 0)]Куратора технических специалистов / Заместителя Куратора технических специалистов.[/COLOR] Пожалуйста, ожидайте ответа.[/B][/CENTER]<br>" +
+                "[CENTER][size=15px][COLOR=rgb(255, 255,0)][ICODE]На рассмотрении.[/ICODE][/size][/CENTER][/COLOR]",
             prefix: PIN_PREFIX,
             status: true,
             dpstyle: 'border-radius: 13px; margin-right: 5px; border: 2px solid; border-color: rgba(255, 140, 0, 0.8); font-family: UtromPressKachat',
@@ -74,7 +75,8 @@
                 "[CENTER][COLOR=rgb(255, 0, 0)]2.28[/COLOR]. Запрещена покупка/продажа внутриигровой валюты за реальные деньги в любом виде | [COLOR=rgb(255, 0, 0)]PermBan с обнулением аккаунта + ЧС проекта.[/COLOR]<br>" +
                 "[B]Примечание: любые попытки купить или продать внутриигровую валюту, интересоваться этим у других игроков или обсуждать это – наказуемо.<br>Примечание: нельзя обменивать донат валюту (например, рубли, пополненные через сайт) на игровые ценности и наоборот.<br>Пример: пополнение донат-счёта другого игрока в обмен на игровую валюту или другие ценности запрещено.<br>Примечание: продавать или обменивать игровые ценности, которые были куплены за донат-валюту, не запрещено.[/B][B]Исключение: покупка игровой валюты или ценностей через официальный сайт разрешена.[/B][/CENTER]<br>" +
                 "[CENTER][IMG width=695px]https://i.postimg.cc/tgD5Xwhj/1618083711121.png[/IMG][/CENTER]<br>" +
-                "[CENTER][B]Ваша тема закреплена и ожидает вердикта <u>Куратора Технических Специалистов / Заместителя Куратора Технических Специалистов</u>.<br><br><u>Создавать подобные темы не нужно</u>.<br>[B][COLOR=rgb(255, 255, 0)]На рассмотрении[/COLOR][/B][/CENTER]",
+                "[CENTER][B]Ваша тема закреплена и ожидает вердикта [COLOR=rgb(255, 142, 0)]Куратора технических специалистов / Заместителя Куратора технических специалистов.[/COLOR] Пожалуйста, ожидайте ответа.[/B][/CENTER]<br>" +
+                "[CENTER][size=15px][COLOR=rgb(255, 255,0)][ICODE]На рассмотрении.[/ICODE][/size][/CENTER][/COLOR]",
             prefix: PIN_PREFIX,
             status: true,
             dpstyle: 'border-radius: 13px; margin-right: 5px; border: 2px solid; border-color: rgba(255, 140, 0, 0.8); font-family: UtromPressKachat',
@@ -87,7 +89,8 @@
                 "[CENTER][B]Данная совокупность действий в полной мере противоречит правилам проекта пункта [COLOR=rgb(255, 0, 0)]4.05[/COLOR], прошу вас настоятельно с ним ознакомиться и впредь не нарушать.<br><br>[/B][/CENTER]" +
                 "[CENTER][COLOR=rgb(255, 0, 0)][B]4.05[/B][/COLOR][B]. Запрещена передача либо трансфер игровых ценностей, между игровыми аккаунтами либо серверами, а также в целях удержания имущества | [/B][COLOR=rgb(255, 0, 0)][B]Warn / Ban 15 дней / PermBan[/B][/COLOR][B]<br>Пример: передать бизнес, АЗС, дом или любые другие игровые материальные ценности с одного аккаунта игрока на другой / используя свой твинк / договорившись заранее с игроком и иные способы удержания.[/B][/CENTER]<br>" +
                 "[CENTER][IMG width=695px]https://i.postimg.cc/tgD5Xwhj/1618083711121.png[/IMG][/CENTER]<br>" +
-                "[CENTER]Ваша тема закреплена и ожидает вердикта <u>Куратора Технических Специалистов / Заместителя Куратора Технических Специалистов</u>.[/CENTER]<br><br><u>Создавать подобные темы не нужно</u>.<br>[B][COLOR=rgb(255, 255, 0)]На рассмотрении[/COLOR][/B]",
+                "[CENTER][B]Ваша тема закреплена и ожидает вердикта [COLOR=rgb(255, 142, 0)]Куратора технических специалистов / Заместителя Куратора технических специалистов.[/COLOR] Пожалуйста, ожидайте ответа.[/B][/CENTER]<br>" +
+                "[CENTER][size=15px][COLOR=rgb(255, 255,0)][ICODE]На рассмотрении.[/ICODE][/size][/CENTER][/COLOR]",
             prefix: PIN_PREFIX,
             status: true,
             dpstyle: 'border-radius: 13px; margin-right: 5px; border: 2px solid; border-color: rgba(255, 140, 0, 0.8); font-family: UtromPressKachat',
@@ -101,7 +104,8 @@
                 "[CENTER][COLOR=rgb(255, 0, 0)]2.28[/COLOR]. Запрещена покупка/продажа внутриигровой валюты за реальные деньги в любом виде | [COLOR=rgb(255, 0, 0)]PermBan с обнулением аккаунта + ЧС проекта.[/COLOR]<br>" +
                 "[B]Примечание: любые попытки купить или продать внутриигровую валюту, интересоваться этим у других игроков или обсуждать это – наказуемо.<br>Примечание: нельзя обменивать донат валюту (например, рубли, пополненные через сайт) на игровые ценности и наоборот.<br>Пример: пополнение донат-счёта другого игрока в обмен на игровую валюту или другие ценности запрещено.<br>Примечание: продавать или обменивать игровые ценности, которые были куплены за донат-валюту, не запрещено.[/B][B]Исключение: покупка игровой валюты или ценностей через официальный сайт разрешена.[/B][/CENTER]<br>" +
                 "[CENTER][IMG width=695px]https://i.postimg.cc/tgD5Xwhj/1618083711121.png[/IMG][/CENTER]<br>" +
-                "[CENTER]Ваша тема закреплена и ожидает вердикта <u>Куратора Технических Специалистов / Заместителя Куратора Технических Специалистов</u>.[/CENTER]<br><u>Создавать подобные темы не нужно</u>.<br>[B][COLOR=rgb(255, 255, 0)]На рассмотрении[/COLOR][/B]",
+                "[CENTER][B]Ваша тема закреплена и ожидает вердикта [COLOR=rgb(255, 142, 0)]Куратора технических специалистов / Заместителя Куратора технических специалистов.[/COLOR] Пожалуйста, ожидайте ответа.[/B][/CENTER]<br>" +
+                "[CENTER][size=15px][COLOR=rgb(255, 255,0)][ICODE]На рассмотрении.[/ICODE][/size][/CENTER][/COLOR]",
             prefix: PIN_PREFIX,
             status: true,
             dpstyle: 'border-radius: 13px; margin-right: 5px; border: 2px solid; border-color: rgba(255, 140, 0, 0.8); font-family: UtromPressKachat',
@@ -112,7 +116,8 @@
                 "[COLOR=rgb(209, 213, 216)][FONT=Arial][size=15px][CENTER]{{ greeting }}, уважаемый(-ая) {{ user.mention }}[/CENTER]<br><br>" +
                 "[CENTER][B][COLOR=rgb(255, 255, 255)]Внимательно изучив систему логирования, было выявлено, что игрок с никнеймом (ник) был взломан. В ходе дальнейшей проверки обнаружено, что имущество игрока было передано на ваш аккаунт. Данные действия подразумевают собой совокупность, которая направлена на получение выгоды нечестным для этого путем.[/COLOR][/B][/CENTER]<br>" +
                 "[CENTER][IMG width=695px]https://i.postimg.cc/tgD5Xwhj/1618083711121.png[/IMG][/CENTER]<br>" +
-                "[CENTER]Ваша тема закреплена и ожидает вердикта <u>Куратора Технических Специалистов / Заместителя Куратора Технических Специалистов</u>.[/CENTER]<br><u>Создавать подобные темы не нужно</u>.<br>[B][COLOR=rgb(255, 255, 0)]На рассмотрении[/COLOR][/B]",
+                "[CENTER][B]Ваша тема закреплена и ожидает вердикта [COLOR=rgb(255, 142, 0)]Куратора технических специалистов / Заместителя Куратора технических специалистов.[/COLOR] Пожалуйста, ожидайте ответа.[/B][/CENTER]<br>" +
+                "[CENTER][size=15px][COLOR=rgb(255, 255,0)][ICODE]На рассмотрении.[/ICODE][/size][/CENTER][/COLOR]",
             prefix: PIN_PREFIX,
             status: true,
             dpstyle: 'border-radius: 13px; margin-right: 5px; border: 2px solid; border-color: rgba(255, 140, 0, 0.8); font-family: UtromPressKachat',
@@ -164,7 +169,9 @@
             content: "[CENTER][IMG width=695px]https://i.postimg.cc/mrhcH5vR/1621526767066.png[/IMG]<br>"+
                 "[COLOR=rgb(209, 213, 216)][FONT=Arial][size=15px][CENTER]{{ greeting }}, уважаемый(-ая) {{ user.mention }}[/CENTER]<br><br>" +
                 "[CENTER]С момента выдачи наказания от технического специалиста прошло более 14-ти дней.[/CENTER]<br><br>" +
-                "[CENTER]Ваша тема закреплена и ожидает вердикта <u>Куратора Технических Специалистов / Заместителя Куратора Технических Специалистов</u>.<br><br><u>Создавать подобные темы не нужно</u>.<br>[CENTER][IMG width=695px]https://i.postimg.cc/tgD5Xwhj/1618083711121.png[/IMG][/CENTER]<br>[COLOR=rgb(255, 255, 0)]На рассмотрении[/COLOR][/CENTER]",
+                "[CENTER][B]Ваша тема закреплена и ожидает вердикта [COLOR=rgb(255, 142, 0)]Куратора технических специалистов / Заместителя Куратора технических специалистов.[/COLOR] Пожалуйста, ожидайте ответа.[/B][/CENTER]<br>" +
+                "[CENTER][IMG width=695px]https://i.postimg.cc/tgD5Xwhj/1618083711121.png[/IMG][/CENTER]<br>" +
+                "[CENTER][size=15px][COLOR=rgb(255, 255,0)][ICODE]На рассмотрении.[/ICODE][/size][/CENTER][/COLOR]",
             prefix: PIN_PREFIX,
             status: true,
             dpstyle: 'border-radius: 13px; margin-right: 5px; border: 2px solid; border-color: rgba(127, 199, 255, 0.8); font-family: UtromPressKachat',
@@ -293,7 +300,7 @@
                 "[COLOR=rgb(209, 213, 216)][FONT=Arial][size=15px][CENTER]{{ greeting }}, уважаемый(-ая) {{ user.mention }}[/CENTER]<br><br>" +
                 "[CENTER][SIZE=5]Для дальнейшего рассмотрения темы, предоставьте:<br><BR>[QUOTE]1. Скриншоты или видео, подтверждающие факт владения этим имуществом.<BR>2. Все детали пропажи: дата, время, после каких действий имущество пропало.<BR>3. Информация о том, как вы изначально получили это имущество:<BR>4. Дата покупки;<br>5. Способ приобретения (у игрока, в магазине или через донат;<br>6. Видеофиксация покупки (если присутствует);<br>7. Никнейм игрока, у которого было приобретено имущество, если покупка была сделана не в магазине.[/QUOTE]<BR>[/CENTER]" +
                 "[CENTER][IMG width=695px]https://i.postimg.cc/tgD5Xwhj/1618083711121.png[/IMG][/CENTER]<br>" +
-                "[CENTER][COLOR=rgb(255, 255, 0)]Тема закреплена и находится на рассмотрении[/COLOR][/CENTER][/SIZE]",
+                "[CENTER][size=15px][COLOR=rgb(255, 255,0)][ICODE]На рассмотрении.[/ICODE][/size][/CENTER][/COLOR]",
             prefix: PIN_PREFIX,
             status: true,
             dpstyle: 'border-radius: 13px; margin-right: 5px; border: 2px solid; border-color: rgba(127, 199, 255, 0.8); font-family: UtromPressKachat',
@@ -579,7 +586,7 @@
                 "[CENTER][COLOR=rgb(255, 255, 255)]Проверьте, пожалуйста, будет ли актуальна Ваша проблема после рестарта сервера (после 05:00 по-московскому времени)<br>[/COLOR][/CENTER]" +
                 "[CENTER][B][COLOR=rgb(255, 255, 255)]Ожидаем от Вас обратной связи в данной теме.[/COLOR][/B][/CENTER]" +
                 "[CENTER][IMG width=695px]https://i.postimg.cc/tgD5Xwhj/1618083711121.png[/IMG][/CENTER]<br>" +
-                "[COLOR=rgb(255, 255, 0)]На рассмотрении[/COLOR][/SIZE]",
+                "[CENTER][size=15px][COLOR=rgb(255, 255,0)][ICODE]На рассмотрении.[/ICODE][/size][/CENTER][/COLOR]",
             prefix: PIN_PREFIX,
             status: true,
             dpstyle: 'border-radius: 13px; margin-right: 5px; border: 2px solid; border-color: rgba(127, 199, 255, 0.8); font-family: UtromPressKachat',
@@ -713,7 +720,6 @@
                     XF.alert(buttonsMarkup(buttons), null, 'ВЫБЕРИТЕ ОТВЕТ');
                     buttons.forEach((btn, id) => {
                         $(`button#answers-${id}`).click(() => {
-                            // Определяем, нужно ли автоматически отправлять
                             const shouldAutoSend = !NO_AUTO_SEND_TITLES.includes(btn.title);
                             pasteContent(id, threadData, shouldAutoSend);
                         });
@@ -756,14 +762,12 @@
         $('div.fr-element.fr-view p').append(template(data));
         $('a.overlay-titleCloser').trigger('click');
 
-        // Отправляем сообщение только если send = true
         if (send == true && buttons[id].prefix !== undefined) {
             editThreadData(buttons[id].prefix, buttons[id].status);
             $('.button--icon.button--icon--reply.rippleButton').trigger('click');
         } else if (send == true) {
             $('.button--icon.button--icon--reply.rippleButton').trigger('click');
         }
-        // Если send = false, то ничего не отправляем, только вставляем текст
     }
 
     function getThreadData() {
