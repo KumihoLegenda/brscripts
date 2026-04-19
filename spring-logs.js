@@ -2,152 +2,203 @@
     'use strict';
 
     const CONFIG = {
-        storageKey: 'spring_flowers_v2',
-        flowerCount: 50,
+        storageKey: 'spring_flowers_v3',
+        flowerCount: 55,
     };
 
     const springStyles = `
-        /* ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ - ЯРКАЯ ВЕСЕННЯЯ ТЕМНАЯ ТЕМА */
+        /* ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ - ЖЕЛТО-ЗЕЛЕНАЯ ТЕМА */
         :root {
-            --bs-body-bg: #0a1a0a !important;
-            --bs-body-color: #e8f5e9 !important;
-            --bs-card-bg: #1a3a1a !important;
-            --bs-border-color: #4caf50 !important;
+            --bs-body-bg: #1a2a0a !important;
+            --bs-body-color: #eaff80 !important;
+            --bs-card-bg: #2a3d12 !important;
+            --bs-border-color: #ccff33 !important;
         }
 
         /* ОСНОВНОЙ ФОН */
         body, html, .main-content {
-            background-color: var(--bs-body-bg) !important;
-            color: var(--bs-body-color) !important;
+            background: linear-gradient(135deg, #1a2a0a 0%, #1f3a0a 100%) !important;
+            color: #eaff80 !important;
         }
 
         /* НАВИГАЦИЯ */
         #site-navbar {
-            background-color: #051005 !important;
-            border-bottom: 2px solid #4caf50 !important;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            background: linear-gradient(135deg, #0f1a05 0%, #1a2a0a 100%) !important;
+            border-bottom: 2px solid #ccff33 !important;
+            box-shadow: 0 4px 20px rgba(204, 255, 51, 0.2) !important;
         }
         .navbar-brand { 
-            color: #66ff66 !important; 
-            text-shadow: 0 0 10px rgba(102, 255, 102, 0.5); 
+            color: #ffff66 !important; 
+            text-shadow: 0 0 15px #ccff33, 0 0 5px #99ff00 !important;
         }
 
         /* ЗАГРУЗОЧНЫЙ ЭКРАН */
         #loading-overlay, #loading-overlay[data-v-173ec149] {
-            background-color: #0a1a0a !important;
+            background: linear-gradient(135deg, #1a2a0a 0%, #1f3a0a 100%) !important;
             opacity: 1 !important;
         }
         #loading-overlay-heading, .loading-text {
-            color: #66ff66 !important;
-            text-shadow: 0 10px rgba(102, 255, 102, 0.5);
+            color: #ffff66 !important;
+            text-shadow: 0 0 20px #ccff33, 0 0 5px #99ff00 !important;
         }
         #loading-overlay .spinner, .spinner-border {
-            border-color: #66ff66 !important;
+            border-color: #ccff33 !important;
             border-right-color: transparent !important;
+            filter: drop-shadow(0 0 5px #ccff33) !important;
         }
 
         /* ТАБЛИЦА ЛОГОВ */
-        #log-table { color: #dcedc8 !important; }
-        #log-table thead { background: #1a3a1a !important; color: #88ff88 !important; }
-        #log-table th { border-bottom: 2px solid #66ff66 !important; }
-        #log-table .first-row { background-color: #0a1a0a !important; border-color: #4caf50 !important; }
-        #log-table .second-row { background-color: #0f2a0f !important; border-color: #4caf50 !important; }
-        #log-table td { border-color: #4caf50 !important; }
+        #log-table { color: #d4ff4d !important; }
+        #log-table thead { 
+            background: linear-gradient(135deg, #2a3d12 0%, #1f3010 100%) !important;
+            color: #ffff66 !important;
+            text-shadow: 0 0 5px #99ff00 !important;
+        }
+        #log-table th { 
+            border-bottom: 2px solid #ccff33 !important;
+            box-shadow: 0 2px 5px rgba(204, 255, 51, 0.2) !important;
+        }
+        #log-table .first-row { 
+            background: linear-gradient(135deg, #1a2a0a 0%, #1f3010 100%) !important;
+            border-color: #ccff33 !important;
+        }
+        #log-table .second-row { 
+            background: linear-gradient(135deg, #1f3010 0%, #1a2a0a 100%) !important;
+            border-color: #ccff33 !important;
+        }
+        #log-table td { 
+            border-color: #3d5a1a !important;
+            box-shadow: inset 0 1px 0 rgba(204, 255, 51, 0.1) !important;
+        }
 
         /* Описание транзакции и ссылки */
-        .td-transaction-desc { color: #a5d6a7 !important; font-style: italic; }
+        .td-transaction-desc { color: #b3ff66 !important; font-style: italic; }
         a, .td-player-name a, .td-category a {
-            color: #66ff66 !important;
+            color: #ffff66 !important;
             text-decoration: none !important;
-            transition: text-shadow 0.3s;
+            text-shadow: 0 0 8px #ccff33 !important;
+            transition: all 0.3s ease;
         }
-        a:hover { text-shadow: 0 0 8px #66ff66; color: #ccffcc !important; }
-        .td-index { background-color: #2e7d32 !important; color: #ffffff !important; }
+        a:hover { 
+            text-shadow: 0 0 15px #ffff66, 0 0 5px #ccff33 !important;
+            color: #ffffaa !important;
+        }
+        .td-index { 
+            background: linear-gradient(135deg, #4a7a1a 0%, #3a5a10 100%) !important;
+            color: #ffff66 !important;
+            text-shadow: 0 0 5px #99ff00 !important;
+            box-shadow: inset 0 1px 2px rgba(255, 255, 102, 0.2), 0 2px 4px rgba(0,0,0,0.2) !important;
+        }
 
         /* САЙДБАР (Фильтры) */
         #log-filter-section {
-            background: #1a3a1a !important;
-            border-left: 2px solid #4caf50 !important;
+            background: linear-gradient(135deg, #2a3d12 0%, #1f3010 100%) !important;
+            border-left: 2px solid #ccff33 !important;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.3) !important;
         }
-        #log-filter-heading { color: #88ff88 !important; }
-        .form-label { color: #a5d6a7 !important; }
+        #log-filter-heading { 
+            color: #ffff66 !important;
+            text-shadow: 0 0 8px #ccff33 !important;
+        }
+        .form-label { 
+            color: #b3ff66 !important;
+            text-shadow: 0 0 3px #99ff00 !important;
+        }
 
         /* ОБЫЧНЫЕ ИНПУТЫ */
         input, select, textarea, .form-control, .form-select, .dp__input {
-            background-color: #051005 !important;
-            border: 1px solid #4caf50 !important;
-            color: #e8f5e9 !important;
+            background: linear-gradient(135deg, #0f1a05 0%, #1a2a0a 100%) !important;
+            border: 1px solid #ccff33 !important;
+            color: #ffff99 !important;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 0 5px rgba(204, 255, 51, 0.3) !important;
         }
-        input::placeholder { color: #66bb6a !important; }
+        input:focus, select:focus, textarea:focus {
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 0 10px #ccff33 !important;
+            border-color: #ffff66 !important;
+        }
+        input::placeholder { color: #6b8a2a !important; }
 
         /* ФИКС ДЛЯ MULTISELECT */
         .multiselect {
-            background: #051005 !important;
-            border: 1px solid #4caf50 !important;
-            color: #e8f5e9 !important;
+            background: linear-gradient(135deg, #0f1a05 0%, #1a2a0a 100%) !important;
+            border: 1px solid #ccff33 !important;
+            color: #ffff99 !important;
         }
         .multiselect-dropdown {
-            background: #1a3a1a !important;
-            border: 1px solid #4caf50 !important;
-            color: #dcedc8 !important;
+            background: linear-gradient(135deg, #2a3d12 0%, #1f3010 100%) !important;
+            border: 1px solid #ccff33 !important;
+            color: #d4ff4d !important;
         }
         .multiselect-option {
             background: transparent !important;
-            color: #c8e6c9 !important;
+            color: #d4ff4d !important;
         }
         .multiselect-option.is-pointed {
-            background: #2e7d32 !important;
-            color: #ffffff !important;
+            background: linear-gradient(135deg, #3d5a1a 0%, #2d4a10 100%) !important;
+            color: #ffff66 !important;
         }
         .multiselect-option.is-selected {
-            background: #66ff66 !important;
-            color: #051005 !important;
+            background: linear-gradient(135deg, #7ab820 0%, #6aa810 100%) !important;
+            color: #ffff66 !important;
         }
         .multiselect-single-label {
-            color: #e8f5e9 !important;
+            color: #ffff99 !important;
             background: transparent !important;
         }
         .multiselect-tag {
-            background: #2e7d32 !important;
-            color: #dcedc8 !important;
+            background: linear-gradient(135deg, #3d5a1a 0%, #2d4a10 100%) !important;
+            color: #ffff66 !important;
         }
 
         /* АВТОКОМПЛИТ */
         .autoComplete_wrapper > ul {
-            background-color: #1a3a1a !important;
-            border: 1px solid #4caf50 !important;
-            color: #dcedc8 !important;
+            background: linear-gradient(135deg, #2a3d12 0%, #1f3010 100%) !important;
+            border: 1px solid #ccff33 !important;
+            color: #d4ff4d !important;
         }
         .autoComplete_wrapper > ul > li {
-            background-color: #1a3a1a !important;
-            color: #c8e6c9 !important;
+            background: transparent !important;
+            color: #d4ff4d !important;
         }
         .autoComplete_wrapper > ul > li:hover {
-            background-color: #2e7d32 !important;
-            color: #ffffff !important;
+            background: linear-gradient(135deg, #3d5a1a 0%, #2d4a10 100%) !important;
+            color: #ffff66 !important;
         }
         .autoComplete_wrapper > ul > li mark {
-            color: #66ff66 !important;
+            color: #ffff66 !important;
+            background: transparent !important;
         }
 
         /* МОДАЛЬНЫЕ ОКНА */
         .modal-content {
-            background-color: #1a3a1a !important;
-            border: 1px solid #4caf50 !important;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.7) !important;
+            background: linear-gradient(135deg, #2a3d12 0%, #1f3010 100%) !important;
+            border: 1px solid #ccff33 !important;
+            box-shadow: 0 10px 40px rgba(204, 255, 51, 0.3) !important;
         }
-        .modal-header, .modal-footer { border-color: #4caf50 !important; }
-        .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+        .modal-header, .modal-footer { 
+            border-color: #ccff33 !important;
+        }
+        .modal-title {
+            color: #ffff66 !important;
+            text-shadow: 0 0 8px #ccff33 !important;
+        }
+        .btn-close { 
+            filter: brightness(0) saturate(100%) invert(83%) sepia(74%) saturate(800%) hue-rotate(28deg) brightness(105%) contrast(105%);
+        }
         
         .btn-primary, .submit-btn {
-            background-color: #66ff66 !important;
-            border-color: #66ff66 !important;
-            color: #051005 !important;
+            background: linear-gradient(135deg, #7ab820 0%, #6aa810 100%) !important;
+            border-color: #ccff33 !important;
+            color: #ffff66 !important;
             font-weight: bold;
+            text-shadow: 0 0 5px #99ff00 !important;
+            box-shadow: 0 2px 8px rgba(204, 255, 51, 0.3) !important;
+            transition: all 0.3s ease;
         }
         .btn-primary:hover, .submit-btn:hover {
-            background-color: #44cc44 !important;
-            box-shadow: 0 0 15px rgba(102, 255, 102, 0.4);
+            background: linear-gradient(135deg, #8ad830 0%, #7ab820 100%) !important;
+            box-shadow: 0 4px 15px rgba(204, 255, 51, 0.5) !important;
+            transform: translateY(-1px);
         }
 
         /* ПОЛОТНО ДЛЯ ЦВЕТОВ */
@@ -167,24 +218,30 @@
             display: flex;
             align-items: center;
             font-weight: bold;
-            color: #a5d6a7;
+            color: #b3ff66;
             text-decoration: none;
             margin-left: auto; 
             margin-right: 15px;
             padding: 5px 10px;
-            border: 1px solid transparent;
-            border-radius: 5px;
+            border: 1px solid #ccff33;
+            border-radius: 8px;
             transition: all 0.3s ease;
             font-size: 1.2rem;
+            background: rgba(30, 50, 10, 0.5);
+            backdrop-filter: blur(4px);
+            text-shadow: 0 0 5px #99ff00;
         }
         #spring-toggle-btn:hover {
-            background: rgba(102, 255, 102, 0.2);
-            color: #ccffcc;
+            background: rgba(100, 180, 30, 0.3);
+            color: #ffff66;
+            box-shadow: 0 0 15px rgba(204, 255, 51, 0.4);
+            border-color: #ffff66;
         }
         #spring-toggle-btn.spring-mode-active {
-            color: #66ff66 !important;
-            text-shadow: 0 0 8px rgba(102, 255, 102, 0.6);
-            border-color: rgba(102, 255, 102, 0.3);
+            color: #ffff66 !important;
+            text-shadow: 0 0 12px #ccff33 !important;
+            border-color: #ffff66 !important;
+            background: rgba(100, 180, 30, 0.4);
         }
         @media (min-width: 992px) {
             #spring-toggle-btn {
@@ -192,6 +249,13 @@
                 margin-right: 0;
                 order: 5;
             }
+        }
+
+        /* ДОПОЛНИТЕЛЬНЫЕ ЭФФЕКТЫ ДЛЯ КАРТОЧЕК */
+        .card, .card-body {
+            background: linear-gradient(135deg, #2a3d12 0%, #1f3010 100%) !important;
+            border-color: #ccff33 !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 0 8px rgba(204, 255, 51, 0.2) !important;
         }
     `;
 
@@ -202,16 +266,16 @@
     let flowersCanvas, ctx, animationFrame;
     let flowers = [];
 
-    // Яркие весенние цвета
+    // Желто-зеленые оттенки для цветов
     const flowerColors = [
-        '#FF4444', // Ярко-красный
-        '#FF8844', // Ярко-оранжевый
-        '#FFDD44', // Ярко-желтый
-        '#44FF44', // Ярко-зеленый
-        '#4488FF', // Ярко-синий
-        '#DD44FF', // Ярко-фиолетовый
-        '#FF66BB', // Ярко-розовый
-        '#FF4488'  // Малиновый
+        '#ffff44', // Желтый
+        '#eaff44', // Желто-зеленый
+        '#ccff33', // Лайм
+        '#aaff22', // Салатовый
+        '#88ff11', // Ярко-зеленый
+        '#ffee33', // Лимонный
+        '#ffdd44', // Золотистый
+        '#d4ff1a'  // Зеленовато-желтый
     ];
 
     function initFlowers() {
@@ -236,24 +300,27 @@
         return {
             x: Math.random() * window.innerWidth,
             y: Math.random() * window.innerHeight,
-            size: Math.random() * 8 + 6,
-            speed: Math.random() * 0.8 + 0.4,
-            wind: Math.random() * 0.4 - 0.2,
-            opacity: Math.random() * 0.4 + 0.6,
+            size: Math.random() * 9 + 5,
+            speed: Math.random() * 0.9 + 0.3,
+            wind: Math.random() * 0.5 - 0.25,
+            opacity: Math.random() * 0.3 + 0.7,
             color: flowerColors[Math.floor(Math.random() * flowerColors.length)],
             type: type,
             rotation: Math.random() * Math.PI * 2,
-            rotationSpeed: (Math.random() - 0.5) * 0.02
+            rotationSpeed: (Math.random() - 0.5) * 0.025,
+            glowIntensity: Math.random() * 0.3 + 0.2
         };
     }
 
-    function drawFlower(ctx, x, y, size, color, opacity, type, rotation) {
+    function drawFlower(ctx, x, y, size, color, opacity, type, rotation, glowIntensity) {
         ctx.save();
         ctx.translate(x, y);
         ctx.rotate(rotation);
         ctx.globalAlpha = opacity;
-        ctx.shadowBlur = 4;
-        ctx.shadowColor = "rgba(0,0,0,0.3)";
+        
+        // Добавляем свечение
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = `rgba(204, 255, 51, ${glowIntensity})`;
         
         const radius = size / 2;
         
@@ -270,11 +337,11 @@
             }
             ctx.beginPath();
             ctx.arc(0, 0, radius * 0.35, 0, Math.PI * 2);
-            ctx.fillStyle = '#FFDD66';
+            ctx.fillStyle = '#ffee44';
             ctx.fill();
             ctx.beginPath();
             ctx.arc(0, 0, radius * 0.2, 0, Math.PI * 2);
-            ctx.fillStyle = '#FFAA33';
+            ctx.fillStyle = '#ffdd22';
             ctx.fill();
         } 
         else if (type === 1) {
@@ -290,7 +357,7 @@
             ctx.moveTo(0, radius * 0.3);
             ctx.lineTo(radius * 0.12, radius * 0.65);
             ctx.lineTo(-radius * 0.12, radius * 0.65);
-            ctx.fillStyle = '#44FF44';
+            ctx.fillStyle = '#88ff22';
             ctx.fill();
         }
         else if (type === 2) {
@@ -310,7 +377,7 @@
             ctx.fill();
             ctx.beginPath();
             ctx.arc(0, 0, radius * 0.3, 0, Math.PI * 2);
-            ctx.fillStyle = '#FFFF88';
+            ctx.fillStyle = '#ffff55';
             ctx.fill();
         }
         else {
@@ -326,11 +393,11 @@
             }
             ctx.beginPath();
             ctx.arc(0, 0, radius * 0.35, 0, Math.PI * 2);
-            ctx.fillStyle = '#FFEE88';
+            ctx.fillStyle = '#ffee55';
             ctx.fill();
             ctx.beginPath();
             ctx.arc(0, 0, radius * 0.2, 0, Math.PI * 2);
-            ctx.fillStyle = '#FFCC44';
+            ctx.fillStyle = '#ffdd33';
             ctx.fill();
         }
         
@@ -342,7 +409,7 @@
         ctx.clearRect(0, 0, flowersCanvas.width, flowersCanvas.height);
         
         flowers.forEach(flower => {
-            drawFlower(ctx, flower.x, flower.y, flower.size, flower.color, flower.opacity, flower.type, flower.rotation);
+            drawFlower(ctx, flower.x, flower.y, flower.size, flower.color, flower.opacity, flower.type, flower.rotation, flower.glowIntensity);
             flower.y += flower.speed;
             flower.x += flower.wind;
             flower.rotation += flower.rotationSpeed;
