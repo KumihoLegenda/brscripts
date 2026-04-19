@@ -8,10 +8,10 @@
       "enabledDefault": true
     },
     {
-      "id": "button-v2",
-      "name": "Форум | Кнопки переходники v2.0",
+      "id": "button-old",
+      "name": "Форум | Кнопки переходники (OLD)",
       "matches": ["https://forum.blackrussia.online/*"],
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/buttons-v2",
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/buttons-old",
       "enabledDefault": true
     },
     {
@@ -27,6 +27,15 @@
       "id": "forumtech",
       "name": "Форум | Скрипт для специалистов",
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forum-tech.js",
+      "matches": [
+        "https://forum.blackrussia.online/threads/*"
+      ],
+      "enabledDefault": true
+    },
+    {
+      "id": "forumtech-old",
+      "name": "Форум | Скрипт для специалистов (OLD)",
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forum-tech-old.js",
       "matches": [
         "https://forum.blackrussia.online/threads/*"
       ],
