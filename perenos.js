@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         BR Panel (Menu Only)
 // @namespace    http://tampermonkey.net/
-// @version      3.0
-// @description  Floating menu with servers and thread mover (FIXED: now uses same logic as first script)
+// @version      3.1
+// @description  Floating menu with servers and thread mover (All servers 1-91)
 // @author       Black Russia
 // @match        https://forum.blackrussia.online/*
 // @grant        none
@@ -20,14 +20,13 @@
         (function() {
             const STORAGE_PREFIX = 'br_panel_mix_';
 
-            // === ФУНКЦИЯ ИЗ ПЕРВОГО СКРИПТА (полностью скопирована) ===
+            // === ФУНКЦИИ ИЗ ПЕРВОГО СКРИПТА ===
             function getFormData(data) {
                 const formData = new FormData();
                 Object.entries(data).forEach(i => formData.append(i[0], i[1]));
                 return formData;
             }
 
-            // === ФУНКЦИЯ РЕДАКТИРОВАНИЯ ТЕМЫ ИЗ ПЕРВОГО СКРИПТА ===
             function editThreadData(prefix, pin = false) {
                 const threadTitle = document.querySelector('.p-title-value')?.lastChild?.textContent || '';
                 
@@ -61,7 +60,6 @@
                 }
             }
 
-            // === ФУНКЦИЯ ПЕРЕМЕЩЕНИЯ ТЕМЫ ИЗ ПЕРВОГО СКРИПТА ===
             function moveThread(prefix, targetNodeId) {
                 const threadTitle = document.querySelector('.p-title-value')?.lastChild?.textContent || '';
                 
@@ -83,7 +81,6 @@
                 }).then(() => location.reload());
             }
 
-            // === ОСНОВНАЯ ФУНКЦИЯ ДЛЯ ПЕРЕНОСА (как в первом скрипте) ===
             function moveThreadToSection(targetNodeId, prefixId = 0) {
                 const threadId = getThreadIdFromUrl();
                 if (!threadId) {
@@ -91,7 +88,6 @@
                     return false;
                 }
                 
-                // Сначала меняем префикс (если указан), потом переносим
                 if (prefixId !== 0) {
                     editThreadData(prefixId, false);
                 }
@@ -104,7 +100,7 @@
                 return match ? match[1] : null;
             }
 
-            // Данные с префиксами (как в первом скрипте)
+            // Префиксы для переноса (из первого скрипта)
             const TRANSFER_PREFIX1 = 20;   // передача админам 31
             const TRANSFER_PREFIX2 = 21;   // передача в обжалования 31
             const TRANSFER_PREFIX3 = 22;   // передача в жб на игроков 31
@@ -131,50 +127,102 @@
             const TRANSFER_PREFIX24 = 43;  // передача в тех раздел 35
             const TRANSFER_PREFIX25 = 44;  // передача в жб на тех 35
 
-            // Соответствие типа раздела и префикса
             function getPrefixForSection(sectionType, serverId) {
                 const prefixMap = {
-                    'tech_complaint': { 31: TRANSFER_PREFIX5, 32: TRANSFER_PREFIX10, 33: TRANSFER_PREFIX15, 34: TRANSFER_PREFIX20, 35: TRANSFER_PREFIX25 },
-                    'tech': { 31: TRANSFER_PREFIX4, 32: TRANSFER_PREFIX9, 33: TRANSFER_PREFIX14, 34: TRANSFER_PREFIX19,  ادام35: TRANSFER_PREFIX24 },
-                    'player_complaint': { 31: TRANSFER_PREFIX3, 32: TRANSFER_PREFIX8, 33: TRANSFER_PREFIX13, 34: TRANSFER_PREFIX18, 35: TRANSFER_PREFIX23 }
+                    'tech_complaint': { 
+                        31: TRANSFER_PREFIX5, 32: TRANSFER_PREFIX10, 33: TRANSFER_PREFIX15, 
+                        34: TRANSFER_PREFIX20, 35: TRANSFER_PREFIX25 
+                    },
+                    'tech': { 
+                        31: TRANSFER_PREFIX4, 32: TRANSFER_PREFIX9, 33: TRANSFER_PREFIX14, 
+                        34: TRANSFER_PREFIX19, 35: TRANSFER_PREFIX24 
+                    },
+                    'player_complaint': { 
+                        31: TRANSFER_PREFIX3, 32: TRANSFER_PREFIX8, 33: TRANSFER_PREFIX13, 
+                        34: TRANSFER_PREFIX18, 35: TRANSFER_PREFIX23 
+                    }
                 };
-                return prefixMap[sectionType]?.[serverId] || 0;
+                // Для серверов выше 35 используем префикс по умолчанию
+                if (prefixMap[sectionType]?.[serverId]) {
+                    return prefixMap[sectionType][serverId];
+                }
+                // Для остальных серверов используем префикс для ЖБТ (по умолчанию)
+                if (sectionType === 'tech_complaint') return TRANSFER_PREFIX5;
+                if (sectionType === 'tech') return TRANSFER_PREFIX4;
+                if (sectionType === 'player_complaint') return TRANSFER_PREFIX3;
+                return 0;
             }
 
-            // Данные разделов (с ссылками и nodeId)
-            const DATA_TECH = [
-                { text: 'RED (1)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-red.226/', color: '#8B008B', nodeId: 226 },
-                // ... (все остальные сервера до 35, оставляем как в оригинале)
-                { text: 'EKB (31)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-ekb.1458/', color: '#8B008B', nodeId: 1458 },
-                { text: 'KRASNODAR (32)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-krasnodar.1460/', color: '#8B008B', nodeId: 1460 },
-                { text: 'ARZAMAS (33)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-arzamas.1502/', color: '#8B008B', nodeId: 1502 },
-                { text: 'NOVOSIBIRSK (34)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-novosibirsk.1544/', color: '#8B008B', nodeId: 1544 },
-                { text: 'GROZNY (35)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-grozny.1586/', color: '#8B008B', nodeId: 1586 },
-            ];
+            // Генерация названий серверов (1-91)
+            const serverNames = {
+                1: 'RED', 2: 'GREEN', 3: 'BLUE', 4: 'YELLOW', 5: 'ORANGE',
+                6: 'PURPLE', 7: 'LIME', 8: 'PINK', 9: 'CHERRY', 10: 'BLACK',
+                11: 'INDIGO', 12: 'WHITE', 13: 'MAGENTA', 14: 'CRIMSON', 15: 'GOLD',
+                16: 'AZURE', 17: 'PLATINUM', 18: 'AQUA', 19: 'GRAY', 20: 'ICE',
+                21: 'CHILLI', 22: 'CHOCO', 23: 'MOSCOW', 24: 'SPB', 25: 'UFA',
+                26: 'SOCHI', 27: 'KAZAN', 28: 'SAMARA', 29: 'ROSTOV', 30: 'ANAPA',
+                31: 'EKB', 32: 'KRASNODAR', 33: 'ARZAMAS', 34: 'NOVOSIBIRSK', 35: 'GROZNY',
+                36: 'SARATOV', 37: 'OMSK', 38: 'IRKUTSK', 39: 'VOLGOGRAD', 40: 'VORONEZH',
+                41: 'BELGOROD', 42: 'MAKHACHKALA', 43: 'VLADIKAVKAZ', 44: 'VLADIVOSTOK', 45: 'KALININGRAD',
+                46: 'CHELYABINSK', 47: 'KRASNOYARSK', 48: 'CHEBOKSARY', 49: 'KHABAROVSK', 50: 'PERM',
+                51: 'TULA', 52: 'RYAZAN', 53: 'MURMANSK', 54: 'PENZA', 55: 'KURSK',
+                56: 'ARKHANGELSK', 57: 'ORENBURG', 58: 'KIROV', 59: 'KEMEROVO', 60: 'TYUMEN',
+                61: 'TOLYATTI', 62: 'IVANOVO', 63: 'STAVROPOL', 64: 'SMOLENSK', 65: 'PSKOV',
+                66: 'BRYANSK', 67: 'OREL', 68: 'YAROSLAVL', 69: 'BARNAUL', 70: 'LIPETSK',
+                71: 'ULYANOVSK', 72: 'YAKUTSK', 73: 'TAMBOV', 74: 'BRATSK', 75: 'ASTRAKHAN',
+                76: 'CHITA', 77: 'KOSTROMA', 78: 'VLADIMIR', 79: 'KALUGA', 80: 'NOVGOROD',
+                81: 'TAGANROG', 82: 'VOLOGDA', 83: 'TVER', 84: 'TOMSK', 85: 'IZHEVSK',
+                86: 'SURGUT', 87: 'PODOLSK', 88: 'MAGADAN', 89: 'CHEREPOVETS', 90: 'NORILSK',
+                91: 'ASTANA'
+            };
 
-            const DATA_TECH_COMPLAINT = [
-                { text: 'RED (1)', link: 'https://forum.blackrussia.online/forums/Сервер-№1-red.1182/', color: '#0000CD', nodeId: 1182 },
-                // ... (все остальные сервера до 35)
-                { text: 'EKB (31)', link: 'https://forum.blackrussia.online/forums/Сервер-№31-ekb.1457/', color: '#0000CD', nodeId: 1457 },
-                { text: 'KRASNODAR (32)', link: 'https://forum.blackrussia.online/forums/Сервер-№32-krasnodar.1459/', color: '#0000CD', nodeId: 1459 },
-                { text: 'ARZAMAS (33)', link: 'https://forum.blackrussia.online/forums/Сервер-№33-arzamas.1501/', color: '#0000CD', nodeId: 1501 },
-                { text: 'NOVOSIBIRSK (34)', link: 'https://forum.blackrussia.online/forums/Сервер-№34-novosibirsk.1543/', color: '#0000CD', nodeId: 1543 },
-                { text: 'GROZNY (35)', link: 'https://forum.blackrussia.online/forums/Сервер-№35-grozny.1585/', color: '#0000CD', nodeId: 1585 },
-            ];
+            // Базовые nodeId для серверов (от 1 до 91)
+            // Технические разделы
+            const techNodeIds = {
+                1: 226, 2: 227, 3: 228, 4: 229, 5: 245, 6: 325, 7: 365, 8: 396, 9: 408, 10: 488,
+                11: 493, 12: 554, 13: 613, 14: 653, 15: 660, 16: 701, 17: 757, 18: 815, 19: 857, 20: 925,
+                21: 1007, 22: 1048, 23: 1052, 24: 1095, 25: 1138, 26: 1248, 27: 1290, 28: 1292, 29: 1334, 30: 1416,
+                31: 1458, 32: 1460, 33: 1502, 34: 1544, 35: 1586, 36: 1628, 37: 1670, 38: 1712, 39: 1758, 40: 1800,
+                41: 1842, 42: 1884, 43: 1926, 44: 1968, 45: 2010, 46: 2052, 47: 2094, 48: 2136, 49: 2178, 50: 2220,
+                51: 2262, 52: 2304, 53: 2346, 54: 2388, 55: 2430, 56: 2472, 57: 2514, 58: 2516, 59: 2598, 60: 2639,
+                61: 2682, 62: 2714, 63: 2747, 64: 2779, 65: 2811, 66: 2843, 67: 2875, 68: 2907, 69: 2939, 70: 2971,
+                71: 3003, 72: 3035, 73: 3289, 74: 3324, 75: 3359, 76: 3394, 77: 3429, 78: 3464, 79: 3499, 80: 3535,
+                81: 3570, 82: 3605, 83: 3643, 84: 3740, 85: 3747, 86: 3812, 87: 3817, 88: 3912, 89: 3978, 90: 3985,
+                91: 4021
+            };
 
-            const DATA_PLAYER_COMPLAINT = [
-                { text: 'RED (1)', link: 'https://forum.blackrussia.online/forums/Жалобы-на-игроков.88/', color: '#DC143C', nodeId: 88 },
-                // ... (все остальные сервера до 35)
-                { text: 'EKB (31)', link: 'https://forum.blackrussia.online/forums/Жалобы-на-игроков.1444/', color: '#DC143C', nodeId: 1444 },
-                { text: 'KRASNODAR (32)', link: 'https://forum.blackrussia.online/forums/Жалобы-на-игроков.1488/', color: '#DC143C', nodeId: 1488 },
-                { text: 'ARZAMAS (33)', link: 'https://forum.blackrussia.online/forums/Жалобы-на-игроков.1531/', color: '#DC143C', nodeId: 1531 },
-                { text: 'NOVOSIBIRSK (34)', link: 'https://forum.blackrussia.online/forums/Жалобы-на-игроков.1572/', color: '#DC143C', nodeId: 1572 },
-                { text: 'GROZNY (35)', link: 'https://forum.blackrussia.online/forums/Жалобы-на-игроков.1614/', color: '#DC143C', nodeId: 1614 },
-            ];
+            // Жалобы на технических специалистов
+            const techComplaintNodeIds = {
+                1: 1182, 2: 1183, 3: 1184, 4: 1185, 5: 1186, 6: 1187, 7: 1188, 8: 1189, 9: 1190, 10: 1191,
+                11: 1192, 12: 1193, 13: 1194, 14: 1195, 15: 1196, 16: 1197, 17: 1198, 18: 1199, 19: 1200, 20: 1201,
+                21: 1202, 22: 1203, 23: 1204, 24: 1205, 25: 1206, 26: 1247, 27: 1289, 28: 1291, 29: 1333, 30: 1415,
+                31: 1457, 32: 1459, 33: 1501, 34: 1543, 35: 1585, 36: 1627, 37: 1669, 38: 1711, 39: 1757, 40: 1801,
+                41: 1841, 42: 1883, 43: 1925, 44: 1967, 45: 2009, 46: 2051, 47: 2093, 48: 2135, 49: 2177, 50: 2219,
+                51: 2261, 52: 2303, 53: 2345, 54: 2387, 55: 2429, 56: 2471, 57: 2513, 58: 2515, 59: 2597, 60: 2639,
+                61: 2681, 62: 2713, 63: 2746, 64: 2778, 65: 2810, 66: 2842, 67: 2874, 68: 2906, 69: 2938, 70: 2970,
+                71: 3002, 72: 3034, 73: 3288, 74: 3323, 75: 3358, 76: 3393, 77: 3428, 78: 3463, 79: 3498, 80: 3533,
+                81: 3569, 82: 3604, 83: 3642, 84: 3739, 85: 3746, 86: 3811, 87: 3816, 88: 3911, 89: 3946, 90: 3984,
+                91: 4020
+            };
 
-            const OPS_LINK = { text: 'ОПС', href: 'https://forum.blackrussia.online/threads/Общие-правила-серверов.312571/', color: '#f59e0b', glow: true };
+            // Жалобы на игроков
+            const playerComplaintNodeIds = {
+                1: 88, 2: 119, 3: 156, 4: 194, 5: 273, 6: 312, 7: 352, 8: 394, 9: 435, 10: 470,
+                11: 519, 12: 560, 13: 599, 14: 640, 15: 682, 16: 723, 17: 785, 18: 844, 19: 885, 20: 954,
+                21: 994, 22: 1036, 23: 1082, 24: 1124, 25: 1167, 26: 1234, 27: 1276, 28: 1320, 29: 1362, 30: 1402,
+                31: 1444, 32: 1488, 33: 1531, 34: 1572, 35: 1614, 36: 1656, 37: 1698, 38: 1740, 39: 1786, 40: 1828,
+                41: 1870, 42: 1912, 43: 1954, 44: 1996, 45: 2038, 46: 2080, 47: 2122, 48: 2164, 49: 2206, 50: 2248,
+                51: 2290, 52: 2332, 53: 2374, 54: 2416, 55: 2458, 56: 2500, 57: 2545, 58: 2584, 59: 2626, 60: 2663,
+                61: 2702, 62: 2735, 63: 2767, 64: 2799, 65: 2831, 66: 2863, 67: 2895, 68: 2927, 69: 2959, 70: 2991,
+                71: 3023, 72: 3055, 73: 3309, 74: 3344, 75: 3379, 76: 3414, 77: 3449, 78: 3484, 79: 3519, 80: 3555,
+                81: 3590, 82: 3625, 83: 3666, 84: 3728, 85: 3767, 86: 3800, 87: 3837, 88: 3932, 89: 3967, 90: 4005,
+                91: 4041
+            };
 
-            const SERVER_LIST = [31, 32, 33, 34, 35].map(id => ({ id, name: id === 31 ? 'EKB' : id === 32 ? 'KRASNODAR' : id === 33 ? 'ARZAMAS' : id === 34 ? 'NOVOSIBIRSK' : 'GROZNY' }));
+            // Цвета для разных типов разделов
+            const techColor = '#8B008B';
+            const techComplaintColor = '#0000CD';
+            const playerComplaintColor = '#DC143C';
 
             function getSelected() {
                 const saved = localStorage.getItem(STORAGE_PREFIX + 'servers');
@@ -194,58 +242,70 @@
                     emptyMsg.textContent = 'Серверы не выбраны. Нажмите настройки.';
                     menu.appendChild(emptyMsg);
                 } else {
-                    const createMoveButton = (dataArray, serverId, label, sectionType) => {
-                        const item = dataArray.find(s => s.text.includes(`(${serverId})`));
-                        if (!item || !item.nodeId) return null;
-                        
+                    // Заголовок "ПЕРЕНОС ТЕМ"
+                    const header = document.createElement('div');
+                    header.textContent = 'ПЕРЕНОС ТЕМ';
+                    header.style.cssText = 'text-align:center; color:#fff; font-weight:bold; font-size:12px; padding:5px 0; margin-bottom:5px; background: rgba(255,255,255,0.1); border-radius:6px;';
+                    menu.appendChild(header);
+
+                    // Функция создания кнопки переноса
+                    const createMoveButton = (nodeId, serverId, label, color, sectionType) => {
                         const a = document.createElement('a');
                         a.className = 'fnp-link';
                         a.href = '#';
                         a.textContent = `${label} ${serverId}`;
-                        a.style.borderBottom = `2px solid ${item.color}`;
+                        a.style.borderBottom = `2px solid ${color}`;
                         
                         const prefixId = getPrefixForSection(sectionType, serverId);
                         
-                        a.addEventListener('click', async (e) => {
+                        a.addEventListener('click', (e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            if (confirm(`Перенести текущую тему в раздел "${label} ${serverId}"?`)) {
-                                moveThreadToSection(item.nodeId, prefixId);
-                            }
+                            moveThreadToSection(nodeId, prefixId);
                         });
                         
                         return a;
                     };
 
-                    const addGroup = (data, labelPrefix, sectionType) => {
-                        const group = document.createElement('div');
-                        group.className = 'fnp-grid';
-                        selectedIds.forEach(id => {
-                            const btn = createMoveButton(data, id, labelPrefix, sectionType);
-                            if (btn) group.appendChild(btn);
-                        });
-                        menu.appendChild(group);
-                    };
-
-                    addGroup(DATA_TECH_COMPLAINT, 'ЖБТ', 'tech_complaint');
-                    menu.appendChild(Object.assign(document.createElement('div'), { className: 'fnp-divider' }));
-                    addGroup(DATA_TECH, 'ТР', 'tech');
-                    menu.appendChild(Object.assign(document.createElement('div'), { className: 'fnp-divider' }));
-                    addGroup(DATA_PLAYER_COMPLAINT, 'ЖБИ', 'player_complaint');
-                    menu.appendChild(Object.assign(document.createElement('div'), { className: 'fnp-divider' }));
-
-                    const ops = document.createElement('a');
-                    ops.className = 'fnp-link glow';
-                    ops.href = '#';
-                    ops.textContent = OPS_LINK.text;
-                    ops.style.borderBottom = `2px solid ${OPS_LINK.color}`;
-                    ops.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        window.open(OPS_LINK.href, '_blank');
+                    // Группа ЖБТ (жалобы на тех)
+                    const techComplaintGroup = document.createElement('div');
+                    techComplaintGroup.className = 'fnp-grid';
+                    selectedIds.forEach(id => {
+                        if (techComplaintNodeIds[id]) {
+                            const btn = createMoveButton(techComplaintNodeIds[id], id, 'ЖБТ', techComplaintColor, 'tech_complaint');
+                            techComplaintGroup.appendChild(btn);
+                        }
                     });
-                    menu.appendChild(ops);
+                    menu.appendChild(techComplaintGroup);
+                    
+                    menu.appendChild(Object.assign(document.createElement('div'), { className: 'fnp-divider' }));
+                    
+                    // Группа ТР (технические разделы)
+                    const techGroup = document.createElement('div');
+                    techGroup.className = 'fnp-grid';
+                    selectedIds.forEach(id => {
+                        if (techNodeIds[id]) {
+                            const btn = createMoveButton(techNodeIds[id], id, 'ТР', techColor, 'tech');
+                            techGroup.appendChild(btn);
+                        }
+                    });
+                    menu.appendChild(techGroup);
+                    
+                    menu.appendChild(Object.assign(document.createElement('div'), { className: 'fnp-divider' }));
+                    
+                    // Группа ЖБИ (жалобы на игроков)
+                    const playerComplaintGroup = document.createElement('div');
+                    playerComplaintGroup.className = 'fnp-grid';
+                    selectedIds.forEach(id => {
+                        if (playerComplaintNodeIds[id]) {
+                            const btn = createMoveButton(playerComplaintNodeIds[id], id, 'ЖБИ', playerComplaintColor, 'player_complaint');
+                            playerComplaintGroup.appendChild(btn);
+                        }
+                    });
+                    menu.appendChild(playerComplaintGroup);
                 }
 
+                // Кнопка настроек
                 const settingsBtn = document.createElement('div');
                 settingsBtn.className = 'fnp-settings-btn';
                 settingsBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`;
@@ -266,7 +326,7 @@
                     overlay.className = 'fnp-modal-overlay';
                     overlay.innerHTML = `
                         <div class="fnp-modal">
-                            <div class="fnp-modal-header">Выбор серверов</div>
+                            <div class="fnp-modal-header">Выбор серверов (1-91)</div>
                             <div class="fnp-modal-body"></div>
                             <div class="fnp-modal-footer">
                                 <button class="fnp-btn fnp-btn-secondary" id="fnp-cancel">Отмена</button>
@@ -287,19 +347,22 @@
                 const body = overlay.querySelector('.fnp-modal-body');
                 body.innerHTML = '';
                 const current = getSelected();
-                SERVER_LIST.forEach(srv => {
+                
+                // Создаем список серверов 1-91
+                for (let i = 1; i <= 91; i++) {
+                    const serverName = serverNames[i] || `Server ${i}`;
                     const lbl = document.createElement('label');
-                    lbl.className = 'fnp-checkbox-label ' + (current.includes(srv.id) ? 'checked' : '');
-                    lbl.innerHTML = `<input type="checkbox" value="${srv.id}" ${current.includes(srv.id) ? 'checked' : ''}> ${srv.name} (${srv.id})`;
+                    lbl.className = 'fnp-checkbox-label ' + (current.includes(i) ? 'checked' : '');
+                    lbl.innerHTML = `<input type="checkbox" value="${i}" ${current.includes(i) ? 'checked' : ''}> ${i} | ${serverName}`;
                     lbl.querySelector('input').onchange = function () {
                         this.parentElement.classList.toggle('checked', this.checked);
                     };
                     body.appendChild(lbl);
-                });
+                }
                 setTimeout(() => overlay.classList.add('open'), 10);
             }
 
-            // Стили (оставляем как в оригинале)
+            // Стили
             const style = document.createElement('style');
             style.textContent = `
                 :root { --fnp-btn: 48px; }
@@ -315,17 +378,16 @@
                 .fnp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
                 .fnp-link { display: flex; align-items: center; justify-content: center; padding: 6px 2px; font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; color: #e5e5e5; text-decoration: none; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid transparent; transition: background 0.1s; white-space: nowrap; cursor: pointer; }
                 .fnp-link:active { background: rgba(255,255,255,0.2); transform: translateY(1px); }
-                .fnp-link.glow { background: rgba(245,158,11,0.15); color: #fbbf24; border-color: rgba(245,158,11,0.3); }
                 .fnp-divider { height: 1px; background: rgba(255,255,255,0.15); margin: 4px 0; width: 100%; }
                 .fnp-settings-btn { width: 100%; padding: 8px; margin-top: 5px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #aaa; cursor: pointer; display: flex; justify-content: center; align-items: center; }
                 .fnp-settings-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
                 .fnp-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2147483648; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.3s; }
                 .fnp-modal-overlay.open { opacity: 1; visibility: visible; }
-                .fnp-modal { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; width: 90%; max-width: 500px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+                .fnp-modal { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; width: 90%; max-width: 600px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
                 .fnp-modal-header { padding: 15px; border-bottom: 1px solid #333; color: #fff; font-weight: bold; }
-                .fnp-modal-body { padding: 15px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+                .fnp-modal-body { padding: 15px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
                 .fnp-modal-footer { padding: 15px; border-top: 1px solid #333; display: flex; justify-content: flex-end; gap: 10px; }
-                .fnp-checkbox-label { display: flex; align-items: center; gap: 8px; background: #222; padding: 6px; border-radius: 6px; cursor: pointer; user-select: none; color: #ccc; font-size: 12px; border: 1px solid #333; }
+                .fnp-checkbox-label { display: flex; align-items: center; gap: 8px; background: #222; padding: 6px; border-radius: 6px; cursor: pointer; user-select: none; color: #ccc; font-size: 11px; border: 1px solid #333; }
                 .fnp-checkbox-label:hover { background: #2a2a2a; }
                 .fnp-checkbox-label input { accent-color: #2563eb; }
                 .fnp-checkbox-label.checked { border-color: #2563eb; background: rgba(37,99,235,0.1); color: #fff; }
