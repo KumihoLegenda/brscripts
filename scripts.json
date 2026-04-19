@@ -15,6 +15,13 @@
       "enabledDefault": true
     },
     {
+      "id": "perenos",
+      "name": "Форум | Переносчик тем",
+      "matches": ["https://forum.blackrussia.online/*"],
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/perenos.js",
+      "enabledDefault": true
+    },
+    {
       "id": "forumSneg",
       "name": "Форум | Зимняя тема (тёмная)",
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/snow-forum.js",
