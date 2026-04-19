@@ -2,7 +2,7 @@
   "scripts": [
     {
       "id": "button",
-      "name": "Форум | Кнопки переходники",
+      "name": "Форум | Кнопки переходнии",
       "matches": ["https://forum.blackrussia.online/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/button",
       "enabledDefault": true
