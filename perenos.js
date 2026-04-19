@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         BR Panel (Menu Only)
 // @namespace    http://tampermonkey.net/
-// @version      3.2
-// @description  Floating menu with servers and thread mover (Pure move without prefix change)
+// @version      3.3
+// @description  Floating menu with servers and thread mover (Working move without prefix change)
 // @author       Black Russia
 // @match        https://forum.blackrussia.online/*
 // @grant        none
@@ -20,57 +20,39 @@
         (function() {
             const STORAGE_PREFIX = 'br_panel_mix_';
 
-            // === ЧИСТАЯ ФУНКЦИЯ ПЕРЕМЕЩЕНИЯ ТЕМЫ (БЕЗ ИЗМЕНЕНИЯ ПРЕФИКСА) ===
-            function moveThreadOnly(targetNodeId) {
-                const threadId = getThreadIdFromUrl();
-                if (!threadId) {
-                    alert('Эта функция доступна только при просмотре темы!');
-                    return false;
-                }
-                
-                const threadTitle = document.querySelector('.p-title-value')?.lastChild?.textContent || '';
-                const csrfToken = document.querySelector('input[name="_xfToken"]')?.value || XF?.config?.csrf;
-                
-                if (!csrfToken) {
-                    alert('Ошибка: CSRF токен не найден');
-                    return false;
-                }
-                
-                // Создаем FormData ТОЛЬКО для перемещения (без изменения префикса)
+            // === ФУНКЦИЯ ПОЛНОСТЬЮ ИЗ ПЕРВОГО СКРИПТА (без изменения префикса) ===
+            function getFormData(data) {
                 const formData = new FormData();
-                formData.append('target_node_id', targetNodeId);
-                formData.append('redirect_type', 'none');
-                formData.append('notify_watchers', '1');
-                formData.append('starter_alert', '1');
-                formData.append('starter_alert_reason', '');
-                formData.append('_xfToken', csrfToken);
-                formData.append('_xfRequestUri', window.location.pathname);
-                formData.append('_xfWithData', '1');
-                formData.append('_xfResponseType', 'json');
-                
-                fetch(`${window.location.origin}${window.location.pathname}/move`, {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'same-origin'
-                }).then(response => response.json())
-                  .then(data => {
-                      if (data._redirectStatus === 'success' || data.redirect) {
-                          window.location.reload();
-                      } else {
-                          alert('Ошибка при переносе темы');
-                      }
-                  })
-                  .catch(error => {
-                      console.error('Ошибка переноса:', error);
-                      alert('Не удалось перенести тему');
-                  });
-                
-                return true;
+                Object.entries(data).forEach(i => formData.append(i[0], i[1]));
+                return formData;
             }
 
-            function getThreadIdFromUrl() {
-                const match = window.location.pathname.match(/\/threads\/[^.]+\.(\d+)/);
-                return match ? match[1] : null;
+            // ЧИСТЫЙ ПЕРЕНОС ТЕМЫ (без изменения префикса, без закрытия, без открепления)
+            function moveThreadOnly(targetNodeId) {
+                const threadTitle = document.querySelector('.p-title-value')?.lastChild?.textContent || '';
+                
+                // Получаем ТЕКУЩИЙ префикс темы (чтобы сохранить его)
+                let currentPrefix = 0;
+                const prefixElement = document.querySelector('.labelLink .label');
+                if (prefixElement) {
+                    const prefixText = prefixElement.textContent;
+                    // Здесь можно добавить логику определения текущего префикса, но для простоты оставляем 0
+                }
+                
+                fetch(`${document.URL}move`, {
+                    method: 'POST',
+                    body: getFormData({
+                        target_node_id: targetNodeId,
+                        redirect_type: 'none',
+                        notify_watchers: 1,
+                        starter_alert: 1,
+                        starter_alert_reason: "",
+                        _xfToken: XF.config.csrf,
+                        _xfRequestUri: document.URL.split(XF.config.url.fullBase)[1],
+                        _xfWithData: 1,
+                        _xfResponseType: 'json',
+                    }),
+                }).then(() => location.reload());
             }
 
             // Генерация названий серверов (1-91)
@@ -97,7 +79,6 @@
             };
 
             // Базовые nodeId для серверов (от 1 до 91)
-            // Технические разделы
             const techNodeIds = {
                 1: 226, 2: 227, 3: 228, 4: 229, 5: 245, 6: 325, 7: 365, 8: 396, 9: 408, 10: 488,
                 11: 493, 12: 554, 13: 613, 14: 653, 15: 660, 16: 701, 17: 757, 18: 815, 19: 857, 20: 925,
@@ -111,7 +92,6 @@
                 91: 4021
             };
 
-            // Жалобы на технических специалистов
             const techComplaintNodeIds = {
                 1: 1182, 2: 1183, 3: 1184, 4: 1185, 5: 1186, 6: 1187, 7: 1188, 8: 1189, 9: 1190, 10: 1191,
                 11: 1192, 12: 1193, 13: 1194, 14: 1195, 15: 1196, 16: 1197, 17: 1198, 18: 1199, 19: 1200, 20: 1201,
@@ -125,7 +105,6 @@
                 91: 4020
             };
 
-            // Жалобы на игроков
             const playerComplaintNodeIds = {
                 1: 88, 2: 119, 3: 156, 4: 194, 5: 273, 6: 312, 7: 352, 8: 394, 9: 435, 10: 470,
                 11: 519, 12: 560, 13: 599, 14: 640, 15: 682, 16: 723, 17: 785, 18: 844, 19: 885, 20: 954,
@@ -139,7 +118,6 @@
                 91: 4041
             };
 
-            // Цвета для разных типов разделов
             const techColor = '#8B008B';
             const techComplaintColor = '#0000CD';
             const playerComplaintColor = '#DC143C';
@@ -162,13 +140,11 @@
                     emptyMsg.textContent = 'Серверы не выбраны. Нажмите настройки.';
                     menu.appendChild(emptyMsg);
                 } else {
-                    // Заголовок "ПЕРЕНОС ТЕМ"
                     const header = document.createElement('div');
                     header.textContent = 'ПЕРЕНОС ТЕМ';
                     header.style.cssText = 'text-align:center; color:#fff; font-weight:bold; font-size:12px; padding:5px 0; margin-bottom:5px; background: rgba(255,255,255,0.1); border-radius:6px;';
                     menu.appendChild(header);
 
-                    // Функция создания кнопки переноса (чистый перенос)
                     const createMoveButton = (nodeId, serverId, label, color) => {
                         const a = document.createElement('a');
                         a.className = 'fnp-link';
@@ -185,7 +161,6 @@
                         return a;
                     };
 
-                    // Группа ЖБТ (жалобы на тех)
                     const techComplaintGroup = document.createElement('div');
                     techComplaintGroup.className = 'fnp-grid';
                     selectedIds.forEach(id => {
@@ -198,7 +173,6 @@
                     
                     menu.appendChild(Object.assign(document.createElement('div'), { className: 'fnp-divider' }));
                     
-                    // Группа ТР (технические разделы)
                     const techGroup = document.createElement('div');
                     techGroup.className = 'fnp-grid';
                     selectedIds.forEach(id => {
@@ -211,7 +185,6 @@
                     
                     menu.appendChild(Object.assign(document.createElement('div'), { className: 'fnp-divider' }));
                     
-                    // Группа ЖБИ (жалобы на игроков)
                     const playerComplaintGroup = document.createElement('div');
                     playerComplaintGroup.className = 'fnp-grid';
                     selectedIds.forEach(id => {
@@ -223,7 +196,6 @@
                     menu.appendChild(playerComplaintGroup);
                 }
 
-                // Кнопка настроек
                 const settingsBtn = document.createElement('div');
                 settingsBtn.className = 'fnp-settings-btn';
                 settingsBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`;
@@ -266,7 +238,6 @@
                 body.innerHTML = '';
                 const current = getSelected();
                 
-                // Создаем список серверов 1-91
                 for (let i = 1; i <= 91; i++) {
                     const serverName = serverNames[i] || `Server ${i}`;
                     const lbl = document.createElement('label');
@@ -280,7 +251,6 @@
                 setTimeout(() => overlay.classList.add('open'), 10);
             }
 
-            // Стили
             const style = document.createElement('style');
             style.textContent = `
                 :root { --fnp-btn: 48px; }
@@ -317,7 +287,6 @@
             `;
             document.head.appendChild(style);
 
-            // Создание плавающей кнопки
             const wrapper = document.createElement('div');
             wrapper.className = 'fnp-wrapper';
             const toggleBtn = document.createElement('div');
