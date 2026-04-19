@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Snow theme for forum
 // @namespace    https://forum.blackrussia.online
-// @version      1893248239.00005
+// @version      1893248239.00002
 // @description  Snow forum
 // @author       kumiho
 // @match        *://forum.blackrussia.online/*
@@ -13,12 +13,6 @@
 
 (function() {
     'use strict';
-
-    // Проверяем, не был ли уже выполнен скрипт
-    if (window.__SNOW_THEME_INSTALLED__) {
-        return;
-    }
-    window.__SNOW_THEME_INSTALLED__ = true;
 
     const css = `
         :root {
@@ -404,106 +398,97 @@
         }
     `;
 
-    // Добавляем стили только один раз
-    if (!document.getElementById('snow-theme-styles')) {
-        const style = document.createElement('style');
-        style.id = 'snow-theme-styles';
-        style.textContent = css;
-        (document.head || document.documentElement).appendChild(style);
-    }
+    const style = document.createElement('style');
+    style.textContent = css;
+    (document.head || document.documentElement).appendChild(style);
 
     const STORAGE_KEY = 'forum_snow_enabled';
     const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent) || window.innerWidth < 768;
     const SNOW_COUNT = isMobile ? 35 : 85;
 
-    let snowCanvas = null;
-    let snowCtx = null;
-    let snowflakes = [];
-    let animationId = null;
-    let isSnowRunning = false;
-    let timerElement = null;
-    let treeAdded = false;
-
-    function resizeCanvas() {
-        if (snowCanvas) {
-            snowCanvas.width = window.innerWidth;
-            snowCanvas.height = window.innerHeight;
-            if (!isSnowRunning && snowCtx) {
-                snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+    class SnowSystem {
+        constructor() {
+            this.canvas = document.createElement('canvas');
+            this.canvas.id = 'snowCanvas';
+            this.ctx = this.canvas.getContext('2d');
+            this.flakes = [];
+            this.animationFrame = null;
+            this.isRunning = false;
+        }
+        
+        init() {
+            document.body.appendChild(this.canvas);
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+            this.createFlakes();
+            this.start();
+        }
+        
+        start() {
+            if (this.isRunning) return;
+            this.isRunning = true;
+            this.animate();
+        }
+        
+        stop() {
+            if (this.animationFrame) {
+                cancelAnimationFrame(this.animationFrame);
+                this.animationFrame = null;
+            }
+            if (this.ctx && this.canvas) {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+            this.isRunning = false;
+        }
+        
+        resize() {
+            if (this.canvas) {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
             }
         }
-    }
-
-    function createFlakes() {
-        snowflakes = [];
-        for (let i = 0; i < SNOW_COUNT; i++) {
-            snowflakes.push({
-                x: Math.random() * (snowCanvas?.width || window.innerWidth),
-                y: Math.random() * (snowCanvas?.height || window.innerHeight),
-                s: Math.random() * 2 + 1,
-                sp: Math.random() * 1 + 0.5,
-                op: Math.random() * 0.5 + 0.3
+        
+        createFlakes() {
+            this.flakes = [];
+            for (let i = 0; i < SNOW_COUNT; i++) {
+                this.flakes.push({
+                    x: Math.random() * (this.canvas?.width || window.innerWidth),
+                    y: Math.random() * (this.canvas?.height || window.innerHeight),
+                    s: Math.random() * 2 + 1,
+                    sp: Math.random() * 1 + 0.5,
+                    op: Math.random() * 0.5 + 0.3
+                });
+            }
+        }
+        
+        animate() {
+            if (!this.isRunning || !this.ctx || !this.canvas) return;
+            
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.fillStyle = '#FFF';
+            
+            this.flakes.forEach(f => {
+                f.y += f.sp;
+                if (f.y > this.canvas.height) {
+                    f.y = -5;
+                    f.x = Math.random() * this.canvas.width;
+                }
+                this.ctx.globalAlpha = f.op;
+                this.ctx.beginPath();
+                this.ctx.arc(f.x, f.y, f.s, 0, Math.PI * 2);
+                this.ctx.fill();
             });
+            
+            this.animationFrame = requestAnimationFrame(() => this.animate());
         }
     }
 
-    function animateSnow() {
-        if (!isSnowRunning || !snowCtx || !snowCanvas) return;
-        
-        snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
-        snowCtx.fillStyle = '#FFF';
-        
-        snowflakes.forEach(flake => {
-            flake.y += flake.sp;
-            if (flake.y > snowCanvas.height) {
-                flake.y = -5;
-                flake.x = Math.random() * snowCanvas.width;
-            }
-            snowCtx.globalAlpha = flake.op;
-            snowCtx.beginPath();
-            snowCtx.arc(flake.x, flake.y, flake.s, 0, Math.PI * 2);
-            snowCtx.fill();
-        });
-        
-        animationId = requestAnimationFrame(animateSnow);
-    }
+    let snowSystem = null;
+    let timerElement = null;
 
-    function initSnow() {
-        // Проверяем, не существует ли уже canvas
-        if (document.getElementById('snowCanvas')) {
-            snowCanvas = document.getElementById('snowCanvas');
-            snowCtx = snowCanvas.getContext('2d');
-        } else {
-            snowCanvas = document.createElement('canvas');
-            snowCanvas.id = 'snowCanvas';
-            document.body.appendChild(snowCanvas);
-            snowCtx = snowCanvas.getContext('2d');
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        createFlakes();
-    }
-
-    function startSnow() {
-        if (isSnowRunning) return;
-        isSnowRunning = true;
-        animateSnow();
-    }
-
-    function stopSnow() {
-        isSnowRunning = false;
-        if (animationId) {
-            cancelAnimationFrame(animationId);
-            animationId = null;
-        }
-        if (snowCtx && snowCanvas) {
-            snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
-        }
-    }
-
-    function updateTimerStyle(isEnabled) {
+    function updateTimerStyle(isSnowEnabled) {
         if (timerElement) {
-            if (isEnabled) {
+            if (isSnowEnabled) {
                 timerElement.classList.remove('snow-disabled');
                 timerElement.style.borderColor = '#3498db';
                 timerElement.style.boxShadow = '0 0 15px rgba(52, 152, 219, 0.3)';
@@ -516,19 +501,24 @@
     }
 
     function enableSnow() {
-        startSnow();
+        if (snowSystem && !snowSystem.isRunning) {
+            snowSystem.start();
+        }
         updateTimerStyle(true);
         localStorage.setItem(STORAGE_KEY, 'true');
     }
 
     function disableSnow() {
-        stopSnow();
+        if (snowSystem && snowSystem.isRunning) {
+            snowSystem.stop();
+        }
         updateTimerStyle(false);
         localStorage.setItem(STORAGE_KEY, 'false');
     }
 
     function toggleSnow() {
-        if (isSnowRunning) {
+        const isEnabled = localStorage.getItem(STORAGE_KEY) !== 'false';
+        if (isEnabled) {
             disableSnow();
         } else {
             enableSnow();
@@ -536,16 +526,11 @@
     }
 
     function startTimer() {
-        // Проверяем, не существует ли уже таймер
-        if (document.getElementById('brTimer')) {
-            timerElement = document.getElementById('brTimer');
-            return;
-        }
-        
         timerElement = document.createElement('div');
         timerElement.id = 'brTimer';
         document.body.appendChild(timerElement);
         
+        // Добавляем обработчик клика
         timerElement.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -553,7 +538,6 @@
         });
 
         function update() {
-            if (!timerElement) return;
             const now = new Date();
             const nextYear = new Date(now.getFullYear() + 1, 0, 1);
             const diff = nextYear - now;
@@ -574,12 +558,6 @@
     }
 
     function addChristmasTree() {
-        // Проверяем, не добавлена ли уже елка
-        if (treeAdded || document.querySelector('.scene-container')) {
-            treeAdded = true;
-            return;
-        }
-        
         const scene = document.createElement('div');
         scene.className = 'scene-container';
         scene.innerHTML = `
@@ -605,18 +583,27 @@
             </div>
         `;
         document.body.appendChild(scene);
-        treeAdded = true;
     }
 
     function init() {
-        initSnow();
+        // Создаем систему снега
+        snowSystem = new SnowSystem();
+        snowSystem.init();
+        
+        // Запускаем таймер
         startTimer();
+        
+        // Добавляем елку
         addChristmasTree();
         
+        // Проверяем сохраненное состояние
         const savedState = localStorage.getItem(STORAGE_KEY);
+        
         if (savedState === 'false') {
+            // Снег должен быть выключен
             disableSnow();
         } else {
+            // Снег включен (первый запуск или было true)
             enableSnow();
         }
     }
