@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         BR Panel (Menu Only)
 // @namespace    http://tampermonkey.net/
-// @version      2.1
-// @description  Only floating menu with servers and thread mover
+// @version      2.2
+// @description  Only floating menu with servers and thread mover (FIXED: now moves threads)
 // @author       Black Russia
 // @match        https://forum.blackrussia.online/*
 // @grant        none
@@ -28,18 +28,25 @@
                 return match ? match[1] : null;
             }
 
-            // Функция для переноса темы (из вашего второго скрипта)
-            function moveThreadToSection(targetNodeId) {
-                // Получаем CSRF-токен
+            // === НОВАЯ ФУНКЦИЯ ДЛЯ ПЕРЕНОСА ТЕМЫ (как в первом скрипте) ===
+            async function moveThreadToSection(targetNodeId) {
+                // Проверяем, находимся ли мы на странице темы
+                const threadId = getThreadIdFromUrl();
+                if (!threadId) {
+                    alert('Эта функция доступна только при просмотре темы!');
+                    return false;
+                }
+
+                // Получаем CSRF-токен (как в первом скрипте)
                 const csrfToken = document.querySelector('input[name="_xfToken"]')?.value || XF?.config?.csrf;
                 if (!csrfToken) {
-                    alert('Ошибка: CSRF токен не найден');
+                    alert('Ошибка: CSRF токен не найден. Возможно, вы не авторизованы или страница загружена не полностью.');
                     return false;
                 }
 
                 const threadTitle = document.querySelector('.p-title-value')?.lastChild?.textContent || '';
                 
-                // Создаем FormData для запроса
+                // Создаем FormData для запроса (полностью копируем из первого скрипта)
                 const formData = new FormData();
                 formData.append('target_node_id', targetNodeId);
                 formData.append('redirect_type', 'none');
@@ -51,54 +58,31 @@
                 formData.append('_xfWithData', '1');
                 formData.append('_xfResponseType', 'json');
 
-                // Отправляем запрос на перемещение
-                fetch(`${window.location.origin}${window.location.pathname}/move`, {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'same-origin'
-                })
-                .then(response => response.json())
-                .then(data => {
+                try {
+                    // Отправляем запрос на перемещение (как в первом скрипте)
+                    const response = await fetch(`${window.location.origin}${window.location.pathname}/move`, {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'same-origin'
+                    });
+                    
+                    const data = await response.json();
+                    
                     if (data._redirectStatus === 'success' || data.redirect) {
                         alert('Тема успешно перенесена!');
                         window.location.reload();
+                        return true;
                     } else {
-                        throw new Error('Ошибка при переносе');
+                        throw new Error('Ошибка при переносе: ' + JSON.stringify(data));
                     }
-                })
-                .catch(error => {
+                } catch (error) {
                     console.error('Ошибка переноса:', error);
                     alert('Не удалось перенести тему. Убедитесь, что у вас есть права на перенос темы в этот раздел.');
-                });
-                
-                return true;
-            }
-
-            // Функция для обработки нажатия на кнопку с переносом
-            function handleMoveButtonClick(targetUrl) {
-                // Проверяем, находимся ли мы на странице темы
-                const threadId = getThreadIdFromUrl();
-                if (!threadId) {
-                    alert('Эта функция доступна только при просмотре темы!');
-                    return;
-                }
-                
-                // Извлекаем ID раздела из URL (цифры после точки)
-                const nodeIdMatch = targetUrl.match(/\.(\d+)\/?$/);
-                if (!nodeIdMatch) {
-                    alert('Ошибка: не удалось определить ID раздела');
-                    return;
-                }
-                
-                const targetNodeId = nodeIdMatch[1];
-                
-                // Подтверждение переноса
-                if (confirm('Вы уверены, что хотите перенести эту тему в выбранный раздел?')) {
-                    moveThreadToSection(targetNodeId);
+                    return false;
                 }
             }
 
-            // Ссылки на тех. разделы
+            // Ссылки на тех. разделы (оставляем как есть, они нужны для получения nodeId и цвета)
             const DATA_TECH = [
                 { text: 'RED (1)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-red.226/', color: '#8B008B', nodeId: 226 },
                 { text: 'GREEN (2)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-green.227/', color: '#8B008B', nodeId: 227 },
@@ -229,7 +213,7 @@
                 { text: 'ARZAMAS (33)', link: 'https://forum.blackrussia.online/forums/Сервер-№33-arzamas.1501/', color: '#0000CD', nodeId: 1501 },
                 { text: 'NOVOSIBIRSK (34)', link: 'https://forum.blackrussia.online/forums/Сервер-№34-novosibirsk.1543/', color: '#0000CD', nodeId: 1543 },
                 { text: 'GROZNY (35)', link: 'https://forum.blackrussia.online/forums/Сервер-№35-grozny.1585/', color: '#0000CD', nodeId: 1585 },
-                { text: 'SARATOV (36)', link: 'https://forum.blackrussia.online/forums/Сервер-№36-grozny.1585/', color: '#0000CD', nodeId: 1585 },
+                { text: 'SARATOV (36)', link: 'https://forum.blackrussia.online/forums/Сервер-№36-saratov.1627/', color: '#0000CD', nodeId: 1627 },
                 { text: 'OMSK (37)', link: 'https://forum.blackrussia.online/forums/Сервер-№37-omsk.1669/', color: '#0000CD', nodeId: 1669 },
                 { text: 'IRKUTSK (38)', link: 'https://forum.blackrussia.online/forums/Сервер-№38-irkutsk.1711/', color: '#0000CD', nodeId: 1711 },
                 { text: 'VOLGOGRAD (39)', link: 'https://forum.blackrussia.online/forums/Сервер-№39-volgograd.1757/', color: '#0000CD', nodeId: 1757 },
@@ -253,7 +237,7 @@
                 { text: 'ORENBURG (57)', link: 'https://forum.blackrussia.online/forums/Сервер-№57-orenburg.2513/', color: '#0000CD', nodeId: 2513 },
                 { text: 'KIROV (58)', link: 'https://forum.blackrussia.online/forums/Сервер-№58-kirov.2515/', color: '#0000CD', nodeId: 2515 },
                 { text: 'KEMEROVO (59)', link: 'https://forum.blackrussia.online/forums/Сервер-№59-kemerovo.2597/', color: '#0000CD', nodeId: 2597 },
-                { text: 'TYUMEN (60)', link: 'https://forum.blackrussia.online/forums/Сервер-№60-tuymen.2640/', color: '#0000CD', nodeId: 2640 },
+                { text: 'TYUMEN (60)', link: 'https://forum.blackrussia.online/forums/Сервер-№60-tyumen.2639/', color: '#0000CD', nodeId: 2639 },
                 { text: 'TOLYATTI (61)', link: 'https://forum.blackrussia.online/forums/Сервер-№61-tolyatti.2681/', color: '#0000CD', nodeId: 2681 },
                 { text: 'IVANOVO (62)', link: 'https://forum.blackrussia.online/forums/Сервер-№62-ivanovo.2713/', color: '#0000CD', nodeId: 2713 },
                 { text: 'STAVROPOL (63)', link: 'https://forum.blackrussia.online/forums/Сервер-№63-stavropol.2746/', color: '#0000CD', nodeId: 2746 },
@@ -284,7 +268,7 @@
                 { text: 'MAGADAN (88)', link: 'https://forum.blackrussia.online/forums/Сервер-№88-magadan.3911/', color: '#0000CD', nodeId: 3911 },
                 { text: 'CHEREPOVETS (89)', link: 'https://forum.blackrussia.online/forums/Сервер-№89-cherepovets.3946/', color: '#0000CD', nodeId: 3946 },
                 { text: 'NORILSK (90)', link: 'https://forum.blackrussia.online/forums/Сервер-№90-norilsk.3984/', color: '#0000CD', nodeId: 3984 },
-                { text: 'ASTANA (91)', link: 'https://forum.blackrussia.online/forums/Сервер-№90-astana.4020/', color: '#0000CD', nodeId: 4020 },
+                { text: 'ASTANA (91)', link: 'https://forum.blackrussia.online/forums/Сервер-№91-astana.4020/', color: '#0000CD', nodeId: 4020 },
             ];
 
             const DATA_PLAYER_COMPLAINT = [
@@ -410,21 +394,25 @@
                     emptyMsg.textContent = 'Серверы не выбраны. Нажмите настройки.';
                     menu.appendChild(emptyMsg);
                 } else {
-                    const createBtn = (dataArray, serverId, label, isMoveOnly = false) => {
+                    // Функция для создания кнопки с ПЕРЕНОСОМ темы
+                    const createMoveButton = (dataArray, serverId, label) => {
                         const item = dataArray[serverId - 1];
-                        if (!item) return null;
+                        if (!item || !item.nodeId) return null;
+                        
                         const a = document.createElement('a');
                         a.className = 'fnp-link';
-                        
-                        // Для всех кнопок делаем перенос темы
                         a.href = '#';
-                        a.textContent = label;
+                        a.textContent = label + serverId;
                         a.style.borderBottom = `2px solid ${item.color}`;
                         
-                        // Добавляем обработчик для переноса темы
-                        a.addEventListener('click', (e) => {
+                        // ВАЖНО: при клике вызываем функцию переноса с nodeId
+                        a.addEventListener('click', async (e) => {
                             e.preventDefault();
-                            handleMoveButtonClick(item.link);
+                            e.stopPropagation();
+                            // Запрашиваем подтверждение перед переносом
+                            if (confirm(`Перенести текущую тему в раздел "${label}${serverId}"?`)) {
+                                await moveThreadToSection(item.nodeId);
+                            }
                         });
                         
                         a.addEventListener('pointerdown', e => e.stopPropagation());
@@ -435,7 +423,7 @@
                         const group = document.createElement('div');
                         group.className = 'fnp-grid';
                         selectedIds.forEach(id => {
-                            const btn = createBtn(data, id, labelPrefix + id);
+                            const btn = createMoveButton(data, id, labelPrefix);
                             if(btn) group.appendChild(btn);
                         });
                         menu.appendChild(group);
@@ -448,16 +436,17 @@
                     addGroup(DATA_PLAYER_COMPLAINT, 'ЖБИ ');
                     menu.appendChild(Object.assign(document.createElement('div'), {className:'fnp-divider'}));
 
+                    // ОПС - отдельная кнопка (перенос в тему правил невозможен)
                     const ops = document.createElement('a');
                     ops.className = 'fnp-link glow';
-                    ops.href = '#'; // Для ОПС тоже делаем перенос? ОПС - это тема, а не раздел
+                    ops.href = '#';
                     ops.textContent = OPS_LINK.text;
                     ops.style.borderBottom = `2px solid ${OPS_LINK.color}`;
                     ops.addEventListener('click', (e) => {
                         e.preventDefault();
-                        alert('ОПС - это тема с правилами, перенос темы в неё невозможен');
+                        alert('ОПС - это тема с правилами, перенос темы в неё невозможен. Откроется ссылка в новой вкладке.');
+                        window.open(OPS_LINK.href, '_blank');
                     });
-                    ops.addEventListener('pointerdown', e => e.stopPropagation());
                     menu.appendChild(ops);
                 }
 
