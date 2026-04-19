@@ -1,0 +1,110 @@
+{
+  "scripts": [
+    {
+      "id": "button",
+      "name": "Форум | Кнопки переходники",
+      "matches": ["https://forum.blackrussia.online/*"],
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/button",
+      "enabledDefault": true
+    },
+    {
+      "id": "button-old",
+      "name": "Форум | Кнопки переходники (OLD)",
+      "matches": ["https://forum.blackrussia.online/*"],
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/buttons-old",
+      "enabledDefault": true
+    },
+    {
+      "id": "perenos",
+      "name": "Форум | Переносчик тем",
+      "matches": ["https://forum.blackrussia.online/*"],
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/perenos.js",
+      "enabledDefault": true
+    },
+    {
+      "id": "forumSneg",
+      "name": "Форум | Зимняя тема",
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/snow-forum.js",
+      "matches": [
+        "https://forum.blackrussia.online/threads/*"
+      ],
+      "enabledDefault": true
+    },
+    {
+      "id": "forumtech",
+      "name": "Форум | Скрипт для специалистов",
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forum-tech.js",
+      "matches": [
+        "https://forum.blackrussia.online/threads/*"
+      ],
+      "enabledDefault": true
+    },
+    {
+      "id": "forumtech-old",
+      "name": "Форум | Скрипт для специалистов (OLD)",
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forum-tech-old.js",
+      "matches": [
+        "https://forum.blackrussia.online/threads/*"
+      ],
+      "enabledDefault": true
+    },
+    {
+      "id": "forumkts",
+      "name": "Форум | Скрипт для КТС/ЗКТС" ,
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forum-kts",
+      "matches": [
+        "https://forum.blackrussia.online/*"
+      ],
+      "enabledDefault": true
+    },
+    {
+      "id": "br-superfunctional",
+      "name": "Логи | Содержимое трейдов",
+      "matches": ["https://logs.blackrussia.online/gslogs/*"],
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/br-trade-viewer.js",
+      "enabledDefault": true
+    },
+    {
+      "id": "set-tstart",
+      "name": "Логи | Последняя блокировка/разблокировка",
+      "matches": ["https://logs.blackrussia.online/gslogs/*"],
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/baninfo.js",
+      "enabledDefault": true
+    },
+    {
+      "id": "darklogs",
+      "name": "Логи | Тёмная тема",
+      "matches": ["https://logs.blackrussia.online/gslogs/*"],
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/dark-logs.js",
+      "enabledDefault": true
+    },
+    {
+      "id": "spring-logs",
+      "name": "Логи | Весенняя тема",
+      "matches": ["https://logs.blackrussia.online/gslogs/*"],
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/spring-logs.js",
+      "enabledDefault": true
+    },
+    {
+      "id": "sneg",
+      "name": "Логи | Зимняя тема",
+      "matches": ["https://logs.blackrussia.online/gslogs/*"],
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/snow-logs.js",
+      "enabledDefault": true
+    },
+    {
+      "id": "search",
+      "name": "Логи | Поиск по серверам",
+      "matches": ["https://logs.blackrussia.online/gslogs/*"],
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/search",
+      "enabledDefault": true
+    },
+    {
+      "id": "time",
+      "name": "Логи | Минимальное время автоматически – 7 месяцев",
+      "matches": ["https://logs.blackrussia.online/gslogs/*"],
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/time",
+      "enabledDefault": true
+    }
+  ]
+}
