@@ -333,8 +333,19 @@
             navContainer.appendChild(btn);
         }
 
-        // Включаем цветы сразу при загрузке страницы (без проверки localStorage)
-        enableFlowers();
+        // Проверяем сохраненное состояние при загрузке
+        const savedState = localStorage.getItem(CONFIG.storageKey);
+        
+        // Если сохраненного состояния нет или оно равно 'true' - включаем цветы
+        if (savedState === null || savedState === 'true') {
+            enableFlowers();
+        } else {
+            // Если сохранено 'false' - оставляем цветы выключенными
+            updateBtnState(false);
+            CONFIG.flowersEnabled = false;
+            // Убеждаемся, что цветы не запущены
+            destroyFlowers();
+        }
     }
 
     // Запускаем скрипт немедленно, как только страница готова
