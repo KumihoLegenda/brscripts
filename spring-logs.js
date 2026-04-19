@@ -302,8 +302,10 @@
         if (btn) {
             if (isActive) {
                 btn.classList.add('spring-mode-active');
+                btn.style.opacity = '1';
             } else {
                 btn.classList.remove('spring-mode-active');
+                btn.style.opacity = '0.6';
             }
         }
     }
@@ -317,7 +319,11 @@
         btn.id = 'spring-toggle-btn';
         btn.href = '#';
         btn.innerHTML = '🌷';
-        btn.addEventListener('click', (e) => { e.preventDefault(); toggleFlowers(); });
+        btn.style.transition = 'all 0.3s ease';
+        btn.addEventListener('click', (e) => { 
+            e.preventDefault(); 
+            toggleFlowers(); 
+        });
 
         const toggler = navContainer.querySelector('.navbar-toggler');
         const collapse = navContainer.querySelector('.navbar-collapse');
@@ -335,8 +341,19 @@
     function startImmediately() {
         // Добавляем стили
         document.head.appendChild(styleElement);
-        // Запускаем цветы
-        enableFlowers();
+        
+        // Проверяем сохранённое состояние
+        const savedState = localStorage.getItem(CONFIG.storageKey);
+        
+        if (savedState === 'false') {
+            // Цветы выключены, кнопка неактивна
+            CONFIG.flowersEnabled = false;
+            updateBtnState(false);
+        } else {
+            // Цветы включены по умолчанию
+            enableFlowers();
+        }
+        
         // Добавляем кнопку в интерфейс
         injectUI();
     }
