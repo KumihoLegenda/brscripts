@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         BR Panel (Menu Only)
 // @namespace    http://tampermonkey.net/
-// @version      3.1
-// @description  Floating menu with servers and thread mover (All servers 1-91)
+// @version      3.2
+// @description  Floating menu with servers and thread mover (Pure move without prefix change)
 // @author       Black Russia
 // @match        https://forum.blackrussia.online/*
 // @grant        none
@@ -20,137 +20,57 @@
         (function() {
             const STORAGE_PREFIX = 'br_panel_mix_';
 
-            // === ФУНКЦИИ ИЗ ПЕРВОГО СКРИПТА ===
-            function getFormData(data) {
-                const formData = new FormData();
-                Object.entries(data).forEach(i => formData.append(i[0], i[1]));
-                return formData;
-            }
-
-            function editThreadData(prefix, pin = false) {
-                const threadTitle = document.querySelector('.p-title-value')?.lastChild?.textContent || '';
-                
-                if (pin == false) {
-                    fetch(`${document.URL}edit`, {
-                        method: 'POST',
-                        body: getFormData({
-                            prefix_id: prefix,
-                            title: threadTitle,
-                            _xfToken: XF.config.csrf,
-                            _xfRequestUri: document.URL.split(XF.config.url.fullBase)[1],
-                            _xfWithData: 1,
-                            _xfResponseType: 'json',
-                        }),
-                    }).then(() => location.reload());
-                }
-                if (pin == true) {
-                    fetch(`${document.URL}edit`, {
-                        method: 'POST',
-                        body: getFormData({
-                            prefix_id: prefix,
-                            title: threadTitle,
-                            discussion_open: 1,
-                            sticky: 1,
-                            _xfToken: XF.config.csrf,
-                            _xfRequestUri: document.URL.split(XF.config.url.fullBase)[1],
-                            _xfWithData: 1,
-                            _xfResponseType: 'json',
-                        }),
-                    }).then(() => location.reload());
-                }
-            }
-
-            function moveThread(prefix, targetNodeId) {
-                const threadTitle = document.querySelector('.p-title-value')?.lastChild?.textContent || '';
-                
-                fetch(`${document.URL}move`, {
-                    method: 'POST',
-                    body: getFormData({
-                        prefix_id: prefix,
-                        title: threadTitle,
-                        target_node_id: targetNodeId,
-                        redirect_type: 'none',
-                        notify_watchers: 1,
-                        starter_alert: 1,
-                        starter_alert_reason: "",
-                        _xfToken: XF.config.csrf,
-                        _xfRequestUri: document.URL.split(XF.config.url.fullBase)[1],
-                        _xfWithData: 1,
-                        _xfResponseType: 'json',
-                    }),
-                }).then(() => location.reload());
-            }
-
-            function moveThreadToSection(targetNodeId, prefixId = 0) {
+            // === ЧИСТАЯ ФУНКЦИЯ ПЕРЕМЕЩЕНИЯ ТЕМЫ (БЕЗ ИЗМЕНЕНИЯ ПРЕФИКСА) ===
+            function moveThreadOnly(targetNodeId) {
                 const threadId = getThreadIdFromUrl();
                 if (!threadId) {
                     alert('Эта функция доступна только при просмотре темы!');
                     return false;
                 }
                 
-                if (prefixId !== 0) {
-                    editThreadData(prefixId, false);
+                const threadTitle = document.querySelector('.p-title-value')?.lastChild?.textContent || '';
+                const csrfToken = document.querySelector('input[name="_xfToken"]')?.value || XF?.config?.csrf;
+                
+                if (!csrfToken) {
+                    alert('Ошибка: CSRF токен не найден');
+                    return false;
                 }
-                moveThread(prefixId, targetNodeId);
+                
+                // Создаем FormData ТОЛЬКО для перемещения (без изменения префикса)
+                const formData = new FormData();
+                formData.append('target_node_id', targetNodeId);
+                formData.append('redirect_type', 'none');
+                formData.append('notify_watchers', '1');
+                formData.append('starter_alert', '1');
+                formData.append('starter_alert_reason', '');
+                formData.append('_xfToken', csrfToken);
+                formData.append('_xfRequestUri', window.location.pathname);
+                formData.append('_xfWithData', '1');
+                formData.append('_xfResponseType', 'json');
+                
+                fetch(`${window.location.origin}${window.location.pathname}/move`, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data._redirectStatus === 'success' || data.redirect) {
+                          window.location.reload();
+                      } else {
+                          alert('Ошибка при переносе темы');
+                      }
+                  })
+                  .catch(error => {
+                      console.error('Ошибка переноса:', error);
+                      alert('Не удалось перенести тему');
+                  });
+                
                 return true;
             }
 
             function getThreadIdFromUrl() {
                 const match = window.location.pathname.match(/\/threads\/[^.]+\.(\d+)/);
                 return match ? match[1] : null;
-            }
-
-            // Префиксы для переноса (из первого скрипта)
-            const TRANSFER_PREFIX1 = 20;   // передача админам 31
-            const TRANSFER_PREFIX2 = 21;   // передача в обжалования 31
-            const TRANSFER_PREFIX3 = 22;   // передача в жб на игроков 31
-            const TRANSFER_PREFIX4 = 23;   // передача в тех раздел 31
-            const TRANSFER_PREFIX5 = 24;   // передача в жб на тех 31
-            const TRANSFER_PREFIX6 = 25;   // передача админам 32
-            const TRANSFER_PREFIX7 = 26;   // передача в обжалования 32
-            const TRANSFER_PREFIX8 = 27;   // передача в жб на игроков 32
-            const TRANSFER_PREFIX9 = 28;   // передача в тех раздел 32
-            const TRANSFER_PREFIX10 = 29;  // передача в жб на тех 32
-            const TRANSFER_PREFIX11 = 30;  // передача админам 33
-            const TRANSFER_PREFIX12 = 31;  // передача в обжалования 33
-            const TRANSFER_PREFIX13 = 32;  // передача в жб на игроков 33
-            const TRANSFER_PREFIX14 = 33;  // передача в тех раздел 33
-            const TRANSFER_PREFIX15 = 34;  // передача в жб на тех 33
-            const TRANSFER_PREFIX16 = 35;  // передача админам 34
-            const TRANSFER_PREFIX17 = 36;  // передача в обжалования 34
-            const TRANSFER_PREFIX18 = 37;  // передача в жб на игроков 34
-            const TRANSFER_PREFIX19 = 38;  // передача в тех раздел 34
-            const TRANSFER_PREFIX20 = 39;  // передача в жб на тех 34
-            const TRANSFER_PREFIX21 = 40;  // передача админам 35
-            const TRANSFER_PREFIX22 = 41;  // передача в обжалования 35
-            const TRANSFER_PREFIX23 = 42;  // передача в жб на игроков 35
-            const TRANSFER_PREFIX24 = 43;  // передача в тех раздел 35
-            const TRANSFER_PREFIX25 = 44;  // передача в жб на тех 35
-
-            function getPrefixForSection(sectionType, serverId) {
-                const prefixMap = {
-                    'tech_complaint': { 
-                        31: TRANSFER_PREFIX5, 32: TRANSFER_PREFIX10, 33: TRANSFER_PREFIX15, 
-                        34: TRANSFER_PREFIX20, 35: TRANSFER_PREFIX25 
-                    },
-                    'tech': { 
-                        31: TRANSFER_PREFIX4, 32: TRANSFER_PREFIX9, 33: TRANSFER_PREFIX14, 
-                        34: TRANSFER_PREFIX19, 35: TRANSFER_PREFIX24 
-                    },
-                    'player_complaint': { 
-                        31: TRANSFER_PREFIX3, 32: TRANSFER_PREFIX8, 33: TRANSFER_PREFIX13, 
-                        34: TRANSFER_PREFIX18, 35: TRANSFER_PREFIX23 
-                    }
-                };
-                // Для серверов выше 35 используем префикс по умолчанию
-                if (prefixMap[sectionType]?.[serverId]) {
-                    return prefixMap[sectionType][serverId];
-                }
-                // Для остальных серверов используем префикс для ЖБТ (по умолчанию)
-                if (sectionType === 'tech_complaint') return TRANSFER_PREFIX5;
-                if (sectionType === 'tech') return TRANSFER_PREFIX4;
-                if (sectionType === 'player_complaint') return TRANSFER_PREFIX3;
-                return 0;
             }
 
             // Генерация названий серверов (1-91)
@@ -248,20 +168,18 @@
                     header.style.cssText = 'text-align:center; color:#fff; font-weight:bold; font-size:12px; padding:5px 0; margin-bottom:5px; background: rgba(255,255,255,0.1); border-radius:6px;';
                     menu.appendChild(header);
 
-                    // Функция создания кнопки переноса
-                    const createMoveButton = (nodeId, serverId, label, color, sectionType) => {
+                    // Функция создания кнопки переноса (чистый перенос)
+                    const createMoveButton = (nodeId, serverId, label, color) => {
                         const a = document.createElement('a');
                         a.className = 'fnp-link';
                         a.href = '#';
                         a.textContent = `${label} ${serverId}`;
                         a.style.borderBottom = `2px solid ${color}`;
                         
-                        const prefixId = getPrefixForSection(sectionType, serverId);
-                        
                         a.addEventListener('click', (e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            moveThreadToSection(nodeId, prefixId);
+                            moveThreadOnly(nodeId);
                         });
                         
                         return a;
@@ -272,7 +190,7 @@
                     techComplaintGroup.className = 'fnp-grid';
                     selectedIds.forEach(id => {
                         if (techComplaintNodeIds[id]) {
-                            const btn = createMoveButton(techComplaintNodeIds[id], id, 'ЖБТ', techComplaintColor, 'tech_complaint');
+                            const btn = createMoveButton(techComplaintNodeIds[id], id, 'ЖБТ', techComplaintColor);
                             techComplaintGroup.appendChild(btn);
                         }
                     });
@@ -285,7 +203,7 @@
                     techGroup.className = 'fnp-grid';
                     selectedIds.forEach(id => {
                         if (techNodeIds[id]) {
-                            const btn = createMoveButton(techNodeIds[id], id, 'ТР', techColor, 'tech');
+                            const btn = createMoveButton(techNodeIds[id], id, 'ТР', techColor);
                             techGroup.appendChild(btn);
                         }
                     });
@@ -298,7 +216,7 @@
                     playerComplaintGroup.className = 'fnp-grid';
                     selectedIds.forEach(id => {
                         if (playerComplaintNodeIds[id]) {
-                            const btn = createMoveButton(playerComplaintNodeIds[id], id, 'ЖБИ', playerComplaintColor, 'player_complaint');
+                            const btn = createMoveButton(playerComplaintNodeIds[id], id, 'ЖБИ', playerComplaintColor);
                             playerComplaintGroup.appendChild(btn);
                         }
                     });
