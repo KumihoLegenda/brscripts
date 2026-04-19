@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Snow theme for forum
 // @namespace    https://forum.blackrussia.online
-// @version      1893248239.00001
+// @version      1.3
 // @description  Snow forum
 // @author       kumiho
 // @match        *://forum.blackrussia.online/*
@@ -10,8 +10,6 @@
 // @run-at       document-start
 // @license      MIT
 // ==/UserScript==
-
-
 
 (function() {
     'use strict';
@@ -172,7 +170,19 @@
             font-size: 13px;
             z-index: 9999;
             box-shadow: 0 0 15px rgba(52, 152, 219, 0.3);
-            pointer-events: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            pointer-events: auto;
+        }
+        #brTimer:hover {
+            background: rgba(52, 152, 219, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.5);
+        }
+        #brTimer.snow-disabled {
+            opacity: 0.7;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
         }
         #snowCanvas {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -247,7 +257,7 @@
             width: 100%;
             height: 400px;
             margin-top: 50px;
-            margin-bottom: -50px; /* Уходит немного под экран */
+            margin-bottom: -50px;
             background: linear-gradient(to top, rgba(5,8,12,1) 10%, rgba(5,8,12,0) 100%);
             display: flex;
             justify-content: center;
@@ -266,7 +276,6 @@
             z-index: 10;
         }
 
-        /* Ствол */
         .trunk {
             position: absolute;
             bottom: 20px;
@@ -280,7 +289,6 @@
             z-index: 1;
         }
 
-        /* Хвоя (Слои) */
         .layer {
             position: absolute;
             left: 50%;
@@ -296,14 +304,12 @@
         .layer-3 { bottom: 180px; width: 140px; height: 90px; z-index: 4; }
         .layer-4 { bottom: 240px; width: 100px; height: 70px; z-index: 5; }
 
-        /* Тень на ветках */
         .layer::before {
             content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             border-radius: inherit;
             background: radial-gradient(circle at 50% 100%, rgba(0,0,0,0.6) 0%, transparent 60%);
         }
 
-        /* 3D Звезда */
         .star-3d {
             position: absolute;
             top: 30px;
@@ -333,7 +339,6 @@
             animation: corePulse 1.5s infinite alternate;
         }
 
-        /* Игрушки (Шары) */
         .ornament {
             position: absolute;
             width: 12px;
@@ -347,7 +352,6 @@
         .blue { background: radial-gradient(circle at 30% 30%, #74b9ff, #0984e3); box-shadow: 0 0 10px rgba(9, 132, 227, 0.6); }
         .gold { background: radial-gradient(circle at 30% 30%, #ffeaa7, #fdcb6e); box-shadow: 0 0 10px rgba(253, 203, 110, 0.6); }
 
-        /* Позиции игрушек */
         .o1 { bottom: 80px; left: 40%; animation-delay: 0s; }
         .o2 { bottom: 90px; left: 70%; animation-delay: 0.5s; }
         .o3 { bottom: 140px; left: 35%; animation-delay: 1s; }
@@ -356,7 +360,6 @@
         .o6 { bottom: 210px; left: 55%; animation-delay: 0.7s; }
         .o7 { bottom: 250px; left: 50%; width: 10px; height: 10px; animation-delay: 1.2s; }
 
-        /* Снег под елкой */
         .snow-base {
             position: absolute;
             bottom: -20px;
@@ -370,7 +373,6 @@
             opacity: 0.7;
         }
 
-        /* Неоновое свечение сзади */
         .aurora-glow {
             position: absolute;
             bottom: 0;
@@ -383,7 +385,6 @@
             pointer-events: none;
         }
 
-        /* Анимации */
         @keyframes starSpin { 100% { transform: rotateY(360deg); } }
         @keyframes starFloat { 0%, 100% { top: 30px; } 50% { top: 25px; } }
         @keyframes corePulse { 0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.8); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); } }
@@ -401,6 +402,7 @@
     style.textContent = css;
     (document.head || document.documentElement).appendChild(style);
 
+    const STORAGE_KEY = 'forum_snow_enabled';
     const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent) || window.innerWidth < 768;
     const SNOW_COUNT = isMobile ? 35 : 85;
 
@@ -410,33 +412,61 @@
             this.canvas.id = 'snowCanvas';
             this.ctx = this.canvas.getContext('2d');
             this.flakes = [];
+            this.animationFrame = null;
+            this.isRunning = false;
         }
+        
         init() {
             document.body.appendChild(this.canvas);
             this.resize();
             window.addEventListener('resize', () => this.resize());
             this.createFlakes();
+            this.start();
+        }
+        
+        start() {
+            if (this.isRunning) return;
+            this.isRunning = true;
             this.animate();
         }
-        resize() {
-            this.canvas.width = window.innerWidth;
-            this.canvas.height = window.innerHeight;
+        
+        stop() {
+            if (this.animationFrame) {
+                cancelAnimationFrame(this.animationFrame);
+                this.animationFrame = null;
+            }
+            if (this.ctx && this.canvas) {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+            this.isRunning = false;
         }
+        
+        resize() {
+            if (this.canvas) {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+        }
+        
         createFlakes() {
             this.flakes = [];
             for (let i = 0; i < SNOW_COUNT; i++) {
                 this.flakes.push({
-                    x: Math.random() * this.canvas.width,
-                    y: Math.random() * this.canvas.height,
+                    x: Math.random() * (this.canvas?.width || window.innerWidth),
+                    y: Math.random() * (this.canvas?.height || window.innerHeight),
                     s: Math.random() * 2 + 1,
                     sp: Math.random() * 1 + 0.5,
                     op: Math.random() * 0.5 + 0.3
                 });
             }
         }
+        
         animate() {
+            if (!this.isRunning || !this.ctx || !this.canvas) return;
+            
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.ctx.fillStyle = '#FFF';
+            
             this.flakes.forEach(f => {
                 f.y += f.sp;
                 if (f.y > this.canvas.height) {
@@ -448,14 +478,64 @@
                 this.ctx.arc(f.x, f.y, f.s, 0, Math.PI * 2);
                 this.ctx.fill();
             });
-            requestAnimationFrame(() => this.animate());
+            
+            this.animationFrame = requestAnimationFrame(() => this.animate());
+        }
+    }
+
+    let snowSystem = null;
+    let timerElement = null;
+
+    function updateTimerStyle(isSnowEnabled) {
+        if (timerElement) {
+            if (isSnowEnabled) {
+                timerElement.classList.remove('snow-disabled');
+                timerElement.style.borderColor = '#3498db';
+                timerElement.style.boxShadow = '0 0 15px rgba(52, 152, 219, 0.3)';
+            } else {
+                timerElement.classList.add('snow-disabled');
+                timerElement.style.borderColor = '#ff6b6b';
+                timerElement.style.boxShadow = '0 0 15px rgba(255, 107, 107, 0.3)';
+            }
+        }
+    }
+
+    function enableSnow() {
+        if (snowSystem && !snowSystem.isRunning) {
+            snowSystem.start();
+        }
+        updateTimerStyle(true);
+        localStorage.setItem(STORAGE_KEY, 'true');
+    }
+
+    function disableSnow() {
+        if (snowSystem && snowSystem.isRunning) {
+            snowSystem.stop();
+        }
+        updateTimerStyle(false);
+        localStorage.setItem(STORAGE_KEY, 'false');
+    }
+
+    function toggleSnow() {
+        const isEnabled = localStorage.getItem(STORAGE_KEY) !== 'false';
+        if (isEnabled) {
+            disableSnow();
+        } else {
+            enableSnow();
         }
     }
 
     function startTimer() {
-        const t = document.createElement('div');
-        t.id = 'brTimer';
-        document.body.appendChild(t);
+        timerElement = document.createElement('div');
+        timerElement.id = 'brTimer';
+        document.body.appendChild(timerElement);
+        
+        // Добавляем обработчик клика
+        timerElement.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleSnow();
+        });
 
         function update() {
             const now = new Date();
@@ -463,14 +543,14 @@
             const diff = nextYear - now;
 
             if (diff < 0) {
-                t.innerHTML = '🎄 ' + (now.getFullYear() + 1) + '!';
+                timerElement.innerHTML = '🎄 ' + (now.getFullYear() + 1) + '!';
                 return;
             }
 
             const d = Math.floor(diff / 86400000);
             const h = Math.floor((diff / 3600000) % 24);
             const m = Math.floor((diff / 60000) % 60);
-            t.innerHTML = '❄️ ' + d + 'д ' + h + 'ч ' + m + 'м';
+            timerElement.innerHTML = '❄️ ' + d + 'д ' + h + 'ч ' + m + 'м';
         }
 
         update();
@@ -493,8 +573,6 @@
                 <div class="layer layer-1"></div>
                 <div class="trunk"></div>
                 <div class="snow-base"></div>
-
-                <!-- ORNAMENTS -->
                 <div class="ornament red o1"></div>
                 <div class="ornament gold o2"></div>
                 <div class="ornament blue o3"></div>
@@ -508,9 +586,26 @@
     }
 
     function init() {
-        new SnowSystem().init();
+        // Создаем систему снега
+        snowSystem = new SnowSystem();
+        snowSystem.init();
+        
+        // Запускаем таймер
         startTimer();
+        
+        // Добавляем елку
         addChristmasTree();
+        
+        // Проверяем сохраненное состояние
+        const savedState = localStorage.getItem(STORAGE_KEY);
+        
+        if (savedState === 'false') {
+            // Снег должен быть выключен
+            disableSnow();
+        } else {
+            // Снег включен (первый запуск или было true)
+            enableSnow();
+        }
     }
 
     if (document.readyState === 'loading') {
