@@ -1,10 +1,10 @@
-
 (function() {
     'use strict';
 
     const CONFIG = {
         storageKey: 'blacklog_winter_v4',
         snowCount: 70,
+        snowEnabled: true, // по умолчанию включен
     };
 
     const winterStyles = `
@@ -173,6 +173,7 @@
             border: 1px solid transparent;
             border-radius: 5px;
             transition: all 0.3s ease;
+            font-size: 1.2rem;
         }
         #winter-toggle-btn:hover {
             background: rgba(255,255,0.1);
@@ -212,8 +213,10 @@
     }
 
     function resizeCanvas() {
-        snowCanvas.width = window.innerWidth;
-        snowCanvas.height = window.innerHeight;
+        if (snowCanvas) {
+            snowCanvas.width = window.innerWidth;
+            snowCanvas.height = window.innerHeight;
+        }
     }
 
     function createFlake() {
@@ -228,6 +231,7 @@
     }
 
     function animateSnow() {
+        if (!ctx || !snowCanvas) return;
         ctx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
         snowflakes.forEach(flake => {
             ctx.beginPath();
@@ -249,33 +253,44 @@
     }
 
     function destroySnow() {
-        if (animationFrame) cancelAnimationFrame(animationFrame);
-        if (snowCanvas) snowCanvas.remove();
+        if (animationFrame) {
+            cancelAnimationFrame(animationFrame);
+            animationFrame = null;
+        }
+        if (snowCanvas) {
+            snowCanvas.remove();
+            snowCanvas = null;
+            ctx = null;
+        }
         window.removeEventListener('resize', resizeCanvas);
     }
 
     function enableWinter() {
+        // Всегда применяем стили при включении
         if (!document.getElementById('winter-theme-styles')) {
             document.head.appendChild(styleElement);
         }
-        initSnow();
+        if (!snowCanvas) {
+            initSnow();
+        }
         updateBtnState(true);
+        CONFIG.snowEnabled = true;
         localStorage.setItem(CONFIG.storageKey, 'true');
     }
 
     function disableWinter() {
-        if (document.getElementById('winter-theme-styles')) {
-            styleElement.remove();
-        }
         destroySnow();
         updateBtnState(false);
+        CONFIG.snowEnabled = false;
         localStorage.setItem(CONFIG.storageKey, 'false');
     }
 
     function toggleWinter() {
-        const isEnabled = localStorage.getItem(CONFIG.storageKey) === 'true';
-        if (isEnabled) disableWinter();
-        else enableWinter();
+        if (snowCanvas && animationFrame) {
+            disableWinter();
+        } else {
+            enableWinter();
+        }
     }
 
     function updateBtnState(isActive) {
@@ -283,10 +298,10 @@
         if (btn) {
             if (isActive) {
                 btn.classList.add('winter-mode-active');
-                btn.innerHTML = '<i class="bi bi-snow2"></i>';
+                btn.innerHTML = '❄';
             } else {
                 btn.classList.remove('winter-mode-active');
-                btn.innerHTML = '<i class="bi bi-snow2"></i>';
+                btn.innerHTML = '❄';
             }
         }
     }
@@ -296,10 +311,15 @@
         if (!navContainer) { setTimeout(injectUI, 500); return; }
         if (document.getElementById('winter-toggle-btn')) return;
 
+        // ВСЕГДА применяем стили при загрузке
+        if (!document.getElementById('winter-theme-styles')) {
+            document.head.appendChild(styleElement);
+        }
+
         const btn = document.createElement('a');
         btn.id = 'winter-toggle-btn';
         btn.href = '#';
-        btn.innerHTML = '<i class="bi bi-snow2"></i>';
+        btn.innerHTML = '❄';
         btn.addEventListener('click', (e) => { e.preventDefault(); toggleWinter(); });
 
         const toggler = navContainer.querySelector('.navbar-toggler');
@@ -313,9 +333,23 @@
             navContainer.appendChild(btn);
         }
 
-        if (localStorage.getItem(CONFIG.storageKey) === 'true') enableWinter();
+        // Проверяем сохраненное состояние
+        const savedState = localStorage.getItem(CONFIG.storageKey);
+        
+        if (savedState === 'false') {
+            // Снег должен быть выключен, но стили темы уже применены
+            CONFIG.snowEnabled = false;
+            updateBtnState(false);
+            // Убеждаемся, что снег не запущен
+            destroySnow();
+        } else {
+            // Включаем снег (первый запуск или было true)
+            CONFIG.snowEnabled = true;
+            enableWinter();
+        }
     }
 
+    // Запускаем скрипт
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', injectUI);
     } else {
