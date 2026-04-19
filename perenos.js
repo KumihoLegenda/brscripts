@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BR Panel (Thread Mover)
 // @namespace    http://tampermonkey.net/
-// @version      3.3
+// @version      3.4
 // @description  Floating menu with thread mover (All servers 1-91) - Fixed transfer without prefix/sticky/close changes
 // @author       Black Russia
 // @match        https://forum.blackrussia.online/*
@@ -19,7 +19,7 @@
 
     try {
         (function() {
-            const STORAGE_PREFIX = 'br_mover_'; // Уникальный префикс для localStorage
+            const STORAGE_PREFIX = 'br_mover_';
 
             // === ФУНКЦИИ ПЕРЕНОСА (ТОЛЬКО ПЕРЕМЕЩЕНИЕ, БЕЗ ИЗМЕНЕНИЯ ПРЕФИКСА/СТАТУСА) ===
             function moveThreadOnly(targetNodeId) {
@@ -29,7 +29,6 @@
                     return false;
                 }
                 
-                // Получаем текущий префикс темы (если есть)
                 let currentPrefixId = 0;
                 const prefixElement = document.querySelector('.p-title-value .label');
                 if (prefixElement) {
@@ -40,7 +39,6 @@
                     }
                 }
                 
-                // Отправляем запрос на перемещение
                 fetch(`${document.URL}move`, {
                     method: 'POST',
                     body: getFormData({
@@ -71,7 +69,6 @@
                 return match ? match[1] : null;
             }
 
-            // Генерация названий серверов (1-91)
             const serverNames = {
                 1: 'RED', 2: 'GREEN', 3: 'BLUE', 4: 'YELLOW', 5: 'ORANGE',
                 6: 'PURPLE', 7: 'LIME', 8: 'PINK', 9: 'CHERRY', 10: 'BLACK',
@@ -94,7 +91,6 @@
                 91: 'ASTANA'
             };
 
-            // Node IDs для разделов
             const techNodeIds = {
                 1: 226, 2: 227, 3: 228, 4: 229, 5: 245, 6: 325, 7: 365, 8: 396, 9: 408, 10: 488,
                 11: 493, 12: 554, 13: 613, 14: 653, 15: 660, 16: 701, 17: 757, 18: 815, 19: 857, 20: 925,
@@ -144,7 +140,7 @@
             }
 
             function renderMenu() {
-                const menu = document.querySelector('.fnm-mover-menu'); // Уникальный класс
+                const menu = document.querySelector('.fnm-mover-menu');
                 if (!menu) return;
 
                 menu.innerHTML = '';
@@ -267,32 +263,131 @@
                 setTimeout(() => overlay.classList.add('open'), 10);
             }
 
-            // Уникальные стили с префиксом fnm-mover-
             const style = document.createElement('style');
             style.textContent = `
                 :root { --fnm-mover-btn: 48px; }
                 .fnm-mover-wrapper { position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: 2147483646; }
-                .fnm-mover-toggle { position: fixed; width: var(--fnm-mover-btn); height: var(--fnm-mover-btn); background: #151515; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; box-shadow: 0 6px 25px rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; color: #fff; cursor: grab; touch-action: none; user-select: none; transition: transform 0.2s; }
-                .fnm-mover-toggle:active { transform: scale(0.9); cursor: grabbing; }
+                .fnm-mover-toggle { 
+                    position: fixed; 
+                    width: var(--fnm-mover-btn); 
+                    height: var(--fnm-mover-btn); 
+                    background: #151515; 
+                    border: 1px solid rgba(255,255,255,0.2); 
+                    border-radius: 50%; 
+                    box-shadow: 0 6px 25px rgba(0,0,0,0.7); 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    color: #fff; 
+                    cursor: grab; 
+                    touch-action: none; 
+                    user-select: none; 
+                    transition: transform 0.2s, left 0.1s, top 0.1s;
+                }
+                .fnm-mover-toggle:active { transform: scale(0.95); cursor: grabbing; }
                 .fnm-mover-toggle.active { background: #dc2626; border-color: #ef4444; }
-                .fnm-mover-toggle.active svg { transform: rotate(45deg); }
-                .fnm-mover-menu { position: fixed; background: rgba(20,20,20,0.95); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 10px; display: flex; flex-direction: column; gap: 5px; width: 300px; max-height: 70vh; overflow-y: auto; opacity: 0; visibility: hidden; transform: scale(0.9); transition: opacity 0.2s, transform 0.2s, visibility 0.2s; pointer-events: none; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+                .fnm-mover-toggle svg { transition: transform 0.2s; }
+                .fnm-mover-toggle.active svg { transform: rotate(180deg); }
+                .fnm-mover-menu { 
+                    position: fixed; 
+                    background: rgba(20,20,20,0.95); 
+                    backdrop-filter: blur(16px); 
+                    border: 1px solid rgba(255,255,255,0.12); 
+                    border-radius: 16px; 
+                    padding: 10px; 
+                    display: flex; 
+                    flex-direction: column; 
+                    gap: 5px; 
+                    width: 300px; 
+                    max-height: 70vh; 
+                    overflow-y: auto; 
+                    opacity: 0; 
+                    visibility: hidden; 
+                    transform: scale(0.9); 
+                    transition: opacity 0.2s, transform 0.2s, visibility 0.2s; 
+                    pointer-events: none; 
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
+                }
                 .fnm-mover-menu.show { opacity: 1; visibility: visible; transform: scale(1); pointer-events: auto; }
                 .fnm-mover-menu::-webkit-scrollbar { width: 4px; }
                 .fnm-mover-menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
                 .fnm-mover-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
-                .fnm-mover-link { display: flex; align-items: center; justify-content: center; padding: 6px 2px; font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; color: #e5e5e5; text-decoration: none; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid transparent; transition: background 0.1s; white-space: nowrap; cursor: pointer; }
+                .fnm-mover-link { 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    padding: 6px 2px; 
+                    font-family: system-ui, -apple-system, sans-serif; 
+                    font-size: 10px; 
+                    font-weight: 700; 
+                    color: #e5e5e5; 
+                    text-decoration: none; 
+                    background: rgba(255,255,255,0.05); 
+                    border-radius: 6px; 
+                    border: 1px solid transparent; 
+                    transition: background 0.1s; 
+                    white-space: nowrap; 
+                    cursor: pointer; 
+                }
                 .fnm-mover-link:active { background: rgba(255,255,255,0.2); transform: translateY(1px); }
                 .fnm-mover-divider { height: 1px; background: rgba(255,255,255,0.15); margin: 4px 0; width: 100%; }
-                .fnm-mover-settings-btn { width: 100%; padding: 8px; margin-top: 5px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #aaa; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+                .fnm-mover-settings-btn { 
+                    width: 100%; 
+                    padding: 8px; 
+                    margin-top: 5px; 
+                    background: rgba(255,255,255,0.05); 
+                    border: 1px solid rgba(255,255,255,0.1); 
+                    border-radius: 8px; 
+                    color: #aaa; 
+                    cursor: pointer; 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center; 
+                }
                 .fnm-mover-settings-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
-                .fnm-mover-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2147483648; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.3s; }
+                .fnm-mover-modal-overlay { 
+                    position: fixed; 
+                    top: 0; 
+                    left: 0; 
+                    width: 100%; 
+                    height: 100%; 
+                    background: rgba(0,0,0,0.7); 
+                    z-index: 2147483648; 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    opacity: 0; 
+                    visibility: hidden; 
+                    transition: 0.3s; 
+                }
                 .fnm-mover-modal-overlay.open { opacity: 1; visibility: visible; }
-                .fnm-mover-modal { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; width: 90%; max-width: 600px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+                .fnm-mover-modal { 
+                    background: #1a1a1a; 
+                    border: 1px solid #333; 
+                    border-radius: 12px; 
+                    width: 90%; 
+                    max-width: 600px; 
+                    max-height: 85vh; 
+                    display: flex; 
+                    flex-direction: column; 
+                    box-shadow: 0 20px 50px rgba(0,0,0,0.8); 
+                }
                 .fnm-mover-modal-header { padding: 15px; border-bottom: 1px solid #333; color: #fff; font-weight: bold; }
                 .fnm-mover-modal-body { padding: 15px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
                 .fnm-mover-modal-footer { padding: 15px; border-top: 1px solid #333; display: flex; justify-content: flex-end; gap: 10px; }
-                .fnm-mover-checkbox-label { display: flex; align-items: center; gap: 8px; background: #222; padding: 6px; border-radius: 6px; cursor: pointer; user-select: none; color: #ccc; font-size: 11px; border: 1px solid #333; }
+                .fnm-mover-checkbox-label { 
+                    display: flex; 
+                    align-items: center; 
+                    gap: 8px; 
+                    background: #222; 
+                    padding: 6px; 
+                    border-radius: 6px; 
+                    cursor: pointer; 
+                    user-select: none; 
+                    color: #ccc; 
+                    font-size: 11px; 
+                    border: 1px solid #333; 
+                }
                 .fnm-mover-checkbox-label:hover { background: #2a2a2a; }
                 .fnm-mover-checkbox-label input { accent-color: #dc2626; }
                 .fnm-mover-checkbox-label.checked { border-color: #dc2626; background: rgba(220,38,38,0.1); color: #fff; }
@@ -304,12 +399,12 @@
             `;
             document.head.appendChild(style);
 
-            // Создание плавающей кнопки с уникальными классами
             const wrapper = document.createElement('div');
             wrapper.className = 'fnm-mover-wrapper';
             const toggleBtn = document.createElement('div');
             toggleBtn.className = 'fnm-mover-toggle';
-            toggleBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
+            // Новый SVG с двумя стрелками в разные стороны
+            toggleBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`;
             const menu = document.createElement('div');
             menu.className = 'fnm-mover-menu';
             wrapper.appendChild(menu);
@@ -317,14 +412,20 @@
             document.body.appendChild(wrapper);
 
             let savedPos = localStorage.getItem(STORAGE_PREFIX + 'pos');
-            let pos = savedPos ? JSON.parse(savedPos) : { x: window.innerWidth - 120, y: window.innerHeight * 0.6 };
+            let pos = savedPos ? JSON.parse(savedPos) : { x: window.innerWidth - 70, y: window.innerHeight * 0.6 };
             let isDragging = false;
+            let dragStartTime = 0;
+            let dragStartX = 0;
+            let dragStartY = 0;
+            let hasMoved = false;
 
             const updatePos = (x, y) => {
-                pos.x = Math.min(Math.max(0, x), window.innerWidth - 50);
-                pos.y = Math.min(Math.max(0, y), window.innerHeight - 50);
+                // Убираем ограничение справа - можно придвинуть вплотную к краю
+                pos.x = Math.min(Math.max(0, x), window.innerWidth - 48);
+                pos.y = Math.min(Math.max(0, y), window.innerHeight - 48);
                 toggleBtn.style.left = pos.x + 'px';
                 toggleBtn.style.top = pos.y + 'px';
+
                 const rect = toggleBtn.getBoundingClientRect();
                 menu.style.left = (rect.right + 310 > window.innerWidth ? rect.left - 310 : rect.right + 10) + 'px';
                 menu.style.top = (rect.bottom + 300 > window.innerHeight ? rect.top - 300 : rect.top) + 'px';
@@ -332,12 +433,22 @@
 
             toggleBtn.addEventListener('pointerdown', (e) => {
                 isDragging = true;
+                hasMoved = false;
+                dragStartTime = Date.now();
+                dragStartX = e.clientX;
+                dragStartY = e.clientY;
                 toggleBtn.setPointerCapture(e.pointerId);
                 toggleBtn.style.transition = 'none';
+                toggleBtn.style.cursor = 'grabbing';
             });
 
             toggleBtn.addEventListener('pointermove', (e) => {
                 if (!isDragging) return;
+                const dx = Math.abs(e.clientX - dragStartX);
+                const dy = Math.abs(e.clientY - dragStartY);
+                if (dx > 5 || dy > 5) {
+                    hasMoved = true;
+                }
                 updatePos(e.clientX - 24, e.clientY - 24);
             });
 
@@ -345,10 +456,16 @@
                 isDragging = false;
                 toggleBtn.releasePointerCapture(e.pointerId);
                 toggleBtn.style.transition = 'all 0.3s';
-                pos.x = pos.x < window.innerWidth / 2 ? 10 : window.innerWidth - 110;
-                updatePos(pos.x, pos.y);
+                toggleBtn.style.cursor = 'grab';
+                
+                // Сохраняем позицию без принудительного прижимания к краю
                 localStorage.setItem(STORAGE_PREFIX + 'pos', JSON.stringify(pos));
-                if (Math.abs(e.clientX - 24 - pos.x) < 10) {
+                
+                // Проверяем, было ли движение или это просто клик
+                const dragDuration = Date.now() - dragStartTime;
+                const isClick = !hasMoved && dragDuration < 200;
+                
+                if (isClick) {
                     const show = menu.classList.toggle('show');
                     toggleBtn.classList.toggle('active', show);
                     localStorage.setItem(STORAGE_PREFIX + 'state', show);
@@ -356,6 +473,7 @@
                 }
             });
 
+            // Инициализация позиции
             updatePos(pos.x, pos.y);
             renderMenu();
             if (localStorage.getItem(STORAGE_PREFIX + 'state') === 'true') {
