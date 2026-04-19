@@ -16,7 +16,7 @@
     },
     {
       "id": "perenos",
-      "name": "Форум | Переносчик тем",
+      "name": "Форум | Переносчик тем (НОВОЕ)",
       "matches": ["https://forum.blackrussia.online/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/perenos.js",
       "enabledDefault": true
