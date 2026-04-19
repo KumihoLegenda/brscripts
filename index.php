@@ -68,12 +68,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Основные стили */
         body {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
             opacity: 0;
             transition: opacity 0.5s ease;
         }
@@ -328,30 +323,6 @@
             50% { opacity: 0.5; }
         }
 
-        /* Защита от скриншотов в Telegram */
-        .telegram-screenshot-protection {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: black;
-            z-index: 9999;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            .telegram-screenshot-protection {
-                background-color: black;
-            }
-        }
-
-        @media (prefers-color-scheme: light) {
-            .telegram-screenshot-protection {
-                background-color: white;
-            }
-        }
-
         /* Стили для критического состояния */
         .countdown-critical {
             border-left-color: #ff4444;
@@ -364,267 +335,30 @@
             100% { box-shadow: 0 5px 15px rgba(255, 68, 68, 0.3); }
         }
 
-        /* ============================== */
-        /* МОБИЛЬНЫЕ СТИЛИ - ОПТИМИЗАЦИЯ */
-        /* ============================== */
-        
+        /* Мобильные стили */
         @media (max-width: 768px) {
-            /* Основные элементы контента */
-            .main-content {
-                padding: 20px 15px;
-            }
-            
-            /* Заголовок */
-            h1 {
-                font-size: 22px;
-                margin-bottom: 15px;
-                line-height: 1.3;
-                padding: 0 10px;
-            }
-            
-            h1::after {
-                width: 60px;
-                bottom: -8px;
-                height: 2px;
-            }
-            
-            /* Приветственный текст */
-            .welcome-text {
-                font-size: 14px;
-                line-height: 1.5;
-                margin-bottom: 25px;
-                padding: 0 10px;
-                opacity: 0.9;
-            }
-            
-            /* Контейнер карточек */
-            .features {
-                gap: 15px;
-                margin-top: 30px;
-            }
-            
-            /* Карточки функций */
-            .feature-card {
-                width: calc(50% - 10px);
-                min-width: 160px;
-                padding: 18px 12px;
-                border-radius: 10px;
-            }
-            
-            .feature-icon {
-                font-size: 28px;
-                margin-bottom: 12px;
-            }
-            
-            .feature-title {
-                font-size: 16px;
-                margin-bottom: 8px;
-                font-weight: 600;
-            }
-            
-            /* Информационная секция */
-            .info-section {
-                margin-top: 30px;
-                padding: 15px;
-                font-size: 14px;
-                line-height: 1.5;
-            }
-            
-            .info-section p {
-                margin-bottom: 12px;
-                opacity: 0.85;
-            }
-            
-            /* Таймер обратного отсчета */
-            .countdown-timer {
-                padding: 12px 18px;
-                margin: 15px auto;
-                border-radius: 10px;
-            }
-            
-            .countdown-title {
-                font-size: 16px;
-                margin-bottom: 8px;
-            }
-            
-            .countdown-time {
-                font-size: 18px;
-            }
-            
-            .additional-days-info {
-                font-size: 12px;
-                margin-top: 6px;
-            }
-            
-            /* Футер */
-            footer {
-                padding: 15px;
-                margin-top: 30px;
-                font-size: 12px;
-                opacity: 0.7;
-            }
-            
-            /* Прелоадер для мобильных */
-            .preloader-text {
-                font-size: 14px;
-                padding: 0 20px;
-            }
-            
-            .preloader-subtext {
-                font-size: 11px;
-                padding: 0 20px;
-            }
+            .main-content { padding: 20px 15px; }
+            h1 { font-size: 22px; }
+            .feature-card { width: calc(50% - 10px); min-width: 160px; padding: 18px 12px; }
+            .feature-icon { font-size: 28px; }
+            .feature-title { font-size: 16px; }
+            .countdown-time { font-size: 18px; }
         }
         
         @media (max-width: 480px) {
-            /* Дополнительная оптимизация для маленьких экранов */
-            .main-content {
-                padding: 15px 10px;
-            }
-            
-            h1 {
-                font-size: 20px;
-                margin-bottom: 12px;
-            }
-            
-            .welcome-text {
-                font-size: 13px;
-                line-height: 1.4;
-                margin-bottom: 20px;
-            }
-            
-            .features {
-                flex-direction: column;
-                align-items: center;
-                gap: 12px;
-            }
-            
-            .feature-card {
-                width: 100%;
-                max-width: 280px;
-                padding: 16px 15px;
-            }
-            
-            .feature-icon {
-                font-size: 32px;
-            }
-            
-            .feature-title {
-                font-size: 17px;
-            }
-            
-            .info-section {
-                padding: 12px;
-                font-size: 13px;
-                line-height: 1.45;
-            }
-            
-            .countdown-timer {
-                padding: 10px 15px;
-            }
-            
-            .countdown-title {
-                font-size: 15px;
-            }
-            
-            .countdown-time {
-                font-size: 16px;
-                font-family: 'Rubik', sans-serif;
-            }
-            
-            /* Уменьшаем отступы для очень маленьких экранов */
-            .container {
-                padding: 0 8px;
-            }
-            
-            /* Оптимизация хедера для мобильных */
-            header {
-                padding: 10px 12px;
-            }
-            
-            .logo {
-                font-size: 16px;
-            }
-            
-            .user-profile {
-                font-size: 14px;
-            }
-            
-            /* Стили для кнопки переключения темы на мобильных */
-            .theme-toggle {
-                padding: 0 !important;
-                width: 40px !important;
-                height: 40px !important;
-                border-radius: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                min-width: 40px !important;
-            }
-            
-            .theme-toggle #themeText {
-                display: none !important;
-            }
-            
-            .theme-toggle #themeIcon {
-                margin: 0 !important;
-                font-size: 20px;
-                display: block !important;
-            }
-            
-            /* Сдвигаем блок пользователя вправо */
-            .user-info {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-            
-            .user-profile {
-                margin-right: 4px;
-            }
-        }
-        
-        /* Оптимизация для средних планшетов */
-        @media (min-width: 481px) and (max-width: 768px) {
-            .feature-card {
-                width: calc(50% - 8px);
-                padding: 20px 15px;
-            }
-            
-            .feature-title {
-                font-size: 16px;
-            }
-            
-            .info-section {
-                font-size: 14.5px;
-                line-height: 1.55;
-            }
-        }
-        
-        /* Плавное масштабирование шрифтов */
-        @media (max-width: 768px) {
-            html {
-                font-size: 14px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            html {
-                font-size: 13px;
-            }
+            .features { flex-direction: column; align-items: center; }
+            .feature-card { width: 100%; max-width: 280px; }
+            .theme-toggle #themeText { display: none; }
+            .theme-toggle #themeIcon { margin: 0; font-size: 20px; display: block; }
         }
     </style>
 </head>
 <body class="night-theme">
-    <!-- Прелоадер -->
     <div class="preloader" id="preloader">
         <div class="loader"></div>
         <div class="preloader-text">Загрузка данных...</div>
         <div class="preloader-subtext">Пожалуйста, подождите</div>
     </div>
-
-    <!-- Защита от скриншотов для Telegram -->
-    <div class="telegram-screenshot-protection" id="screenshotProtection"></div>
 
     <header>
         <div class="logo">Учебный центр</div>
@@ -642,17 +376,12 @@
     <div class="container">
         <div class="main-content">
             <h1>Добро пожаловать в учебный центр технического отдела</h1>
-            
-            <!-- Пустая строчка для отступа от заголовка -->
             <div class="title-spacing"></div>
-            
-            <!-- Контейнер для таймера обратного отсчета -->
             <div id="countdownContainer" class="countdown-timer" style="display: none;">
                 <div class="countdown-title">До завершения обучения осталось:</div>
                 <div class="countdown-time" id="countdownTimer"></div>
                 <div class="additional-days-info" id="additionalDaysInfo" style="display: none;"></div>
             </div>
-            
             <p class="welcome-text">Здесь мы обучим тебя в формате интерактивных курсов, которые помогут тебе хорошо усвоить информацию.</p>
             
             <div class="features">
@@ -676,13 +405,9 @@
 
             <div class="info-section">
                 <p>Учебный центр – это ваш надежный проводник в процессе адаптации к новой должности. Здесь вы получите все необходимые знания о работе отдела, своих обязанностях и используемых системах.</p>
-
                 <p>Обучение проходит поэтапно: завершив один модуль, вы сразу получаете доступ к следующему. Это позволяет осваивать знания последовательно и эффективно.</p>
-
                 <p>После успешного прохождения курса ваши руководители автоматически получат уведомление о ваших результатах.</p>
-
                 <p>Если в процессе обучения у вас возникнут вопросы или сложности, вы всегда можете обратиться за помощью к куратору или его заместителю.</p>
-
                 <p>Мы создали этот центр, чтобы ваш переход на новую должность был максимально комфортным и продуктивным! 🚀</p>
             </div>
         </div>
@@ -695,21 +420,11 @@
     <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
     <script>
-        AOS.init({
-            duration: 800,
-            easing: 'ease-in-out',
-            once: true
-        });
+        AOS.init({ duration: 800, easing: 'ease-in-out', once: true });
 
-        // Загружаем конфигурацию Firebase из PHP
         const firebaseConfig = <?php
-            // Подключаем файл с конфигурацией Firebase
             require_once 'firebase-config.php';
-            
-            // Получаем конфигурацию из файла
             $config = getFirebaseConfig();
-            
-            // Преобразуем PHP массив в JSON для JavaScript
             echo json_encode($config, JSON_UNESCAPED_SLASHES);
         ?>;
 
@@ -718,26 +433,17 @@
         let currentUserId = null;
         let countdownInterval = null;
 
-        // Функция для хеширования пароля
         function hashPassword(password) {
             const salt = "teach-center-salt-2023";
             return sha256(password + salt);
         }
 
-        // Функция для проверки существования пользователя
         async function checkUserExists(userId) {
             try {
                 const snapshot = await database.ref('users/' + userId).once('value');
-                if (!snapshot.exists()) {
-                    return false;
-                }
-                
+                if (!snapshot.exists()) return false;
                 const userData = snapshot.val();
-                // Проверяем, не удален ли пользователь
-                if (userData.isDeleted) {
-                    return false;
-                }
-                
+                if (userData.isDeleted) return false;
                 return userData;
             } catch (error) {
                 console.error('Ошибка проверки пользователя:', error);
@@ -745,359 +451,139 @@
             }
         }
 
-        // Функция для сохранения активности пользователя
         async function saveUserActivity(userId, pageName) {
             try {
-                const updates = {
-                    lastActivity: {
-                        timestamp: Date.now(),
-                        page: pageName,
-                        pageUrl: window.location.pathname + window.location.search
-                    }
-                };
-                
-                await database.ref('users/' + userId).update(updates);
+                await database.ref('users/' + userId).update({
+                    lastActivity: { timestamp: Date.now(), page: pageName, pageUrl: window.location.pathname }
+                });
             } catch (error) {
                 console.error('Ошибка сохранения активности:', error);
             }
         }
 
-        // Функция для получения названия страницы по URL
         function getPageNameFromUrl() {
             const path = window.location.pathname;
             const pageNames = {
-                'index.php': 'Главная страница',
-                'profile.php': 'Профиль пользователя',
-                'admpanel.php': 'Панель управления',
-                'vazhno.php': 'Важная информация отдела',
+                'index.php': 'Главная страница', 'profile.php': 'Профиль пользователя',
+                'admpanel.php': 'Панель управления', 'vazhno.php': 'Важная информация отдела',
                 'курсылоги.php': 'Курсы для тех. специалистов'
             };
-            
             const fileName = path.split('/').pop();
             return pageNames[fileName] || fileName;
         }
 
-        // Функция для расчета времени жизни аккаунта
         function calculateAccountLifetime(userData) {
-            if (!userData.createdAt) {
-                return {
-                    totalLifetimeMs: 10 * 24 * 60 * 60 * 1000,
-                    baseLifetimeMs: 10 * 24 * 60 * 60 * 1000,
-                    additionalDays: 0,
-                    endDate: new Date(Date.now() + (10 * 24 * 60 * 60 * 1000))
-                };
-            }
-            
             const baseLifetimeDays = 10;
             const baseLifetimeMs = baseLifetimeDays * 24 * 60 * 60 * 1000;
             const additionalDays = userData.additionalDays || 0;
             const additionalLifetimeMs = additionalDays * 24 * 60 * 60 * 1000;
             const totalLifetimeMs = baseLifetimeMs + additionalLifetimeMs;
-            
             const startDate = new Date(userData.createdAt);
             const endDate = new Date(startDate.getTime() + totalLifetimeMs);
-            
-            return {
-                totalLifetimeMs,
-                baseLifetimeMs,
-                additionalDays,
-                endDate,
-                startDate
-            };
+            return { totalLifetimeMs, baseLifetimeMs, additionalDays, endDate, startDate };
         }
 
-        // Функция для проверки статуса аккаунта
         function checkAccountStatus(userData) {
             if (!userData || userData.role !== "Технический специалист") {
-                return {
-                    isExpired: false,
-                    hasAccessToCourses: true
-                };
+                return { isExpired: false, hasAccessToCourses: true };
             }
-            
-            if (!userData.createdAt) {
-                return {
-                    isExpired: false,
-                    hasAccessToCourses: true
-                };
-            }
-            
+            if (!userData.createdAt) return { isExpired: false, hasAccessToCourses: true };
             const baseLifetimeDays = 10;
             const baseLifetimeMs = baseLifetimeDays * 24 * 60 * 60 * 1000;
             const additionalDays = userData.additionalDays || 0;
             const totalLifetimeMs = baseLifetimeMs + (additionalDays * 24 * 60 * 60 * 1000);
-            
             const startDate = new Date(userData.createdAt);
             const endDate = new Date(startDate.getTime() + totalLifetimeMs);
             const now = new Date();
-            
             const isExpired = now > endDate;
-            const hasAccessToCourses = !isExpired;
-            
-            return {
-                isExpired,
-                hasAccessToCourses,
-                endDate
-            };
+            return { isExpired, hasAccessToCourses: !isExpired, endDate };
         }
 
-        // Функция для отображения обратного отсчета
         function startCountdown(userData) {
-            const countdownContainer = document.getElementById('countdownContainer');
-            const countdownTimer = document.getElementById('countdownTimer');
-            const additionalDaysInfo = document.getElementById('additionalDaysInfo');
-            
-            if (!userData || !userData.createdAt) {
-                countdownContainer.style.display = 'none';
-                return;
-            }
-            
-            const accountStatus = checkAccountStatus(userData);
-            
-            if (accountStatus.isExpired) {
-                // Если время истекло
-                countdownTimer.innerHTML = '<span class="countdown-expired">Время обучения истекло!</span>';
-                countdownTimer.classList.add('countdown-expired');
-                countdownContainer.classList.add('countdown-critical');
-                countdownContainer.style.display = 'block';
-                
-                if (userData.additionalDays > 0) {
-                    additionalDaysInfo.innerHTML = `Дополнительных дней: <span>${userData.additionalDays}</span> (использованы)`;
-                    additionalDaysInfo.style.display = 'block';
-                }
-                
-                // Скрываем кнопку курсов
-                const coursesCard = document.getElementById('coursesCard');
-                if (coursesCard) {
-                    coursesCard.style.display = 'none';
-                }
-                
+            const container = document.getElementById('countdownContainer');
+            const timerEl = document.getElementById('countdownTimer');
+            const infoEl = document.getElementById('additionalDaysInfo');
+            if (!userData || !userData.createdAt) { container.style.display = 'none'; return; }
+            const status = checkAccountStatus(userData);
+            if (status.isExpired) {
+                timerEl.innerHTML = '<span class="countdown-expired">Время обучения истекло!</span>';
+                container.style.display = 'block';
+                if (userData.additionalDays > 0) infoEl.innerHTML = `Дополнительных дней: <span>${userData.additionalDays}</span> (использованы)`;
+                infoEl.style.display = 'block';
+                document.getElementById('coursesCard').style.display = 'none';
                 clearInterval(countdownInterval);
                 return;
             }
-            
-            const accountLifetime = calculateAccountLifetime(userData);
-            const endDate = accountLifetime.endDate;
-            
-            function updateCountdown() {
+            const lifetime = calculateAccountLifetime(userData);
+            const endDate = lifetime.endDate;
+            function update() {
                 const now = new Date();
-                const timeLeft = endDate - now;
-                
-                if (timeLeft <= 0) {
-                    countdownTimer.innerHTML = '<span class="countdown-expired">Время истекло!</span>';
-                    countdownTimer.classList.add('countdown-expired');
-                    countdownContainer.classList.add('countdown-critical');
-                    
-                    // Скрываем кнопку курсов
-                    const coursesCard = document.getElementById('coursesCard');
-                    if (coursesCard) {
-                        coursesCard.style.display = 'none';
-                    }
-                    
-                    if (accountLifetime.additionalDays > 0) {
-                        additionalDaysInfo.innerHTML = `Дополнительных дней: <span>${accountLifetime.additionalDays}</span> (использованы)`;
-                        additionalDaysInfo.style.display = 'block';
-                    }
-                    
+                const left = endDate - now;
+                if (left <= 0) {
+                    timerEl.innerHTML = '<span class="countdown-expired">Время истекло!</span>';
+                    container.classList.add('countdown-critical');
+                    document.getElementById('coursesCard').style.display = 'none';
+                    if (lifetime.additionalDays > 0) infoEl.innerHTML = `Дополнительных дней: <span>${lifetime.additionalDays}</span> (использованы)`;
                     clearInterval(countdownInterval);
                     return;
                 }
-                
-                const totalSeconds = Math.floor(timeLeft / 1000);
-                const days = Math.floor(totalSeconds / (3600 * 24));
-                const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
-                const minutes = Math.floor((totalSeconds % 3600) / 60);
-                const seconds = Math.floor(totalSeconds % 60);
-                
-                // Форматирование времени с ведущими нулями
-                const formatTime = (value) => value.toString().padStart(2, '0');
-                
-                countdownTimer.textContent = `${days}д ${formatTime(hours)}ч ${formatTime(minutes)}м ${formatTime(seconds)}с`;
-                
-                // Проверяем, использует ли пользователь дополнительные дни
-                const baseEndDate = new Date(accountLifetime.startDate.getTime() + accountLifetime.baseLifetimeMs);
-                const isUsingAdditionalDays = now > baseEndDate;
-                
-                // Обновляем информацию о дополнительных днях
-                if (accountLifetime.additionalDays > 0) {
-                    if (isUsingAdditionalDays) {
-                        // Рассчитываем использованные дополнительные дни
-                        const additionalMsUsed = now - baseEndDate;
-                        const additionalDaysUsed = Math.floor(additionalMsUsed / (24 * 60 * 60 * 1000));
-                        const remainingAdditionalDays = Math.max(0, accountLifetime.additionalDays - additionalDaysUsed);
-                        
-                        additionalDaysInfo.innerHTML = `Дополнительных дней: <span>${accountLifetime.additionalDays}</span> (осталось: ${remainingAdditionalDays})`;
-                        
-                        // Если осталось мало дополнительных дней, показываем предупреждение
-                        if (remainingAdditionalDays <= 3) {
-                            countdownContainer.classList.add('countdown-critical');
-                        } else {
-                            countdownContainer.classList.remove('countdown-critical');
-                        }
+                const sec = Math.floor(left / 1000);
+                const days = Math.floor(sec / 86400);
+                const hours = Math.floor((sec % 86400) / 3600);
+                const mins = Math.floor((sec % 3600) / 60);
+                const secs = sec % 60;
+                timerEl.textContent = `${days}д ${hours.toString().padStart(2,'0')}ч ${mins.toString().padStart(2,'0')}м ${secs.toString().padStart(2,'0')}с`;
+                if (lifetime.additionalDays > 0) {
+                    const baseEnd = new Date(lifetime.startDate.getTime() + lifetime.baseLifetimeMs);
+                    const usingAdditional = now > baseEnd;
+                    if (usingAdditional) {
+                        const used = Math.floor((now - baseEnd) / (24*3600*1000));
+                        const remaining = Math.max(0, lifetime.additionalDays - used);
+                        infoEl.innerHTML = `Дополнительных дней: <span>${lifetime.additionalDays}</span> (осталось: ${remaining})`;
+                        if (remaining <= 3) container.classList.add('countdown-critical');
                     } else {
-                        additionalDaysInfo.innerHTML = `Дополнительных дней: <span>${accountLifetime.additionalDays}</span> (еще не начаты)`;
-                        countdownContainer.classList.remove('countdown-critical');
+                        infoEl.innerHTML = `Дополнительных дней: <span>${lifetime.additionalDays}</span> (еще не начаты)`;
                     }
-                    additionalDaysInfo.style.display = 'block';
-                } else {
-                    additionalDaysInfo.style.display = 'none';
+                    infoEl.style.display = 'block';
                 }
-                
-                // Если осталось меньше 3 дней, показываем предупреждение
-                if (days <= 3 && days > 0) {
-                    countdownContainer.classList.add('countdown-critical');
-                } else if (days > 3) {
-                    countdownContainer.classList.remove('countdown-critical');
-                }
+                if (days <= 3 && days > 0) container.classList.add('countdown-critical');
+                else container.classList.remove('countdown-critical');
             }
-            
-            updateCountdown();
-            countdownInterval = setInterval(updateCountdown, 1000);
-            countdownContainer.style.display = 'block';
+            update();
+            countdownInterval = setInterval(update, 1000);
+            container.style.display = 'block';
         }
 
-        // Защита от скриншотов в Telegram WebView
-        function setupTelegramScreenshotProtection() {
-            const isTelegramWebView = window.navigator.userAgent.includes('TelegramWebApp');
-            const screenshotProtection = document.getElementById('screenshotProtection');
-            
-            if (isTelegramWebView) {
-                // Показываем защитный слой при попытке сделать скриншот
-                document.addEventListener('visibilitychange', function() {
-                    if (document.visibilityState === 'hidden') {
-                        screenshotProtection.style.display = 'block';
-                    } else {
-                        screenshotProtection.style.display = 'none';
-                    }
-                });
-                
-                // Дополнительная защита на случай изменения размера окна (может срабатывать при скриншоте)
-                let lastWidth = window.innerWidth;
-                let lastHeight = window.innerHeight;
-                
-                window.addEventListener('resize', function() {
-                    if (window.innerWidth !== lastWidth || window.innerHeight !== lastHeight) {
-                        screenshotProtection.style.display = 'block';
-                        setTimeout(() => {
-                            screenshotProtection.style.display = 'none';
-                        }, 1000);
-                    }
-                    lastWidth = window.innerWidth;
-                    lastHeight = window.innerHeight;
-                });
-            }
-        }
-
-        // Защита от копирования и скриншотов
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            return false;
-        });
-
-        document.addEventListener('keydown', function(e) {
-            // Блокировка Print Screen, Ctrl+P, Ctrl+S
-            if (e.key === 'PrintScreen' || 
-                (e.ctrlKey && (e.key === 'p' || e.key === 'P' || e.key === 's' || e.key === 'S'))) {
-                e.preventDefault();
-                return false;
-            }
-            // Блокировка Ctrl+C, Ctrl+X, Ctrl+A, Ctrl+Shift+I, F12
-            if (e.ctrlKey && (e.key === 'c' || e.key === 'x' || e.key === 'a' || e.key === 'i' || e.key === 'I') || 
-                e.key === 'F12') {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        // Защита от перетаскивания изображений
-        document.addEventListener('dragstart', function(e) {
-            e.preventDefault();
-            return false;
-        });
-
-        // Запрет выделения текста
-        document.addEventListener('selectstart', function(e) {
-            e.preventDefault();
-            return false;
-        });
-
-        // Функция для скрытия прелоадера и показа основного контента
         function showMainContent() {
             const preloader = document.getElementById('preloader');
-            const body = document.body;
-            
-            // Скрываем прелоадер
             preloader.classList.add('hidden');
-            
-            // Показываем основной контент
             setTimeout(() => {
-                body.classList.add('loaded');
+                document.body.classList.add('loaded');
                 document.querySelector('.main-content').classList.add('loaded');
                 document.querySelector('.welcome-text').classList.add('loaded');
                 document.querySelector('.features').classList.add('loaded');
                 document.querySelector('.info-section').classList.add('loaded');
                 document.querySelector('.footer').classList.add('loaded');
-                
-                // Анимируем появление карточек
-                const featureCards = document.querySelectorAll('.feature-card');
-                featureCards.forEach((card, index) => {
-                    setTimeout(() => {
-                        card.classList.add('loaded');
-                    }, index * 200);
-                });
-                
-                // Показываем таймер, если он есть
-                const countdownTimer = document.getElementById('countdownContainer');
-                if (countdownTimer && countdownTimer.style.display !== 'none') {
-                    setTimeout(() => {
-                        countdownTimer.classList.add('loaded');
-                    }, featureCards.length * 200 + 200);
-                }
+                const cards = document.querySelectorAll('.feature-card');
+                cards.forEach((c, i) => setTimeout(() => c.classList.add('loaded'), i * 200));
+                const timerDiv = document.getElementById('countdownContainer');
+                if (timerDiv && timerDiv.style.display !== 'none') setTimeout(() => timerDiv.classList.add('loaded'), cards.length * 200 + 200);
             }, 500);
         }
 
-        // Функция для обновления интерфейса на основе роли пользователя
         function updateInterfaceBasedOnRole(userExists) {
-            const adminRoles = [
-                "Куратор тех. специалистов",
-                "Куратор учебного центра",
-                "Руководство отдела",
-                "Разработчик"
-            ];
-            
-            // Проверяем роль для отображения панели управления
-            if (!adminRoles.includes(userExists.role)) {
-                document.getElementById('adminPanelCard').style.display = 'none';
-            }
-            
-            // Проверяем роль для отображения кнопки "Мой аккаунт"
-            const techSpecialistRoles = [
-                "Технический специалист"
-            ];
-            
-            if (techSpecialistRoles.includes(userExists.role)) {
+            const adminRoles = ["Куратор тех. специалистов", "Куратор учебного центра", "Руководство отдела", "Разработчик"];
+            if (!adminRoles.includes(userExists.role)) document.getElementById('adminPanelCard').style.display = 'none';
+            const techRoles = ["Технический специалист"];
+            if (techRoles.includes(userExists.role)) {
                 document.getElementById('accountCard').style.display = 'block';
-                // Обновляем ссылку с ID пользователя
                 document.getElementById('accountCard').setAttribute('onclick', `window.location.href='profile.php?userId=${currentUserId}'`);
-                
-                // Загружаем данные пользователя для получения даты создания
-                database.ref('users/' + currentUserId).once('value').then(snapshot => {
-                    const userData = snapshot.val();
-                    if (userData) {
-                        // Проверяем статус аккаунта
-                        const accountStatus = checkAccountStatus(userData);
-                        
-                        // Если время истекло, скрываем кнопку курсов
-                        if (!accountStatus.hasAccessToCourses) {
-                            const coursesCard = document.getElementById('coursesCard');
-                            if (coursesCard) {
-                                coursesCard.style.display = 'none';
-                            }
-                        }
-                        
-                        if (userData.createdAt) {
-                            startCountdown(userData);
-                        }
+                database.ref('users/' + currentUserId).once('value').then(snap => {
+                    const data = snap.val();
+                    if (data) {
+                        const status = checkAccountStatus(data);
+                        if (!status.hasAccessToCourses) document.getElementById('coursesCard').style.display = 'none';
+                        if (data.createdAt) startCountdown(data);
                     }
                 });
             } else {
@@ -1105,83 +591,40 @@
             }
         }
 
-        // Основная функция инициализации
         async function initializePage() {
             const themeToggle = document.getElementById('themeToggle');
             const themeIcon = document.getElementById('themeIcon');
             const themeText = document.getElementById('themeText');
             
-            // Обновляем текст прелоадера
-            document.querySelector('.preloader-text').textContent = 'Проверка авторизации...';
-            
-            // Проверяем пользователя сначала в localStorage, потом в sessionStorage
             let currentUser = null;
-            const localStorageUser = localStorage.getItem('currentUser');
-            const sessionStorageUser = sessionStorage.getItem('currentUser');
+            const localUser = localStorage.getItem('currentUser');
+            const sessionUser = sessionStorage.getItem('currentUser');
+            if (localUser) try { currentUser = JSON.parse(localUser); } catch(e) { localStorage.removeItem('currentUser'); }
+            else if (sessionUser) try { currentUser = JSON.parse(sessionUser); localStorage.setItem('currentUser', sessionUser); } catch(e) { sessionStorage.removeItem('currentUser'); }
             
-            if (localStorageUser) {
-                try {
-                    currentUser = JSON.parse(localStorageUser);
-                } catch (e) {
-                    console.error('Ошибка парсинга пользователя из localStorage:', e);
-                    localStorage.removeItem('currentUser');
-                }
-            } else if (sessionStorageUser) {
-                try {
-                    currentUser = JSON.parse(sessionStorageUser);
-                    // Также сохраняем в localStorage для постоянного хранения
-                    localStorage.setItem('currentUser', sessionStorageUser);
-                } catch (e) {
-                    console.error('Ошибка парсинга пользователя из sessionStorage:', e);
-                    sessionStorage.removeItem('currentUser');
-                }
-            }
+            if (!currentUser) { window.location.href = 'login.php'; return; }
             
-            // Если пользователь не найден, перенаправляем на страницу входа
-            if (!currentUser) {
-                window.location.href = 'login.php';
-                return;
-            }
-            
-            // Обновляем текст прелоадера
-            document.querySelector('.preloader-text').textContent = 'Загрузка данных пользователя...';
-            
-            // Проверяем, существует ли пользователь в базе данных
             const userExists = await checkUserExists(currentUser.id);
-            
             if (!userExists) {
-                // Пользователь удален или не существует, очищаем сохраненные данные
                 localStorage.removeItem('currentUser');
                 sessionStorage.removeItem('currentUser');
                 window.location.href = 'login.php';
                 return;
             }
             
-            // Обновляем информацию о пользователе
             currentUserId = currentUser.id;
-            const usernameElement = document.getElementById('username');
-            usernameElement.textContent = userExists.username;
+            document.getElementById('username').textContent = userExists.username;
+            await saveUserActivity(currentUserId, getPageNameFromUrl());
             
-            // Обновляем текст прелоадера
-            document.querySelector('.preloader-text').textContent = 'Сохранение активности...';
-            
-            // Сохраняем активность пользователя
-            const pageName = getPageNameFromUrl();
-            await saveUserActivity(currentUserId, pageName);
-            
-            // Theme toggle
             themeToggle.addEventListener('click', () => {
-                const isNightTheme = document.body.classList.contains('night-theme');
-                
-                if (isNightTheme) {
-                    // Переключаем на дневную тему
+                const isNight = document.body.classList.contains('night-theme');
+                if (isNight) {
                     document.body.classList.remove('night-theme');
                     document.body.classList.add('day-theme');
                     themeIcon.textContent = '☀️';
                     themeText.textContent = 'День';
                     localStorage.setItem('theme', 'day');
                 } else {
-                    // Переключаем на ночную тему
                     document.body.classList.remove('day-theme');
                     document.body.classList.add('night-theme');
                     themeIcon.textContent = '🌙';
@@ -1189,8 +632,6 @@
                     localStorage.setItem('theme', 'night');
                 }
             });
-            
-            // Проверяем сохраненную тему
             if (localStorage.getItem('theme') === 'day') {
                 document.body.classList.remove('night-theme');
                 document.body.classList.add('day-theme');
@@ -1203,31 +644,20 @@
                 themeText.textContent = 'Ночь';
             }
             
-            // Обновляем текст прелоадера
-            document.querySelector('.preloader-text').textContent = 'Настройка интерфейса...';
-            
-            // Обновляем интерфейс на основе роли пользователя
             updateInterfaceBasedOnRole(userExists);
-            
-            // Обработка выхода
             document.getElementById('logoutBtn').addEventListener('click', () => {
-                if (countdownInterval) {
-                    clearInterval(countdownInterval);
-                }
-                // Очищаем оба хранилища
+                if (countdownInterval) clearInterval(countdownInterval);
                 localStorage.removeItem('currentUser');
                 sessionStorage.removeItem('currentUser');
                 window.location.href = 'login.php';
             });
-
-            // Инициализация защиты от скриншотов для Telegram
-            setupTelegramScreenshotProtection();
             
-            // Показываем основной контент
-            setTimeout(showMainContent, 300);
+            // Мягкая защита только от контекстного меню (можно убрать)
+            document.addEventListener('contextmenu', (e) => { e.preventDefault(); return false; });
+            
+            showMainContent();
         }
 
-        // Запускаем инициализацию при загрузке DOM
         document.addEventListener('DOMContentLoaded', initializePage);
     </script>
 </body>
