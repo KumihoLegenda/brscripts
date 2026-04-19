@@ -2,17 +2,17 @@
     'use strict';
 
     const CONFIG = {
-        storageKey: 'spring_flowers_v1',
-        flowerCount: 50,  // Немного меньше цветов, чем снежинок, для элегантности
+        storageKey: 'spring_flowers_v2',
+        flowerCount: 50,
     };
 
     const springStyles = `
-        /* ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ - ВЕСЕННЯЯ ТЕМНАЯ ТЕМА */
+        /* ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ - ЯРКАЯ ВЕСЕННЯЯ ТЕМНАЯ ТЕМА */
         :root {
-            --bs-body-bg: #0a1f0e !important;
-            --bs-body-color: #c8e6c9 !important;
-            --bs-card-bg: #1b2e1f !important;
-            --bs-border-color: #2e7d32 !important;
+            --bs-body-bg: #0a1a0a !important;
+            --bs-body-color: #e8f5e9 !important;
+            --bs-card-bg: #1a3a1a !important;
+            --bs-border-color: #4caf50 !important;
         }
 
         /* ОСНОВНОЙ ФОН */
@@ -23,72 +23,72 @@
 
         /* НАВИГАЦИЯ */
         #site-navbar {
-            background-color: #051a08 !important;
-            border-bottom: 1px solid #2e7d32;
+            background-color: #051005 !important;
+            border-bottom: 2px solid #4caf50 !important;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
         .navbar-brand { 
-            color: #81c784 !important; 
-            text-shadow: 0 0 10px rgba(129, 199, 132, 0.5); 
+            color: #66ff66 !important; 
+            text-shadow: 0 0 10px rgba(102, 255, 102, 0.5); 
         }
 
         /* ЗАГРУЗОЧНЫЙ ЭКРАН */
         #loading-overlay, #loading-overlay[data-v-173ec149] {
-            background-color: #0a1f0e !important;
+            background-color: #0a1a0a !important;
             opacity: 1 !important;
         }
         #loading-overlay-heading, .loading-text {
-            color: #81c784 !important;
-            text-shadow: 0 10px rgba(129, 199, 132, 0.5);
+            color: #66ff66 !important;
+            text-shadow: 0 10px rgba(102, 255, 102, 0.5);
         }
         #loading-overlay .spinner, .spinner-border {
-            border-color: #81c784 !important;
+            border-color: #66ff66 !important;
             border-right-color: transparent !important;
         }
 
         /* ТАБЛИЦА ЛОГОВ */
         #log-table { color: #dcedc8 !important; }
-        #log-table thead { background: #1b2e1f !important; color: #a5d6a7 !important; }
-        #log-table th { border-bottom: 2px solid #66bb6a !important; }
-        #log-table .first-row { background-color: #0a1f0e !important; border-color: #2e7d32 !important; }
-        #log-table .second-row { background-color: #112817 !important; border-color: #2e7d32 !important; }
-        #log-table td { border-color: #2e7d32 !important; }
+        #log-table thead { background: #1a3a1a !important; color: #88ff88 !important; }
+        #log-table th { border-bottom: 2px solid #66ff66 !important; }
+        #log-table .first-row { background-color: #0a1a0a !important; border-color: #4caf50 !important; }
+        #log-table .second-row { background-color: #0f2a0f !important; border-color: #4caf50 !important; }
+        #log-table td { border-color: #4caf50 !important; }
 
         /* Описание транзакции и ссылки */
-        .td-transaction-desc { color: #9ccc9c !important; font-style: italic; }
+        .td-transaction-desc { color: #a5d6a7 !important; font-style: italic; }
         a, .td-player-name a, .td-category a {
-            color: #81c784 !important;
+            color: #66ff66 !important;
             text-decoration: none !important;
             transition: text-shadow 0.3s;
         }
-        a:hover { text-shadow: 0 0 8px #66bb6a; color: #e8f5e9 !important; }
-        .td-index { background-color: #2e7d32 !important; color: #e8f5e9 !important; }
+        a:hover { text-shadow: 0 0 8px #66ff66; color: #ccffcc !important; }
+        .td-index { background-color: #2e7d32 !important; color: #ffffff !important; }
 
         /* САЙДБАР (Фильтры) */
         #log-filter-section {
-            background: #1b2e1f !important;
-            border-left: 1px solid #2e7d32 !important;
+            background: #1a3a1a !important;
+            border-left: 2px solid #4caf50 !important;
         }
-        #log-filter-heading { color: #a5d6a7 !important; }
-        .form-label { color: #9ccc9c !important; }
+        #log-filter-heading { color: #88ff88 !important; }
+        .form-label { color: #a5d6a7 !important; }
 
         /* ОБЫЧНЫЕ ИНПУТЫ */
         input, select, textarea, .form-control, .form-select, .dp__input {
-            background-color: #051a08 !important;
-            border: 1px solid #388e3c !important;
+            background-color: #051005 !important;
+            border: 1px solid #4caf50 !important;
             color: #e8f5e9 !important;
         }
-        input::placeholder { color: #558b2f !important; }
+        input::placeholder { color: #66bb6a !important; }
 
         /* ФИКС ДЛЯ MULTISELECT */
         .multiselect {
-            background: #051a08 !important;
-            border: 1px solid #388e3c !important;
+            background: #051005 !important;
+            border: 1px solid #4caf50 !important;
             color: #e8f5e9 !important;
         }
         .multiselect-dropdown {
-            background: #1b2e1f !important;
-            border: 1px solid #2e7d32 !important;
+            background: #1a3a1a !important;
+            border: 1px solid #4caf50 !important;
             color: #dcedc8 !important;
         }
         .multiselect-option {
@@ -97,11 +97,11 @@
         }
         .multiselect-option.is-pointed {
             background: #2e7d32 !important;
-            color: #e8f5e9 !important;
+            color: #ffffff !important;
         }
         .multiselect-option.is-selected {
-            background: #66bb6a !important;
-            color: #051a08 !important;
+            background: #66ff66 !important;
+            color: #051005 !important;
         }
         .multiselect-single-label {
             color: #e8f5e9 !important;
@@ -114,40 +114,40 @@
 
         /* АВТОКОМПЛИТ */
         .autoComplete_wrapper > ul {
-            background-color: #1b2e1f !important;
-            border: 1px solid #2e7d32 !important;
+            background-color: #1a3a1a !important;
+            border: 1px solid #4caf50 !important;
             color: #dcedc8 !important;
         }
         .autoComplete_wrapper > ul > li {
-            background-color: #1b2e1f !important;
+            background-color: #1a3a1a !important;
             color: #c8e6c9 !important;
         }
         .autoComplete_wrapper > ul > li:hover {
             background-color: #2e7d32 !important;
-            color: #e8f5e9 !important;
+            color: #ffffff !important;
         }
         .autoComplete_wrapper > ul > li mark {
-            color: #81c784 !important;
+            color: #66ff66 !important;
         }
 
         /* МОДАЛЬНЫЕ ОКНА */
         .modal-content {
-            background-color: #1b2e1f !important;
-            border: 1px solid #388e3c !important;
+            background-color: #1a3a1a !important;
+            border: 1px solid #4caf50 !important;
             box-shadow: 0 10px 40px rgba(0,0,0,0.7) !important;
         }
-        .modal-header, .modal-footer { border-color: #2e7d32 !important; }
+        .modal-header, .modal-footer { border-color: #4caf50 !important; }
         .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
         
         .btn-primary, .submit-btn {
-            background-color: #66bb6a !important;
-            border-color: #66bb6a !important;
-            color: #051a08 !important;
+            background-color: #66ff66 !important;
+            border-color: #66ff66 !important;
+            color: #051005 !important;
             font-weight: bold;
         }
         .btn-primary:hover, .submit-btn:hover {
-            background-color: #4caf50 !important;
-            box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);
+            background-color: #44cc44 !important;
+            box-shadow: 0 0 15px rgba(102, 255, 102, 0.4);
         }
 
         /* ПОЛОТНО ДЛЯ ЦВЕТОВ */
@@ -167,7 +167,7 @@
             display: flex;
             align-items: center;
             font-weight: bold;
-            color: #9ccc9c;
+            color: #a5d6a7;
             text-decoration: none;
             margin-left: auto; 
             margin-right: 15px;
@@ -178,13 +178,13 @@
             font-size: 1.2rem;
         }
         #spring-toggle-btn:hover {
-            background: rgba(129, 199, 132, 0.2);
-            color: #e8f5e9;
+            background: rgba(102, 255, 102, 0.2);
+            color: #ccffcc;
         }
         #spring-toggle-btn.spring-mode-active {
-            color: #81c784 !important;
-            text-shadow: 0 0 8px rgba(129, 199, 132, 0.6);
-            border-color: rgba(129, 199, 132, 0.3);
+            color: #66ff66 !important;
+            text-shadow: 0 0 8px rgba(102, 255, 102, 0.6);
+            border-color: rgba(102, 255, 102, 0.3);
         }
         @media (min-width: 992px) {
             #spring-toggle-btn {
@@ -202,17 +202,16 @@
     let flowersCanvas, ctx, animationFrame;
     let flowers = [];
 
-    // Реалистичные SVG-подобные цветы (рисуются через canvas)
-    // Используем разные типы цветов
+    // Яркие весенние цвета
     const flowerColors = [
-        '#FF6B6B', // Красный
-        '#FF8E53', // Оранжевый
-        '#FFD93D', // Желтый
-        '#6BCB77', // Зеленый
-        '#4D96FF', // Синий
-        '#C084FC', // Фиолетовый
-        '#FFB7B2', // Розовый
-        '#FF6B8B'  // Малиновый
+        '#FF4444', // Ярко-красный
+        '#FF8844', // Ярко-оранжевый
+        '#FFDD44', // Ярко-желтый
+        '#44FF44', // Ярко-зеленый
+        '#4488FF', // Ярко-синий
+        '#DD44FF', // Ярко-фиолетовый
+        '#FF66BB', // Ярко-розовый
+        '#FF4488'  // Малиновый
     ];
 
     function initFlowers() {
@@ -233,15 +232,14 @@
     }
 
     function createFlower() {
-        // Случайный тип цветка для разнообразия форм
-        const type = Math.floor(Math.random() * 4); // 0-3 разных стиля
+        const type = Math.floor(Math.random() * 4);
         return {
             x: Math.random() * window.innerWidth,
             y: Math.random() * window.innerHeight,
-            size: Math.random() * 8 + 5, // Размер 5-13px
-            speed: Math.random() * 0.8 + 0.3,
+            size: Math.random() * 8 + 6,
+            speed: Math.random() * 0.8 + 0.4,
             wind: Math.random() * 0.4 - 0.2,
-            opacity: Math.random() * 0.5 + 0.4,
+            opacity: Math.random() * 0.4 + 0.6,
             color: flowerColors[Math.floor(Math.random() * flowerColors.length)],
             type: type,
             rotation: Math.random() * Math.PI * 2,
@@ -249,86 +247,90 @@
         };
     }
 
-    // Рисуем разные типы цветов
     function drawFlower(ctx, x, y, size, color, opacity, type, rotation) {
         ctx.save();
         ctx.translate(x, y);
         ctx.rotate(rotation);
         ctx.globalAlpha = opacity;
-        ctx.shadowBlur = 3;
-        ctx.shadowColor = "rgba(0,0,0,0.2)";
+        ctx.shadowBlur = 4;
+        ctx.shadowColor = "rgba(0,0,0,0.3)";
         
-        const petalCount = type === 0 ? 5 : type === 1 ? 6 : type === 2 ? 4 : 8;
         const radius = size / 2;
         
         if (type === 0) {
-            // Ромашка/обычный цветок
-            for (let i = 0; i < petalCount; i++) {
-                const angle = (i / petalCount) * Math.PI * 2;
+            // Ромашка
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * Math.PI * 2;
                 const petalX = Math.cos(angle) * radius * 0.7;
                 const petalY = Math.sin(angle) * radius * 0.7;
                 ctx.beginPath();
-                ctx.ellipse(petalX, petalY, radius * 0.5, radius * 0.8, angle, 0, Math.PI * 2);
+                ctx.ellipse(petalX, petalY, radius * 0.45, radius * 0.75, angle, 0, Math.PI * 2);
                 ctx.fillStyle = color;
                 ctx.fill();
             }
-            // Сердцевина
             ctx.beginPath();
             ctx.arc(0, 0, radius * 0.35, 0, Math.PI * 2);
-            ctx.fillStyle = '#FFD700';
+            ctx.fillStyle = '#FFDD66';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFAA33';
             ctx.fill();
         } 
         else if (type === 1) {
-            // Тюльпанообразный
+            // Тюльпан
             ctx.beginPath();
             ctx.moveTo(0, -radius);
-            ctx.quadraticCurveTo(radius * 0.6, -radius * 0.3, radius * 0.4, radius * 0.4);
-            ctx.quadraticCurveTo(0, radius * 0.2, -radius * 0.4, radius * 0.4);
-            ctx.quadraticCurveTo(-radius * 0.6, -radius * 0.3, 0, -radius);
+            ctx.quadraticCurveTo(radius * 0.7, -radius * 0.3, radius * 0.5, radius * 0.4);
+            ctx.quadraticCurveTo(0, radius * 0.2, -radius * 0.5, radius * 0.4);
+            ctx.quadraticCurveTo(-radius * 0.7, -radius * 0.3, 0, -radius);
             ctx.fillStyle = color;
             ctx.fill();
-            // Стебелек
             ctx.beginPath();
             ctx.moveTo(0, radius * 0.3);
-            ctx.lineTo(radius * 0.15, radius * 0.7);
-            ctx.lineTo(-radius * 0.15, radius * 0.7);
-            ctx.fillStyle = '#4CAF50';
+            ctx.lineTo(radius * 0.12, radius * 0.65);
+            ctx.lineTo(-radius * 0.12, radius * 0.65);
+            ctx.fillStyle = '#44FF44';
             ctx.fill();
         }
         else if (type === 2) {
-            // Звездочка/дикий цветок
+            // Звездчатый цветок
             const spikes = 5;
+            ctx.beginPath();
             for (let i = 0; i < spikes * 2; i++) {
-                const rad = i % 2 === 0 ? radius : radius * 0.4;
+                const rad = i % 2 === 0 ? radius : radius * 0.45;
                 const angle = (i / (spikes * 2)) * Math.PI * 2;
                 const px = Math.cos(angle) * rad;
                 const py = Math.sin(angle) * rad;
-                if (i === 0) ctx.beginPath();
-                else ctx.lineTo(px, py);
                 if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
             }
             ctx.closePath();
             ctx.fillStyle = color;
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(0, 0, radius * 0.25, 0, Math.PI * 2);
-            ctx.fillStyle = '#FFF9C4';
+            ctx.arc(0, 0, radius * 0.3, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFF88';
             ctx.fill();
         }
         else {
-            // Много лепестков (пышный цветок)
-            for (let i = 0; i < petalCount; i++) {
-                const angle = (i / petalCount) * Math.PI * 2;
-                const petalX = Math.cos(angle) * radius * 0.5;
-                const petalY = Math.sin(angle) * radius * 0.5;
+            // Пышный цветок
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const petalX = Math.cos(angle) * radius * 0.55;
+                const petalY = Math.sin(angle) * radius * 0.55;
                 ctx.beginPath();
-                ctx.ellipse(petalX, petalY, radius * 0.4, radius * 0.6, angle, 0, Math.PI * 2);
+                ctx.ellipse(petalX, petalY, radius * 0.4, radius * 0.65, angle, 0, Math.PI * 2);
                 ctx.fillStyle = color;
                 ctx.fill();
             }
             ctx.beginPath();
-            ctx.arc(0, 0, radius * 0.3, 0, Math.PI * 2);
-            ctx.fillStyle = '#FFE082';
+            ctx.arc(0, 0, radius * 0.35, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFEE88';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFCC44';
             ctx.fill();
         }
         
@@ -345,14 +347,14 @@
             flower.x += flower.wind;
             flower.rotation += flower.rotationSpeed;
             
-            if (flower.y > window.innerHeight + 20) {
-                flower.y = -20;
+            if (flower.y > window.innerHeight + 30) {
+                flower.y = -30;
                 flower.x = Math.random() * window.innerWidth;
                 flower.type = Math.floor(Math.random() * 4);
                 flower.color = flowerColors[Math.floor(Math.random() * flowerColors.length)];
             }
-            if (flower.x > window.innerWidth + 20) flower.x = -20;
-            if (flower.x < -20) flower.x = window.innerWidth + 20;
+            if (flower.x > window.innerWidth + 30) flower.x = -30;
+            if (flower.x < -30) flower.x = window.innerWidth + 30;
         });
         
         animationFrame = requestAnimationFrame(animateFlowers);
@@ -364,26 +366,22 @@
         window.removeEventListener('resize', resizeCanvas);
     }
 
-    // Темная тема всегда включена, управляем только цветами
     function enableSpringTheme() {
         if (!document.getElementById('spring-theme-styles')) {
             document.head.appendChild(styleElement);
         }
-        // Цветы включаются только если они были включены в localStorage
         if (localStorage.getItem(CONFIG.storageKey) !== 'false') {
             initFlowers();
         }
-        updateBtnState(true);
+        updateBtnState(localStorage.getItem(CONFIG.storageKey) !== 'false');
     }
 
-    // Отключаем ТОЛЬКО цветы, тема остается
     function disableFlowers() {
         destroyFlowers();
         updateBtnState(false);
         localStorage.setItem(CONFIG.storageKey, 'false');
     }
 
-    // Включаем цветы, тема уже есть
     function enableFlowers() {
         initFlowers();
         updateBtnState(true);
@@ -437,19 +435,13 @@
             navContainer.appendChild(btn);
         }
 
-        // Применяем тему сразу и всегда
         if (!document.getElementById('spring-theme-styles')) {
             document.head.appendChild(styleElement);
         }
         
-        // Включаем цветы, если не отключены
         if (localStorage.getItem(CONFIG.storageKey) !== 'false') {
             enableSpringTheme();
         } else {
-            // Тема применяется, но цветы не включаются
-            if (!document.getElementById('spring-theme-styles')) {
-                document.head.appendChild(styleElement);
-            }
             updateBtnState(false);
         }
     }
