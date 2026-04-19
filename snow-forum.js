@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Snow theme for forum
 // @namespace    https://forum.blackrussia.online
-// @version      1893248239.00003
+// @version      1893248239.00004
 // @description  Snow forum
 // @author       kumiho
 // @match        *://forum.blackrussia.online/*
@@ -406,93 +406,88 @@
     const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent) || window.innerWidth < 768;
     const SNOW_COUNT = isMobile ? 35 : 85;
 
-    class SnowSystem {
-        constructor() {
-            this.canvas = document.createElement('canvas');
-            this.canvas.id = 'snowCanvas';
-            this.ctx = this.canvas.getContext('2d');
-            this.flakes = [];
-            this.animationId = null;
-            this.isRunning = false;
-        }
-        
-        init() {
-            document.body.appendChild(this.canvas);
-            this.resize();
-            window.addEventListener('resize', () => this.resize());
-            this.createFlakes();
-        }
-        
-        start() {
-            if (this.isRunning) return;
-            this.isRunning = true;
-            this.animate();
-        }
-        
-        stop() {
-            this.isRunning = false;
-            if (this.animationId) {
-                cancelAnimationFrame(this.animationId);
-                this.animationId = null;
+    let snowCanvas = null;
+    let snowCtx = null;
+    let snowflakes = [];
+    let animationId = null;
+    let isSnowRunning = false;
+    let timerElement = null;
+
+    function resizeCanvas() {
+        if (snowCanvas) {
+            snowCanvas.width = window.innerWidth;
+            snowCanvas.height = window.innerHeight;
+            if (!isSnowRunning && snowCtx) {
+                snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
             }
-            // Очищаем canvas сразу
-            if (this.ctx && this.canvas) {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            }
-        }
-        
-        resize() {
-            if (this.canvas) {
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight;
-                // Если снег остановлен, очищаем после изменения размера
-                if (!this.isRunning && this.ctx) {
-                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                }
-            }
-        }
-        
-        createFlakes() {
-            this.flakes = [];
-            for (let i = 0; i < SNOW_COUNT; i++) {
-                this.flakes.push({
-                    x: Math.random() * (this.canvas?.width || window.innerWidth),
-                    y: Math.random() * (this.canvas?.height || window.innerHeight),
-                    s: Math.random() * 2 + 1,
-                    sp: Math.random() * 1 + 0.5,
-                    op: Math.random() * 0.5 + 0.3
-                });
-            }
-        }
-        
-        animate() {
-            if (!this.isRunning || !this.ctx || !this.canvas) return;
-            
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.fillStyle = '#FFF';
-            
-            this.flakes.forEach(f => {
-                f.y += f.sp;
-                if (f.y > this.canvas.height) {
-                    f.y = -5;
-                    f.x = Math.random() * this.canvas.width;
-                }
-                this.ctx.globalAlpha = f.op;
-                this.ctx.beginPath();
-                this.ctx.arc(f.x, f.y, f.s, 0, Math.PI * 2);
-                this.ctx.fill();
-            });
-            
-            this.animationId = requestAnimationFrame(() => this.animate());
         }
     }
 
-    let snowSystem = null;
-    let timerElement = null;
+    function createFlakes() {
+        snowflakes = [];
+        for (let i = 0; i < SNOW_COUNT; i++) {
+            snowflakes.push({
+                x: Math.random() * (snowCanvas?.width || window.innerWidth),
+                y: Math.random() * (snowCanvas?.height || window.innerHeight),
+                s: Math.random() * 2 + 1,
+                sp: Math.random() * 1 + 0.5,
+                op: Math.random() * 0.5 + 0.3
+            });
+        }
+    }
 
-    function updateTimerStyle(isSnowEnabled) {
+    function animateSnow() {
+        if (!isSnowRunning || !snowCtx || !snowCanvas) return;
+        
+        snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+        snowCtx.fillStyle = '#FFF';
+        
+        snowflakes.forEach(flake => {
+            flake.y += flake.sp;
+            if (flake.y > snowCanvas.height) {
+                flake.y = -5;
+                flake.x = Math.random() * snowCanvas.width;
+            }
+            snowCtx.globalAlpha = flake.op;
+            snowCtx.beginPath();
+            snowCtx.arc(flake.x, flake.y, flake.s, 0, Math.PI * 2);
+            snowCtx.fill();
+        });
+        
+        animationId = requestAnimationFrame(animateSnow);
+    }
+
+    function initSnow() {
+        snowCanvas = document.createElement('canvas');
+        snowCanvas.id = 'snowCanvas';
+        document.body.appendChild(snowCanvas);
+        snowCtx = snowCanvas.getContext('2d');
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        createFlakes();
+    }
+
+    function startSnow() {
+        if (isSnowRunning) return;
+        isSnowRunning = true;
+        animateSnow();
+    }
+
+    function stopSnow() {
+        isSnowRunning = false;
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
+        // НЕМЕДЛЕННО очищаем canvas
+        if (snowCtx && snowCanvas) {
+            snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+        }
+    }
+
+    function updateTimerStyle(isEnabled) {
         if (timerElement) {
-            if (isSnowEnabled) {
+            if (isEnabled) {
                 timerElement.classList.remove('snow-disabled');
                 timerElement.style.borderColor = '#3498db';
                 timerElement.style.boxShadow = '0 0 15px rgba(52, 152, 219, 0.3)';
@@ -505,24 +500,19 @@
     }
 
     function enableSnow() {
-        if (snowSystem) {
-            snowSystem.start();
-        }
+        startSnow();
         updateTimerStyle(true);
         localStorage.setItem(STORAGE_KEY, 'true');
     }
 
     function disableSnow() {
-        if (snowSystem) {
-            snowSystem.stop();
-        }
+        stopSnow();
         updateTimerStyle(false);
         localStorage.setItem(STORAGE_KEY, 'false');
     }
 
     function toggleSnow() {
-        const isEnabled = snowSystem && snowSystem.isRunning;
-        if (isEnabled) {
+        if (isSnowRunning) {
             disableSnow();
         } else {
             enableSnow();
@@ -534,7 +524,6 @@
         timerElement.id = 'brTimer';
         document.body.appendChild(timerElement);
         
-        // Добавляем обработчик клика
         timerElement.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -590,24 +579,14 @@
     }
 
     function init() {
-        // Создаем систему снега
-        snowSystem = new SnowSystem();
-        snowSystem.init();
-        
-        // Запускаем таймер
+        initSnow();
         startTimer();
-        
-        // Добавляем елку
         addChristmasTree();
         
-        // Проверяем сохраненное состояние
         const savedState = localStorage.getItem(STORAGE_KEY);
-        
         if (savedState === 'false') {
-            // Снег должен быть выключен
             disableSnow();
         } else {
-            // Снег включен (первый запуск или было true)
             enableSnow();
         }
     }
