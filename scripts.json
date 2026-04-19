@@ -23,7 +23,7 @@
     },
     {
       "id": "forumSneg",
-      "name": "Форум | Зимняя тема (тёмная)",
+      "name": "Форум | Зимняя тема",
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/snow-forum.js",
       "matches": [
         "https://forum.blackrussia.online/threads/*"
