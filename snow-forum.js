@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Snow theme for forum
 // @namespace    https://forum.blackrussia.online
-// @version      1.3
+// @version      1893248239.00002
 // @description  Snow forum
 // @author       kumiho
 // @match        *://forum.blackrussia.online/*
