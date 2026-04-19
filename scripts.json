@@ -2,7 +2,7 @@
   "scripts": [
     {
       "id": "button",
-      "name": "Форум | Кнопки переходнии",
+      "name": "Форум | Кнопки переходники",
       "matches": ["https://forum.blackrussia.online/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/button",
       "enabledDefault": true
@@ -80,21 +80,21 @@
     },
     {
       "id": "spring-logs",
-      "name": "Логи | Весенняя тема (НОВОЕ)",
+      "name": "Логи | Весенняя тема (тёмная)",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/spring-logs.js",
       "enabledDefault": true
     },
     {
       "id": "sneg",
-      "name": "Логи | Зимняя тема",
+      "name": "Логи | Зимняя тема (тёмная)",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/snow-logs.js",
       "enabledDefault": true
     },
     {
       "id": "search",
-      "name": "Логи | Поиск по серверам",
+      "name": "Логи | Поиск по серверам (Для ЗГТС)",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/search",
       "enabledDefault": true
