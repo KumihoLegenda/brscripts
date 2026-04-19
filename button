@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BR Panel (Integrated Header)
 // @namespace    http://tampermonkey.net/
-// @version      3.2
+// @version      3.3
 // @description  Floating panel replaced with header buttons. Dynamic server selection, IP comparison tool.
 // @author       Black Russia & kumiho
 // @match        https://forum.blackrussia.online/*
@@ -416,14 +416,14 @@
                 }
             }
             
-            // --- Функция открытия настроек ---
+            // --- Функция открытия настроек (обновленная сетка) ---
             function openSettings() {
                 let overlay = document.querySelector('.fnp-modal-overlay');
                 if(!overlay) {
                     overlay = document.createElement('div'); overlay.className = 'fnp-modal-overlay';
                     overlay.innerHTML = `
                         <div class="fnp-modal">
-                            <div class="fnp-modal-header">Выбор серверов</div>
+                            <div class="fnp-modal-header">Выбор серверов (1-91)</div>
                             <div class="fnp-modal-body"></div>
                             <div class="fnp-modal-footer">
                                 <button class="fnp-btn fnp-btn-secondary" id="fnp-cancel">Отмена</button>
@@ -452,20 +452,23 @@
                 const body = overlay.querySelector('.fnp-modal-body');
                 body.innerHTML = '';
                 const current = getSelectedServers();
-                SERVER_LIST.forEach(srv => {
+                
+                // Обновленная сетка: две колонки, формат "номер | название"
+                for (let i = 1; i <= SERVER_LIST.length; i++) {
+                    const server = SERVER_LIST[i-1];
                     const lbl = document.createElement('label');
-                    lbl.className = 'fnp-checkbox-label ' + (current.includes(srv.id) ? 'checked' : '');
-                    lbl.innerHTML = `<input type="checkbox" value="${srv.id}" ${current.includes(srv.id)?'checked':''}> ${srv.name}`;
+                    lbl.className = 'fnp-checkbox-label ' + (current.includes(i) ? 'checked' : '');
+                    lbl.innerHTML = `<input type="checkbox" value="${i}" ${current.includes(i)?'checked':''}> ${i} | ${server.name}`;
                     lbl.querySelector('input').onchange = function() {
                         this.parentElement.classList.toggle('checked', this.checked);
                     };
                     body.appendChild(lbl);
-                });
+                }
                 
                 setTimeout(() => overlay.classList.add('open'), 10);
             }
             
-            // --- Стили (как во втором скрипте) ---
+            // --- Стили (обновленные: сетка в две колонки) ---
             const style = document.createElement('style');
             style.textContent = `
                 .bgButton {
@@ -512,7 +515,7 @@
                     display: none;
                 }
 
-                /* Стили для модального окна настроек */
+                /* Стили для модального окна настроек - ОБНОВЛЕННЫЕ (две колонки) */
                 .fnp-modal-overlay {
                     position: fixed;
                     top: 0;
@@ -537,7 +540,7 @@
                     border: 1px solid #333;
                     border-radius: 12px;
                     width: 90%;
-                    max-width: 500px;
+                    max-width: 600px;
                     max-height: 85vh;
                     display: flex;
                     flex-direction: column;
@@ -556,7 +559,7 @@
                     padding: 15px;
                     overflow-y: auto;
                     display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                    grid-template-columns: repeat(2, 1fr);
                     gap: 8px;
                 }
                 .fnp-modal-footer {
@@ -576,7 +579,7 @@
                     cursor: pointer;
                     user-select: none;
                     color: #ccc;
-                    font-size: 12px;
+                    font-size: 11px;
                     border: 1px solid #333;
                 }
                 .fnp-checkbox-label:hover {
@@ -869,6 +872,9 @@
                     }
                     .ip-comparison-item:last-child {
                         border-bottom: none;
+                    }
+                    .fnp-modal-body {
+                        grid-template-columns: 1fr;
                     }
                 }
                 
