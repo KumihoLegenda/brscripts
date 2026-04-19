@@ -2,9 +2,9 @@
     'use strict';
 
     const CONFIG = {
-        storageKey: 'blacklog_spring_v1', // новый ключ для хранения состояния
+        storageKey: 'blacklog_spring_v1',
         flowerCount: 70,
-        flowersEnabled: true, // по умолчанию включены
+        flowersEnabled: true,
     };
 
     const springStyles = `
@@ -52,6 +52,15 @@
         #log-table .second-row { background-color: #1f3a1f !important; border-color: #5a7a3e !important; }
         #log-table td { border-color: #5a7a3e !important; }
 
+        /* БЛОК НОМЕРОВ СТРОК (ИНДЕКСОВ) - ЖЁЛТО-ЗЕЛЁНЫЙ */
+        .td-index {
+            background-color: #c4d600 !important;
+            color: #0f2b0f !important;
+            font-weight: bold !important;
+            text-shadow: none !important;
+            border-color: #5a7a3e !important;
+        }
+
         /* Описание транзакции и ссылки */
         .td-transaction-desc { color: #b0c4a0 !important; font-style: italic; }
         a, .td-player-name a, .td-category a {
@@ -60,7 +69,6 @@
             transition: text-shadow 0.3s;
         }
         a:hover { text-shadow: 0 0 8px #d4e600; color: #fff !important; }
-        .td-index { background-color: #5a7a3e !important; color: #fff !important; }
 
         /* САЙДБАР (Фильтры) */
         #log-filter-section {
@@ -197,13 +205,13 @@
     styleElement.id = 'spring-theme-styles';
     styleElement.innerText = springStyles;
 
-    // Символы цветов для падения
     const FLOWER_SYMBOLS = ['🌷', '🌸', '🌼', '🌹', '💮', '💐', '🌺', '🏵'];
 
     let flowerCanvas, ctx, animationFrame;
     let flowers = [];
 
     function initFlowers() {
+        if (flowerCanvas) return;
         flowerCanvas = document.createElement('canvas');
         flowerCanvas.id = 'spring-flowers-canvas';
         document.body.appendChild(flowerCanvas);
@@ -226,7 +234,7 @@
         return {
             x: Math.random() * window.innerWidth,
             y: Math.random() * window.innerHeight,
-            size: Math.random() * 20 + 12, // размер шрифта
+            size: Math.random() * 20 + 12,
             speed: Math.random() * 1 + 0.5,
             wind: Math.random() * 0.5 - 0.25,
             opacity: Math.random() * 0.5 + 0.5,
@@ -275,9 +283,7 @@
         if (!document.getElementById('spring-theme-styles')) {
             document.head.appendChild(styleElement);
         }
-        if (!flowerCanvas) {
-            initFlowers();
-        }
+        initFlowers();
         updateBtnState(true);
         CONFIG.flowersEnabled = true;
         localStorage.setItem(CONFIG.storageKey, 'true');
@@ -334,11 +340,8 @@
             navContainer.appendChild(btn);
         }
 
-        // Включаем цветы по умолчанию, если сохранённое состояние не "false"
         const savedState = localStorage.getItem(CONFIG.storageKey);
-        if (savedState === 'false') {
-            // не включаем автоматически
-        } else {
+        if (savedState !== 'false') {
             enableFlowers();
         }
     }
