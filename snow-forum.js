@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Snow theme for forum
 // @namespace    https://forum.blackrussia.online
-// @version      1.3
+// @version      1893248239.00003
 // @description  Snow forum
 // @author       kumiho
 // @match        *://forum.blackrussia.online/*
@@ -412,7 +412,7 @@
             this.canvas.id = 'snowCanvas';
             this.ctx = this.canvas.getContext('2d');
             this.flakes = [];
-            this.animationFrame = null;
+            this.animationId = null;
             this.isRunning = false;
         }
         
@@ -421,7 +421,6 @@
             this.resize();
             window.addEventListener('resize', () => this.resize());
             this.createFlakes();
-            this.start();
         }
         
         start() {
@@ -431,20 +430,25 @@
         }
         
         stop() {
-            if (this.animationFrame) {
-                cancelAnimationFrame(this.animationFrame);
-                this.animationFrame = null;
+            this.isRunning = false;
+            if (this.animationId) {
+                cancelAnimationFrame(this.animationId);
+                this.animationId = null;
             }
+            // Очищаем canvas сразу
             if (this.ctx && this.canvas) {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             }
-            this.isRunning = false;
         }
         
         resize() {
             if (this.canvas) {
                 this.canvas.width = window.innerWidth;
                 this.canvas.height = window.innerHeight;
+                // Если снег остановлен, очищаем после изменения размера
+                if (!this.isRunning && this.ctx) {
+                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                }
             }
         }
         
@@ -479,7 +483,7 @@
                 this.ctx.fill();
             });
             
-            this.animationFrame = requestAnimationFrame(() => this.animate());
+            this.animationId = requestAnimationFrame(() => this.animate());
         }
     }
 
@@ -501,7 +505,7 @@
     }
 
     function enableSnow() {
-        if (snowSystem && !snowSystem.isRunning) {
+        if (snowSystem) {
             snowSystem.start();
         }
         updateTimerStyle(true);
@@ -509,7 +513,7 @@
     }
 
     function disableSnow() {
-        if (snowSystem && snowSystem.isRunning) {
+        if (snowSystem) {
             snowSystem.stop();
         }
         updateTimerStyle(false);
@@ -517,7 +521,7 @@
     }
 
     function toggleSnow() {
-        const isEnabled = localStorage.getItem(STORAGE_KEY) !== 'false';
+        const isEnabled = snowSystem && snowSystem.isRunning;
         if (isEnabled) {
             disableSnow();
         } else {
