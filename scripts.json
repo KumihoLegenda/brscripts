@@ -80,21 +80,21 @@
     },
     {
       "id": "spring-logs",
-      "name": "Логи | Весенняя тема (тёмная)",
+      "name": "Логи | Весенняя тема (НОВОЕ)",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/spring-logs.js",
       "enabledDefault": true
     },
     {
       "id": "sneg",
-      "name": "Логи | Зимняя тема (тёмная)",
+      "name": "Логи | Зимняя тема",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/snow-logs.js",
       "enabledDefault": true
     },
     {
       "id": "search",
-      "name": "Логи | Поиск по серверам (Для ЗГТС)",
+      "name": "Логи | Поиск по серверам",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/search",
       "enabledDefault": true
