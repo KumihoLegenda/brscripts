@@ -2,9 +2,9 @@
     'use strict';
 
     const CONFIG = {
-        storageKey: 'blacklog_spring_v1', // новый ключ для хранения состояния
+        storageKey: 'blacklog_spring_v1',
         flowerCount: 70,
-        flowersEnabled: true, // по умолчанию включены
+        flowersEnabled: true,
     };
 
     const springStyles = `
@@ -197,7 +197,6 @@
     styleElement.id = 'spring-theme-styles';
     styleElement.innerText = springStyles;
 
-    // Символы цветов для падения
     const FLOWER_SYMBOLS = ['🌷', '🌸', '🌼', '🌹', '💮', '💐', '🌺', '🏵'];
 
     let flowerCanvas, ctx, animationFrame;
@@ -272,10 +271,6 @@
     }
 
     function enableFlowers() {
-        // Всегда применяем стили при включении
-        if (!document.getElementById('spring-theme-styles')) {
-            document.head.appendChild(styleElement);
-        }
         if (!flowerCanvas) {
             initFlowers();
         }
@@ -315,7 +310,7 @@
         if (!navContainer) { setTimeout(injectUI, 500); return; }
         if (document.getElementById('spring-toggle-btn')) return;
 
-        // ВСЕГДА применяем стили темы при загрузке страницы
+        // ВСЕГДА применяем стили при загрузке
         if (!document.getElementById('spring-theme-styles')) {
             document.head.appendChild(styleElement);
         }
@@ -341,18 +336,19 @@
         const savedState = localStorage.getItem(CONFIG.storageKey);
         
         if (savedState === 'false') {
-            // Цветы должны быть выключены
+            // Цветы должны быть выключены, но стили темы уже применены
             CONFIG.flowersEnabled = false;
             updateBtnState(false);
-            // Убеждаемся, что цветы не запущены (стили уже применены выше)
+            // Убеждаемся, что цветы не запущены
             destroyFlowers();
         } else {
-            // Цветы включены (первый запуск или было true)
+            // Включаем цветы (первый запуск или было true)
+            CONFIG.flowersEnabled = true;
             enableFlowers();
         }
     }
 
-    // Запускаем скрипт немедленно, как только страница готова
+    // Запускаем скрипт
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', injectUI);
     } else {
