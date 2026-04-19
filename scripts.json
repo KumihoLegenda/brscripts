@@ -72,6 +72,13 @@
       "enabledDefault": true
     },
     {
+      "id": "spring-logs",
+      "name": "Логи | Весенняя тема (тёмная)",
+      "matches": ["https://logs.blackrussia.online/gslogs/*"],
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/spring-logs.js",
+      "enabledDefault": true
+    },
+    {
       "id": "sneg",
       "name": "Логи | Зимняя тема (тёмная)",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
