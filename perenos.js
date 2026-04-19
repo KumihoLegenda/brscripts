@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         BR Panel (Menu Only)
+// @name         BR Panel (Thread Mover)
 // @namespace    http://tampermonkey.net/
-// @version      3.2
-// @description  Floating menu with servers and thread mover (All servers 1-91) - Fixed transfer without prefix/sticky/close changes
+// @version      3.3
+// @description  Floating menu with thread mover (All servers 1-91) - Fixed transfer without prefix/sticky/close changes
 // @author       Black Russia
 // @match        https://forum.blackrussia.online/*
 // @grant        none
@@ -11,16 +11,17 @@
 (function () {
     'use strict';
 
-    if (document.body.getAttribute('data-br-script-injected-panel')) {
+    // Уникальный атрибут для второго скрипта
+    if (document.body.getAttribute('data-br-script-injected-mover')) {
         return;
     }
-    document.body.setAttribute('data-br-script-injected-panel', 'true');
+    document.body.setAttribute('data-br-script-injected-mover', 'true');
 
     try {
         (function() {
-            const STORAGE_PREFIX = 'br_panel_mix_';
+            const STORAGE_PREFIX = 'br_mover_'; // Уникальный префикс для localStorage
 
-            // === ФУНКЦИИ ПЕРЕНСОА (ТОЛЬКО ПЕРЕМЕЩЕНИЕ, БЕЗ ИЗМЕНЕНИЯ ПРЕФИКСА/СТАТУСА) ===
+            // === ФУНКЦИИ ПЕРЕНОСА (ТОЛЬКО ПЕРЕМЕЩЕНИЕ, БЕЗ ИЗМЕНЕНИЯ ПРЕФИКСА/СТАТУСА) ===
             function moveThreadOnly(targetNodeId) {
                 const threadId = getThreadIdFromUrl();
                 if (!threadId) {
@@ -32,9 +33,6 @@
                 let currentPrefixId = 0;
                 const prefixElement = document.querySelector('.p-title-value .label');
                 if (prefixElement) {
-                    const prefixText = prefixElement.textContent.trim();
-                    // Пытаемся найти ID префикса по тексту (если нужно сохранить)
-                    // Для XenForo префикс хранится в data-атрибутах
                     const prefixLink = prefixElement.closest('a');
                     if (prefixLink && prefixLink.href) {
                         const prefixMatch = prefixLink.href.match(/prefix_id=(\d+)/);
@@ -42,11 +40,11 @@
                     }
                 }
                 
-                // Отправляем запрос на перемещение БЕЗ изменения префикса, БЕЗ открепления, БЕЗ закрытия
+                // Отправляем запрос на перемещение
                 fetch(`${document.URL}move`, {
                     method: 'POST',
                     body: getFormData({
-                        prefix_id: currentPrefixId,  // сохраняем текущий префикс
+                        prefix_id: currentPrefixId,
                         title: document.querySelector('.p-title-value')?.lastChild?.textContent || '',
                         target_node_id: targetNodeId,
                         redirect_type: 'none',
@@ -73,57 +71,6 @@
                 return match ? match[1] : null;
             }
 
-            // Префиксы для переноса (сохранены для совместимости, но НЕ используются в moveThreadOnly)
-            const TRANSFER_PREFIX1 = 20;   // передача админам 31
-            const TRANSFER_PREFIX2 = 21;   // передача в обжалования 31
-            const TRANSFER_PREFIX3 = 22;   // передача в жб на игроков 31
-            const TRANSFER_PREFIX4 = 23;   // передача в тех раздел 31
-            const TRANSFER_PREFIX5 = 24;   // передача в жб на тех 31
-            const TRANSFER_PREFIX6 = 25;   // передача админам 32
-            const TRANSFER_PREFIX7 = 26;   // передача в обжалования 32
-            const TRANSFER_PREFIX8 = 27;   // передача в жб на игроков 32
-            const TRANSFER_PREFIX9 = 28;   // передача в тех раздел 32
-            const TRANSFER_PREFIX10 = 29;  // передача в жб на тех 32
-            const TRANSFER_PREFIX11 = 30;  // передача админам 33
-            const TRANSFER_PREFIX12 = 31;  // передача в обжалования 33
-            const TRANSFER_PREFIX13 = 32;  // передача в жб на игроков 33
-            const TRANSFER_PREFIX14 = 33;  // передача в тех раздел 33
-            const TRANSFER_PREFIX15 = 34;  // передача в жб на тех 33
-            const TRANSFER_PREFIX16 = 35;  // передача админам 34
-            const TRANSFER_PREFIX17 = 36;  // передача в обжалования 34
-            const TRANSFER_PREFIX18 = 37;  // передача в жб на игроков 34
-            const TRANSFER_PREFIX19 = 38;  // передача в тех раздел 34
-            const TRANSFER_PREFIX20 = 39;  // передача в жб на тех 34
-            const TRANSFER_PREFIX21 = 40;  // передача админам 35
-            const TRANSFER_PREFIX22 = 41;  // передача в обжалования 35
-            const TRANSFER_PREFIX23 = 42;  // передача в жб на игроков 35
-            const TRANSFER_PREFIX24 = 43;  // передача в тех раздел 35
-            const TRANSFER_PREFIX25 = 44;  // передача в жб на тех 35
-
-            function getPrefixForSection(sectionType, serverId) {
-                const prefixMap = {
-                    'tech_complaint': { 
-                        31: TRANSFER_PREFIX5, 32: TRANSFER_PREFIX10, 33: TRANSFER_PREFIX15, 
-                        34: TRANSFER_PREFIX20, 35: TRANSFER_PREFIX25 
-                    },
-                    'tech': { 
-                        31: TRANSFER_PREFIX4, 32: TRANSFER_PREFIX9, 33: TRANSFER_PREFIX14, 
-                        34: TRANSFER_PREFIX19, 35: TRANSFER_PREFIX24 
-                    },
-                    'player_complaint': { 
-                        31: TRANSFER_PREFIX3, 32: TRANSFER_PREFIX8, 33: TRANSFER_PREFIX13, 
-                        34: TRANSFER_PREFIX18, 35: TRANSFER_PREFIX23 
-                    }
-                };
-                if (prefixMap[sectionType]?.[serverId]) {
-                    return prefixMap[sectionType][serverId];
-                }
-                if (sectionType === 'tech_complaint') return TRANSFER_PREFIX5;
-                if (sectionType === 'tech') return TRANSFER_PREFIX4;
-                if (sectionType === 'player_complaint') return TRANSFER_PREFIX3;
-                return 0;
-            }
-
             // Генерация названий серверов (1-91)
             const serverNames = {
                 1: 'RED', 2: 'GREEN', 3: 'BLUE', 4: 'YELLOW', 5: 'ORANGE',
@@ -147,7 +94,7 @@
                 91: 'ASTANA'
             };
 
-            // Базовые nodeId для серверов (от 1 до 91)
+            // Node IDs для разделов
             const techNodeIds = {
                 1: 226, 2: 227, 3: 228, 4: 229, 5: 245, 6: 325, 7: 365, 8: 396, 9: 408, 10: 488,
                 11: 493, 12: 554, 13: 613, 14: 653, 15: 660, 16: 701, 17: 757, 18: 815, 19: 857, 20: 925,
@@ -197,7 +144,7 @@
             }
 
             function renderMenu() {
-                const menu = document.querySelector('.fnp-menu');
+                const menu = document.querySelector('.fnm-mover-menu'); // Уникальный класс
                 if (!menu) return;
 
                 menu.innerHTML = '';
@@ -214,10 +161,9 @@
                     header.style.cssText = 'text-align:center; color:#fff; font-weight:bold; font-size:12px; padding:5px 0; margin-bottom:5px; background: rgba(255,255,255,0.1); border-radius:6px;';
                     menu.appendChild(header);
 
-                    // Функция создания кнопки переноса - ТОЛЬКО ПЕРЕМЕЩЕНИЕ, БЕЗ ИЗМЕНЕНИЙ
                     const createMoveButton = (nodeId, serverId, label, color) => {
                         const a = document.createElement('a');
-                        a.className = 'fnp-link';
+                        a.className = 'fnm-mover-link';
                         a.href = '#';
                         a.textContent = `${label} ${serverId}`;
                         a.style.borderBottom = `2px solid ${color}`;
@@ -225,14 +171,14 @@
                         a.addEventListener('click', (e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            moveThreadOnly(nodeId);  // ← ТОЛЬКО ПЕРЕМЕЩЕНИЕ, БЕЗ ПРЕФИКСА/ОТКРЕПЛЕНИЯ/ЗАКРЫТИЯ
+                            moveThreadOnly(nodeId);
                         });
                         
                         return a;
                     };
 
                     const techComplaintGroup = document.createElement('div');
-                    techComplaintGroup.className = 'fnp-grid';
+                    techComplaintGroup.className = 'fnm-mover-grid';
                     selectedIds.forEach(id => {
                         if (techComplaintNodeIds[id]) {
                             const btn = createMoveButton(techComplaintNodeIds[id], id, 'ЖБТ', techComplaintColor);
@@ -241,10 +187,10 @@
                     });
                     menu.appendChild(techComplaintGroup);
                     
-                    menu.appendChild(Object.assign(document.createElement('div'), { className: 'fnp-divider' }));
+                    menu.appendChild(Object.assign(document.createElement('div'), { className: 'fnm-mover-divider' }));
                     
                     const techGroup = document.createElement('div');
-                    techGroup.className = 'fnp-grid';
+                    techGroup.className = 'fnm-mover-grid';
                     selectedIds.forEach(id => {
                         if (techNodeIds[id]) {
                             const btn = createMoveButton(techNodeIds[id], id, 'ТР', techColor);
@@ -253,10 +199,10 @@
                     });
                     menu.appendChild(techGroup);
                     
-                    menu.appendChild(Object.assign(document.createElement('div'), { className: 'fnp-divider' }));
+                    menu.appendChild(Object.assign(document.createElement('div'), { className: 'fnm-mover-divider' }));
                     
                     const playerComplaintGroup = document.createElement('div');
-                    playerComplaintGroup.className = 'fnp-grid';
+                    playerComplaintGroup.className = 'fnm-mover-grid';
                     selectedIds.forEach(id => {
                         if (playerComplaintNodeIds[id]) {
                             const btn = createMoveButton(playerComplaintNodeIds[id], id, 'ЖБИ', playerComplaintColor);
@@ -267,36 +213,36 @@
                 }
 
                 const settingsBtn = document.createElement('div');
-                settingsBtn.className = 'fnp-settings-btn';
+                settingsBtn.className = 'fnm-mover-settings-btn';
                 settingsBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`;
                 settingsBtn.addEventListener('click', (e) => { e.stopPropagation(); openSettings(); });
                 menu.appendChild(settingsBtn);
             }
 
             function openSettings() {
-                const menu = document.querySelector('.fnp-menu');
-                const toggleBtn = document.querySelector('.fnp-toggle');
+                const menu = document.querySelector('.fnm-mover-menu');
+                const toggleBtn = document.querySelector('.fnm-mover-toggle');
                 if (menu) menu.classList.remove('show');
                 if (toggleBtn) toggleBtn.classList.remove('active');
                 localStorage.setItem(STORAGE_PREFIX + 'state', 'false');
 
-                let overlay = document.querySelector('.fnp-modal-overlay');
+                let overlay = document.querySelector('.fnm-mover-modal-overlay');
                 if (!overlay) {
                     overlay = document.createElement('div');
-                    overlay.className = 'fnp-modal-overlay';
+                    overlay.className = 'fnm-mover-modal-overlay';
                     overlay.innerHTML = `
-                        <div class="fnp-modal">
-                            <div class="fnp-modal-header">Выбор серверов (1-91)</div>
-                            <div class="fnp-modal-body"></div>
-                            <div class="fnp-modal-footer">
-                                <button class="fnp-btn fnp-btn-secondary" id="fnp-cancel">Отмена</button>
-                                <button class="fnp-btn fnp-btn-primary" id="fnp-save">Сохранить</button>
+                        <div class="fnm-mover-modal">
+                            <div class="fnm-mover-modal-header">Выбор серверов (1-91)</div>
+                            <div class="fnm-mover-modal-body"></div>
+                            <div class="fnm-mover-modal-footer">
+                                <button class="fnm-mover-btn fnm-mover-btn-secondary" id="fnm-mover-cancel">Отмена</button>
+                                <button class="fnm-mover-btn fnm-mover-btn-primary" id="fnm-mover-save">Сохранить</button>
                             </div>
                         </div>
                     `;
                     document.body.appendChild(overlay);
-                    overlay.querySelector('#fnp-cancel').onclick = () => overlay.classList.remove('open');
-                    overlay.querySelector('#fnp-save').onclick = () => {
+                    overlay.querySelector('#fnm-mover-cancel').onclick = () => overlay.classList.remove('open');
+                    overlay.querySelector('#fnm-mover-save').onclick = () => {
                         const checked = Array.from(overlay.querySelectorAll('input:checked')).map(el => +el.value).sort((a, b) => a - b);
                         localStorage.setItem(STORAGE_PREFIX + 'servers', JSON.stringify(checked));
                         renderMenu();
@@ -304,14 +250,14 @@
                     };
                 }
 
-                const body = overlay.querySelector('.fnp-modal-body');
+                const body = overlay.querySelector('.fnm-mover-modal-body');
                 body.innerHTML = '';
                 const current = getSelected();
                 
                 for (let i = 1; i <= 91; i++) {
                     const serverName = serverNames[i] || `Server ${i}`;
                     const lbl = document.createElement('label');
-                    lbl.className = 'fnp-checkbox-label ' + (current.includes(i) ? 'checked' : '');
+                    lbl.className = 'fnm-mover-checkbox-label ' + (current.includes(i) ? 'checked' : '');
                     lbl.innerHTML = `<input type="checkbox" value="${i}" ${current.includes(i) ? 'checked' : ''}> ${i} | ${serverName}`;
                     lbl.querySelector('input').onchange = function () {
                         this.parentElement.classList.toggle('checked', this.checked);
@@ -321,57 +267,57 @@
                 setTimeout(() => overlay.classList.add('open'), 10);
             }
 
-            // Стили (без изменений)
+            // Уникальные стили с префиксом fnm-mover-
             const style = document.createElement('style');
             style.textContent = `
-                :root { --fnp-btn: 48px; }
-                .fnp-wrapper { position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: 2147483647; }
-                .fnp-toggle { position: fixed; width: var(--fnp-btn); height: var(--fnp-btn); background: #151515; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; box-shadow: 0 6px 25px rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; color: #fff; cursor: grab; touch-action: none; user-select: none; transition: transform 0.2s; }
-                .fnp-toggle:active { transform: scale(0.9); cursor: grabbing; }
-                .fnp-toggle.active { background: #2563eb; border-color: #3b82f6; }
-                .fnp-toggle.active svg { transform: rotate(45deg); }
-                .fnp-menu { position: fixed; background: rgba(20,20,20,0.95); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 10px; display: flex; flex-direction: column; gap: 5px; width: 300px; max-height: 70vh; overflow-y: auto; opacity: 0; visibility: hidden; transform: scale(0.9); transition: opacity 0.2s, transform 0.2s, visibility 0.2s; pointer-events: none; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
-                .fnp-menu.show { opacity: 1; visibility: visible; transform: scale(1); pointer-events: auto; }
-                .fnp-menu::-webkit-scrollbar { width: 4px; }
-                .fnp-menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
-                .fnp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
-                .fnp-link { display: flex; align-items: center; justify-content: center; padding: 6px 2px; font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; color: #e5e5e5; text-decoration: none; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid transparent; transition: background 0.1s; white-space: nowrap; cursor: pointer; }
-                .fnp-link:active { background: rgba(255,255,255,0.2); transform: translateY(1px); }
-                .fnp-divider { height: 1px; background: rgba(255,255,255,0.15); margin: 4px 0; width: 100%; }
-                .fnp-settings-btn { width: 100%; padding: 8px; margin-top: 5px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #aaa; cursor: pointer; display: flex; justify-content: center; align-items: center; }
-                .fnp-settings-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
-                .fnp-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2147483648; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.3s; }
-                .fnp-modal-overlay.open { opacity: 1; visibility: visible; }
-                .fnp-modal { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; width: 90%; max-width: 600px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
-                .fnp-modal-header { padding: 15px; border-bottom: 1px solid #333; color: #fff; font-weight: bold; }
-                .fnp-modal-body { padding: 15px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
-                .fnp-modal-footer { padding: 15px; border-top: 1px solid #333; display: flex; justify-content: flex-end; gap: 10px; }
-                .fnp-checkbox-label { display: flex; align-items: center; gap: 8px; background: #222; padding: 6px; border-radius: 6px; cursor: pointer; user-select: none; color: #ccc; font-size: 11px; border: 1px solid #333; }
-                .fnp-checkbox-label:hover { background: #2a2a2a; }
-                .fnp-checkbox-label input { accent-color: #2563eb; }
-                .fnp-checkbox-label.checked { border-color: #2563eb; background: rgba(37,99,235,0.1); color: #fff; }
-                .fnp-btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
-                .fnp-btn-primary { background: #2563eb; color: #fff; }
-                .fnp-btn-primary:hover { background: #1d4ed8; }
-                .fnp-btn-secondary { background: #333; color: #ccc; }
-                .fnp-btn-secondary:hover { background: #444; color: #fff; }
+                :root { --fnm-mover-btn: 48px; }
+                .fnm-mover-wrapper { position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: 2147483646; }
+                .fnm-mover-toggle { position: fixed; width: var(--fnm-mover-btn); height: var(--fnm-mover-btn); background: #151515; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; box-shadow: 0 6px 25px rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; color: #fff; cursor: grab; touch-action: none; user-select: none; transition: transform 0.2s; }
+                .fnm-mover-toggle:active { transform: scale(0.9); cursor: grabbing; }
+                .fnm-mover-toggle.active { background: #dc2626; border-color: #ef4444; }
+                .fnm-mover-toggle.active svg { transform: rotate(45deg); }
+                .fnm-mover-menu { position: fixed; background: rgba(20,20,20,0.95); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 10px; display: flex; flex-direction: column; gap: 5px; width: 300px; max-height: 70vh; overflow-y: auto; opacity: 0; visibility: hidden; transform: scale(0.9); transition: opacity 0.2s, transform 0.2s, visibility 0.2s; pointer-events: none; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+                .fnm-mover-menu.show { opacity: 1; visibility: visible; transform: scale(1); pointer-events: auto; }
+                .fnm-mover-menu::-webkit-scrollbar { width: 4px; }
+                .fnm-mover-menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+                .fnm-mover-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+                .fnm-mover-link { display: flex; align-items: center; justify-content: center; padding: 6px 2px; font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; color: #e5e5e5; text-decoration: none; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid transparent; transition: background 0.1s; white-space: nowrap; cursor: pointer; }
+                .fnm-mover-link:active { background: rgba(255,255,255,0.2); transform: translateY(1px); }
+                .fnm-mover-divider { height: 1px; background: rgba(255,255,255,0.15); margin: 4px 0; width: 100%; }
+                .fnm-mover-settings-btn { width: 100%; padding: 8px; margin-top: 5px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #aaa; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+                .fnm-mover-settings-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+                .fnm-mover-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2147483648; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.3s; }
+                .fnm-mover-modal-overlay.open { opacity: 1; visibility: visible; }
+                .fnm-mover-modal { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; width: 90%; max-width: 600px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+                .fnm-mover-modal-header { padding: 15px; border-bottom: 1px solid #333; color: #fff; font-weight: bold; }
+                .fnm-mover-modal-body { padding: 15px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+                .fnm-mover-modal-footer { padding: 15px; border-top: 1px solid #333; display: flex; justify-content: flex-end; gap: 10px; }
+                .fnm-mover-checkbox-label { display: flex; align-items: center; gap: 8px; background: #222; padding: 6px; border-radius: 6px; cursor: pointer; user-select: none; color: #ccc; font-size: 11px; border: 1px solid #333; }
+                .fnm-mover-checkbox-label:hover { background: #2a2a2a; }
+                .fnm-mover-checkbox-label input { accent-color: #dc2626; }
+                .fnm-mover-checkbox-label.checked { border-color: #dc2626; background: rgba(220,38,38,0.1); color: #fff; }
+                .fnm-mover-btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+                .fnm-mover-btn-primary { background: #dc2626; color: #fff; }
+                .fnm-mover-btn-primary:hover { background: #b91c1c; }
+                .fnm-mover-btn-secondary { background: #333; color: #ccc; }
+                .fnm-mover-btn-secondary:hover { background: #444; color: #fff; }
             `;
             document.head.appendChild(style);
 
-            // Создание плавающей кнопки
+            // Создание плавающей кнопки с уникальными классами
             const wrapper = document.createElement('div');
-            wrapper.className = 'fnp-wrapper';
+            wrapper.className = 'fnm-mover-wrapper';
             const toggleBtn = document.createElement('div');
-            toggleBtn.className = 'fnp-toggle';
+            toggleBtn.className = 'fnm-mover-toggle';
             toggleBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
             const menu = document.createElement('div');
-            menu.className = 'fnp-menu';
+            menu.className = 'fnm-mover-menu';
             wrapper.appendChild(menu);
             wrapper.appendChild(toggleBtn);
             document.body.appendChild(wrapper);
 
             let savedPos = localStorage.getItem(STORAGE_PREFIX + 'pos');
-            let pos = savedPos ? JSON.parse(savedPos) : { x: window.innerWidth - 60, y: window.innerHeight * 0.6 };
+            let pos = savedPos ? JSON.parse(savedPos) : { x: window.innerWidth - 120, y: window.innerHeight * 0.6 };
             let isDragging = false;
 
             const updatePos = (x, y) => {
@@ -399,7 +345,7 @@
                 isDragging = false;
                 toggleBtn.releasePointerCapture(e.pointerId);
                 toggleBtn.style.transition = 'all 0.3s';
-                pos.x = pos.x < window.innerWidth / 2 ? 10 : window.innerWidth - 60;
+                pos.x = pos.x < window.innerWidth / 2 ? 10 : window.innerWidth - 110;
                 updatePos(pos.x, pos.y);
                 localStorage.setItem(STORAGE_PREFIX + 'pos', JSON.stringify(pos));
                 if (Math.abs(e.clientX - 24 - pos.x) < 10) {
@@ -418,6 +364,6 @@
             }
         })();
     } catch (e) {
-        console.error('[BR Script] Panel Error:', e);
+        console.error('[BR Mover] Error:', e);
     }
 })();
