@@ -2,7 +2,7 @@
     'use strict';
 
     const CONFIG = {
-        storageKey: 'blacklog_spring_v1',
+        storageKey: 'blacklog_spring_v1', // новый ключ для хранения состояния
         flowerCount: 70,
         flowersEnabled: true, // по умолчанию включены
     };
@@ -198,6 +198,8 @@
     styleElement.id = 'spring-theme-styles';
     styleElement.innerText = springStyles;
 
+    // Функции цветов удалены, так как снежинки больше не нужны
+
     function enableFlowers() {
         if (!document.getElementById('spring-theme-styles')) {
             document.head.appendChild(styleElement);
@@ -208,10 +210,6 @@
     }
 
     function disableFlowers() {
-        const style = document.getElementById('spring-theme-styles');
-        if (style) {
-            style.remove();
-        }
         updateBtnState(false);
         CONFIG.flowersEnabled = false;
         localStorage.setItem(CONFIG.storageKey, 'false');
@@ -261,19 +259,15 @@
             navContainer.appendChild(btn);
         }
 
-        // ★★★ ГЛАВНОЕ ИЗМЕНЕНИЕ ★★★
-        // Включаем тему СРАЗУ, если только пользователь ранее явно не выключил её
+        // Включаем тему по умолчанию, если сохранённое состояние не "false"
         const savedState = localStorage.getItem(CONFIG.storageKey);
         if (savedState === 'false') {
-            // Пользователь выключил тему - оставляем выключенной
-            disableFlowers(); // гарантируем, что стилей нет
+            // не включаем автоматически
         } else {
-            // Во всех остальных случаях (нет ключа, ключ 'true' или другое значение) - включаем тему
             enableFlowers();
         }
     }
 
-    // Запускаем сразу, не дожидаясь DOMContentLoaded, но с проверкой готовности DOM
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', injectUI);
     } else {
