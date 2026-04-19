@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Snow theme for forum
 // @namespace    https://forum.blackrussia.online
-// @version      1893248239.00004
+// @version      1893248239.00005
 // @description  Snow forum
 // @author       kumiho
 // @match        *://forum.blackrussia.online/*
@@ -13,6 +13,12 @@
 
 (function() {
     'use strict';
+
+    // Проверяем, не был ли уже выполнен скрипт
+    if (window.__SNOW_THEME_INSTALLED__) {
+        return;
+    }
+    window.__SNOW_THEME_INSTALLED__ = true;
 
     const css = `
         :root {
@@ -398,9 +404,13 @@
         }
     `;
 
-    const style = document.createElement('style');
-    style.textContent = css;
-    (document.head || document.documentElement).appendChild(style);
+    // Добавляем стили только один раз
+    if (!document.getElementById('snow-theme-styles')) {
+        const style = document.createElement('style');
+        style.id = 'snow-theme-styles';
+        style.textContent = css;
+        (document.head || document.documentElement).appendChild(style);
+    }
 
     const STORAGE_KEY = 'forum_snow_enabled';
     const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent) || window.innerWidth < 768;
@@ -412,6 +422,7 @@
     let animationId = null;
     let isSnowRunning = false;
     let timerElement = null;
+    let treeAdded = false;
 
     function resizeCanvas() {
         if (snowCanvas) {
@@ -458,10 +469,16 @@
     }
 
     function initSnow() {
-        snowCanvas = document.createElement('canvas');
-        snowCanvas.id = 'snowCanvas';
-        document.body.appendChild(snowCanvas);
-        snowCtx = snowCanvas.getContext('2d');
+        // Проверяем, не существует ли уже canvas
+        if (document.getElementById('snowCanvas')) {
+            snowCanvas = document.getElementById('snowCanvas');
+            snowCtx = snowCanvas.getContext('2d');
+        } else {
+            snowCanvas = document.createElement('canvas');
+            snowCanvas.id = 'snowCanvas';
+            document.body.appendChild(snowCanvas);
+            snowCtx = snowCanvas.getContext('2d');
+        }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         createFlakes();
@@ -479,7 +496,6 @@
             cancelAnimationFrame(animationId);
             animationId = null;
         }
-        // НЕМЕДЛЕННО очищаем canvas
         if (snowCtx && snowCanvas) {
             snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
         }
@@ -520,6 +536,12 @@
     }
 
     function startTimer() {
+        // Проверяем, не существует ли уже таймер
+        if (document.getElementById('brTimer')) {
+            timerElement = document.getElementById('brTimer');
+            return;
+        }
+        
         timerElement = document.createElement('div');
         timerElement.id = 'brTimer';
         document.body.appendChild(timerElement);
@@ -531,6 +553,7 @@
         });
 
         function update() {
+            if (!timerElement) return;
             const now = new Date();
             const nextYear = new Date(now.getFullYear() + 1, 0, 1);
             const diff = nextYear - now;
@@ -551,6 +574,12 @@
     }
 
     function addChristmasTree() {
+        // Проверяем, не добавлена ли уже елка
+        if (treeAdded || document.querySelector('.scene-container')) {
+            treeAdded = true;
+            return;
+        }
+        
         const scene = document.createElement('div');
         scene.className = 'scene-container';
         scene.innerHTML = `
@@ -576,6 +605,7 @@
             </div>
         `;
         document.body.appendChild(scene);
+        treeAdded = true;
     }
 
     function init() {
