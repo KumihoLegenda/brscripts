@@ -2,9 +2,9 @@
     'use strict';
 
     const CONFIG = {
-        storageKey: 'blacklog_spring_v1', // новый ключ для хранения состояния
+        storageKey: 'blacklog_spring_v1',
         flowerCount: 70,
-        flowersEnabled: true, // по умолчанию включены
+        flowersEnabled: true,
     };
 
     const springStyles = `
@@ -52,17 +52,13 @@
         #log-table .second-row { background-color: #1f3a1f !important; border-color: #5a7a3e !important; }
         #log-table td { border-color: #5a7a3e !important; }
 
-        /* БЛОК С НОМЕРАМИ СТРОК - ЖЕЛТО-ЗЕЛЕНЫЙ */
-        .td-index, 
-        td:first-child,
-        .log-index-column,
-        [class*="index"],
-        #log-table td:first-child {
-            background: linear-gradient(135deg, #d4e600 0%, #9bc420 100%) !important;
-            color: #1a2e1a !important;
+        /* БЛОК НОМЕРОВ СТРОК (ИНДЕКСОВ) - ЖЁЛТО-ЗЕЛЁНЫЙ */
+        .td-index {
+            background-color: #c4d600 !important;
+            color: #0f2b0f !important;
             font-weight: bold !important;
-            text-shadow: 0 1px 0 rgba(255,255,255,0.3) !important;
-            border-right: 2px solid #8aa86a !important;
+            text-shadow: none !important;
+            border-color: #5a7a3e !important;
         }
 
         /* Описание транзакции и ссылки */
@@ -160,6 +156,17 @@
             box-shadow: 0 0 15px rgba(212, 230, 0, 0.4);
         }
 
+        /* Холст для падающих цветов */
+        #spring-flowers-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
         /* КНОПКА В МЕНЮ */
         #spring-toggle-btn {
             cursor: pointer;
@@ -198,18 +205,92 @@
     styleElement.id = 'spring-theme-styles';
     styleElement.innerText = springStyles;
 
-    // Функции цветов удалены, так как снежинки больше не нужны
+    const FLOWER_SYMBOLS = ['🌷', '🌸', '🌼', '🌹', '💮', '💐', '🌺', '🏵'];
+
+    let flowerCanvas, ctx, animationFrame;
+    let flowers = [];
+
+    function initFlowers() {
+        if (flowerCanvas) return;
+        flowerCanvas = document.createElement('canvas');
+        flowerCanvas.id = 'spring-flowers-canvas';
+        document.body.appendChild(flowerCanvas);
+        ctx = flowerCanvas.getContext('2d');
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        flowers = [];
+        for (let i = 0; i < CONFIG.flowerCount; i++) flowers.push(createFlower());
+        animateFlowers();
+    }
+
+    function resizeCanvas() {
+        if (flowerCanvas) {
+            flowerCanvas.width = window.innerWidth;
+            flowerCanvas.height = window.innerHeight;
+        }
+    }
+
+    function createFlower() {
+        return {
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+            size: Math.random() * 20 + 12,
+            speed: Math.random() * 1 + 0.5,
+            wind: Math.random() * 0.5 - 0.25,
+            opacity: Math.random() * 0.5 + 0.5,
+            symbol: FLOWER_SYMBOLS[Math.floor(Math.random() * FLOWER_SYMBOLS.length)]
+        };
+    }
+
+    function animateFlowers() {
+        if (!ctx || !flowerCanvas) return;
+        ctx.clearRect(0, 0, flowerCanvas.width, flowerCanvas.height);
+        flowers.forEach(flower => {
+            ctx.font = `${flower.size}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = "rgba(0,0,0,0.3)";
+            ctx.fillStyle = `rgba(255, 255, 200, ${flower.opacity})`;
+            ctx.fillText(flower.symbol, flower.x, flower.y);
+            
+            flower.y += flower.speed;
+            flower.x += flower.wind;
+            
+            if (flower.y > window.innerHeight) {
+                flower.y = -30;
+                flower.x = Math.random() * window.innerWidth;
+                flower.symbol = FLOWER_SYMBOLS[Math.floor(Math.random() * FLOWER_SYMBOLS.length)];
+            }
+            if (flower.x > window.innerWidth) flower.x = 0;
+            if (flower.x < 0) flower.x = window.innerWidth;
+        });
+        animationFrame = requestAnimationFrame(animateFlowers);
+    }
+
+    function destroyFlowers() {
+        if (animationFrame) {
+            cancelAnimationFrame(animationFrame);
+            animationFrame = null;
+        }
+        if (flowerCanvas) {
+            flowerCanvas.remove();
+            flowerCanvas = null;
+            ctx = null;
+        }
+        window.removeEventListener('resize', resizeCanvas);
+    }
 
     function enableFlowers() {
         if (!document.getElementById('spring-theme-styles')) {
             document.head.appendChild(styleElement);
         }
+        initFlowers();
         updateBtnState(true);
         CONFIG.flowersEnabled = true;
         localStorage.setItem(CONFIG.storageKey, 'true');
     }
 
     function disableFlowers() {
+        destroyFlowers();
         updateBtnState(false);
         CONFIG.flowersEnabled = false;
         localStorage.setItem(CONFIG.storageKey, 'false');
@@ -259,11 +340,8 @@
             navContainer.appendChild(btn);
         }
 
-        // Включаем тему по умолчанию, если сохранённое состояние не "false"
         const savedState = localStorage.getItem(CONFIG.storageKey);
-        if (savedState === 'false') {
-            // не включаем автоматически
-        } else {
+        if (savedState !== 'false') {
             enableFlowers();
         }
     }
