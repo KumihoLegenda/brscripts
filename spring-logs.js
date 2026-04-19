@@ -4,7 +4,6 @@
     const CONFIG = {
         storageKey: 'blacklog_spring_v1',
         flowerCount: 70,
-        flowersEnabled: true,
     };
 
     const springStyles = `
@@ -193,14 +192,13 @@
         }
     `;
 
-    const styleElement = document.createElement('style');
-    styleElement.id = 'spring-theme-styles';
-    styleElement.innerText = springStyles;
-
     const FLOWER_SYMBOLS = ['🌷', '🌸', '🌼', '🌹', '💮', '💐', '🌺', '🏵'];
 
-    let flowerCanvas, ctx, animationFrame;
+    let flowerCanvas = null;
+    let ctx = null;
+    let animationFrame = null;
     let flowers = [];
+    let isEnabled = true; // состояние включены ли цветы
 
     function initFlowers() {
         if (flowerCanvas) return;
@@ -208,88 +206,125 @@
         flowerCanvas.id = 'spring-flowers-canvas';
         document.body.appendChild(flowerCanvas);
         ctx = flowerCanvas.getContext('2d');
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        flowers = [];
-        for (let i = 0; i < CONFIG.flowerCount; i++) flowers.push(createFlower());
-        animateFlowers();
-    }
-
-    function resizeCanvas() {
-        if (flowerCanvas) {
-            flowerCanvas.width = window.innerWidth;
-            flowerCanvas.height = window.innerHeight;
-        }
-    }
-
-    function createFlower() {
-        return {
-            x: Math.random() * window.innerWidth,
-            y: Math.random() * window.innerHeight,
-            size: Math.random() * 20 + 12,
-            speed: Math.random() * 1 + 0.5,
-            wind: Math.random() * 0.5 - 0.25,
-            opacity: Math.random() * 0.5 + 0.5,
-            symbol: FLOWER_SYMBOLS[Math.floor(Math.random() * FLOWER_SYMBOLS.length)]
-        };
-    }
-
-    function animateFlowers() {
-        if (!ctx || !flowerCanvas) return;
-        ctx.clearRect(0, 0, flowerCanvas.width, flowerCanvas.height);
-        flowers.forEach(flower => {
-            ctx.font = `${flower.size}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
-            ctx.shadowBlur = 8;
-            ctx.shadowColor = "rgba(0,0,0,0.3)";
-            ctx.fillStyle = `rgba(255, 255, 200, ${flower.opacity})`;
-            ctx.fillText(flower.symbol, flower.x, flower.y);
-            
-            flower.y += flower.speed;
-            flower.x += flower.wind;
-            
-            if (flower.y > window.innerHeight) {
-                flower.y = -30;
-                flower.x = Math.random() * window.innerWidth;
-                flower.symbol = FLOWER_SYMBOLS[Math.floor(Math.random() * FLOWER_SYMBOLS.length)];
+        
+        const resizeHandler = () => {
+            if (flowerCanvas) {
+                flowerCanvas.width = window.innerWidth;
+                flowerCanvas.height = window.innerHeight;
             }
-            if (flower.x > window.innerWidth) flower.x = 0;
-            if (flower.x < 0) flower.x = window.innerWidth;
-        });
-        animationFrame = requestAnimationFrame(animateFlowers);
+        };
+        resizeHandler();
+        window.addEventListener('resize', resizeHandler);
+        
+        // Создаём цветы заново
+        flowers = [];
+        for (let i = 0; i < CONFIG.flowerCount; i++) {
+            flowers.push({
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                size: Math.random() * 20 + 12,
+                speed: Math.random() * 1 + 0.5,
+                wind: Math.random() * 0.5 - 0.25,
+                opacity: Math.random() * 0.5 + 0.5,
+                symbol: FLOWER_SYMBOLS[Math.floor(Math.random() * FLOWER_SYMBOLS.length)]
+            });
+        }
+        
+        // Сохраняем resizeHandler для удаления
+        flowerCanvas._resizeHandler = resizeHandler;
+        
+        startAnimation();
     }
 
-    function destroyFlowers() {
+    function startAnimation() {
+        if (animationFrame) stopAnimation();
+        
+        function animate() {
+            if (!ctx || !flowerCanvas || !isEnabled) return;
+            
+            ctx.clearRect(0, 0, flowerCanvas.width, flowerCanvas.height);
+            flowers.forEach(flower => {
+                ctx.font = `${flower.size}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = "rgba(0,0,0,0.3)";
+                ctx.fillStyle = `rgba(255, 255, 200, ${flower.opacity})`;
+                ctx.fillText(flower.symbol, flower.x, flower.y);
+                
+                flower.y += flower.speed;
+                flower.x += flower.wind;
+                
+                if (flower.y > window.innerHeight) {
+                    flower.y = -30;
+                    flower.x = Math.random() * window.innerWidth;
+                    flower.symbol = FLOWER_SYMBOLS[Math.floor(Math.random() * FLOWER_SYMBOLS.length)];
+                }
+                if (flower.x > window.innerWidth) flower.x = 0;
+                if (flower.x < 0) flower.x = window.innerWidth;
+            });
+            
+            if (isEnabled) {
+                animationFrame = requestAnimationFrame(animate);
+            }
+        }
+        
+        animationFrame = requestAnimationFrame(animate);
+    }
+
+    function stopAnimation() {
         if (animationFrame) {
             cancelAnimationFrame(animationFrame);
             animationFrame = null;
         }
+    }
+
+    function destroyFlowers() {
+        stopAnimation();
         if (flowerCanvas) {
+            const resizeHandler = flowerCanvas._resizeHandler;
+            if (resizeHandler) {
+                window.removeEventListener('resize', resizeHandler);
+            }
             flowerCanvas.remove();
             flowerCanvas = null;
             ctx = null;
         }
-        window.removeEventListener('resize', resizeCanvas);
+        flowers = [];
     }
 
     function enableFlowers() {
+        if (isEnabled) return;
+        isEnabled = true;
+        
         if (!document.getElementById('spring-theme-styles')) {
             document.head.appendChild(styleElement);
         }
+        
         initFlowers();
         updateBtnState(true);
-        CONFIG.flowersEnabled = true;
         localStorage.setItem(CONFIG.storageKey, 'true');
     }
 
     function disableFlowers() {
-        destroyFlowers();
+        if (!isEnabled) return;
+        isEnabled = false;
+        
+        stopAnimation();
+        if (flowerCanvas) {
+            const resizeHandler = flowerCanvas._resizeHandler;
+            if (resizeHandler) {
+                window.removeEventListener('resize', resizeHandler);
+            }
+            flowerCanvas.remove();
+            flowerCanvas = null;
+            ctx = null;
+        }
+        flowers = [];
+        
         updateBtnState(false);
-        CONFIG.flowersEnabled = false;
         localStorage.setItem(CONFIG.storageKey, 'false');
     }
 
     function toggleFlowers() {
-        const isEnabled = localStorage.getItem(CONFIG.storageKey) !== 'false';
         if (isEnabled) {
             disableFlowers();
         } else {
@@ -297,15 +332,13 @@
         }
     }
 
-    function updateBtnState(isActive) {
+    function updateBtnState(active) {
         const btn = document.getElementById('spring-toggle-btn');
         if (btn) {
-            if (isActive) {
+            if (active) {
                 btn.classList.add('spring-mode-active');
-                btn.style.opacity = '1';
             } else {
                 btn.classList.remove('spring-mode-active');
-                btn.style.opacity = '0.6';
             }
         }
     }
@@ -319,7 +352,6 @@
         btn.id = 'spring-toggle-btn';
         btn.href = '#';
         btn.innerHTML = '🌷';
-        btn.style.transition = 'all 0.3s ease';
         btn.addEventListener('click', (e) => { 
             e.preventDefault(); 
             toggleFlowers(); 
@@ -337,7 +369,7 @@
         }
     }
 
-    // Запускаем всё сразу при загрузке страницы
+    // Запуск
     function startImmediately() {
         // Добавляем стили
         document.head.appendChild(styleElement);
@@ -346,15 +378,13 @@
         const savedState = localStorage.getItem(CONFIG.storageKey);
         
         if (savedState === 'false') {
-            // Цветы выключены, кнопка неактивна
-            CONFIG.flowersEnabled = false;
+            isEnabled = false;
             updateBtnState(false);
         } else {
-            // Цветы включены по умолчанию
+            isEnabled = true;
             enableFlowers();
         }
         
-        // Добавляем кнопку в интерфейс
         injectUI();
     }
 
