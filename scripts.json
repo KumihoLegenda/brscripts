@@ -2,7 +2,7 @@
   "scripts": [
     {
       "id": "button",
-      "name": "Форум | Кнопки переходники (НОВОЕ)",
+      "name": "Форум | Кнопки переходники",
       "matches": ["https://forum.blackrussia.online/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/button",
       "enabledDefault": true
@@ -80,7 +80,7 @@
     },
     {
       "id": "spring-logs",
-      "name": "Логи | Весенняя тема (НОВОЕ)",
+      "name": "Логи | Весенняя тема",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/spring-logs.js",
       "enabledDefault": true
