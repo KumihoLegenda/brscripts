@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         BR Panel (Menu Only)
 // @namespace    http://tampermonkey.net/
-// @version      3.5
-// @description  Floating menu with servers and thread mover - Pure move, NO prefix changes
+// @version      3.2
+// @description  Floating menu with servers and thread mover (All servers 1-91) - Fixed transfer without prefix/sticky/close changes
 // @author       Black Russia
 // @match        https://forum.blackrussia.online/*
 // @grant        none
@@ -20,7 +20,7 @@
         (function() {
             const STORAGE_PREFIX = 'br_panel_mix_';
 
-            // Функция перемещения - НИКАКИХ изменений префикса
+            // === ФУНКЦИИ ПЕРЕНСОА (ТОЛЬКО ПЕРЕМЕЩЕНИЕ, БЕЗ ИЗМЕНЕНИЯ ПРЕФИКСА/СТАТУСА) ===
             function moveThreadOnly(targetNodeId) {
                 const threadId = getThreadIdFromUrl();
                 if (!threadId) {
@@ -28,60 +28,100 @@
                     return false;
                 }
                 
-                // Получаем заголовок темы
-                const titleElement = document.querySelector('.p-title-value');
-                let title = '';
-                if (titleElement) {
-                    // Убираем префикс из заголовка, если он есть
-                    const label = titleElement.querySelector('.label');
-                    if (label) {
-                        // Заголовок может быть после префикса
-                        const textNodes = [];
-                        titleElement.childNodes.forEach(node => {
-                            if (node.nodeType === Node.TEXT_NODE) {
-                                textNodes.push(node.textContent);
-                            } else if (node !== label) {
-                                textNodes.push(node.textContent);
-                            }
-                        });
-                        title = textNodes.join('').trim();
-                    } else {
-                        title = titleElement.textContent.trim();
+                // Получаем текущий префикс темы (если есть)
+                let currentPrefixId = 0;
+                const prefixElement = document.querySelector('.p-title-value .label');
+                if (prefixElement) {
+                    const prefixText = prefixElement.textContent.trim();
+                    // Пытаемся найти ID префикса по тексту (если нужно сохранить)
+                    // Для XenForo префикс хранится в data-атрибутах
+                    const prefixLink = prefixElement.closest('a');
+                    if (prefixLink && prefixLink.href) {
+                        const prefixMatch = prefixLink.href.match(/prefix_id=(\d+)/);
+                        if (prefixMatch) currentPrefixId = parseInt(prefixMatch[1]);
                     }
                 }
                 
-                // ОТПРАВЛЯЕМ ТОЛЬКО ПЕРЕМЕЩЕНИЕ - БЕЗ ПАРАМЕТРА PREFIX_ID
-                const formData = new FormData();
-                formData.append('title', title);
-                formData.append('target_node_id', targetNodeId);
-                formData.append('redirect_type', 'none');
-                formData.append('notify_watchers', 1);
-                formData.append('starter_alert', 1);
-                formData.append('starter_alert_reason', '');
-                formData.append('_xfToken', XF.config.csrf);
-                formData.append('_xfRequestUri', document.URL.split(XF.config.url.fullBase)[1]);
-                formData.append('_xfWithData', 1);
-                formData.append('_xfResponseType', 'json');
-                
+                // Отправляем запрос на перемещение БЕЗ изменения префикса, БЕЗ открепления, БЕЗ закрытия
                 fetch(`${document.URL}move`, {
                     method: 'POST',
-                    body: formData,
-                }).then(response => response.json())
-                  .then(data => {
-                      if (data && data._redirect) {
-                          window.location.href = data._redirect;
-                      } else {
-                          location.reload();
-                      }
-                  })
-                  .catch(() => location.reload());
-                  
+                    body: getFormData({
+                        prefix_id: currentPrefixId,  // сохраняем текущий префикс
+                        title: document.querySelector('.p-title-value')?.lastChild?.textContent || '',
+                        target_node_id: targetNodeId,
+                        redirect_type: 'none',
+                        notify_watchers: 1,
+                        starter_alert: 1,
+                        starter_alert_reason: "",
+                        _xfToken: XF.config.csrf,
+                        _xfRequestUri: document.URL.split(XF.config.url.fullBase)[1],
+                        _xfWithData: 1,
+                        _xfResponseType: 'json',
+                    }),
+                }).then(() => location.reload());
                 return true;
+            }
+
+            function getFormData(data) {
+                const formData = new FormData();
+                Object.entries(data).forEach(i => formData.append(i[0], i[1]));
+                return formData;
             }
 
             function getThreadIdFromUrl() {
                 const match = window.location.pathname.match(/\/threads\/[^.]+\.(\d+)/);
                 return match ? match[1] : null;
+            }
+
+            // Префиксы для переноса (сохранены для совместимости, но НЕ используются в moveThreadOnly)
+            const TRANSFER_PREFIX1 = 20;   // передача админам 31
+            const TRANSFER_PREFIX2 = 21;   // передача в обжалования 31
+            const TRANSFER_PREFIX3 = 22;   // передача в жб на игроков 31
+            const TRANSFER_PREFIX4 = 23;   // передача в тех раздел 31
+            const TRANSFER_PREFIX5 = 24;   // передача в жб на тех 31
+            const TRANSFER_PREFIX6 = 25;   // передача админам 32
+            const TRANSFER_PREFIX7 = 26;   // передача в обжалования 32
+            const TRANSFER_PREFIX8 = 27;   // передача в жб на игроков 32
+            const TRANSFER_PREFIX9 = 28;   // передача в тех раздел 32
+            const TRANSFER_PREFIX10 = 29;  // передача в жб на тех 32
+            const TRANSFER_PREFIX11 = 30;  // передача админам 33
+            const TRANSFER_PREFIX12 = 31;  // передача в обжалования 33
+            const TRANSFER_PREFIX13 = 32;  // передача в жб на игроков 33
+            const TRANSFER_PREFIX14 = 33;  // передача в тех раздел 33
+            const TRANSFER_PREFIX15 = 34;  // передача в жб на тех 33
+            const TRANSFER_PREFIX16 = 35;  // передача админам 34
+            const TRANSFER_PREFIX17 = 36;  // передача в обжалования 34
+            const TRANSFER_PREFIX18 = 37;  // передача в жб на игроков 34
+            const TRANSFER_PREFIX19 = 38;  // передача в тех раздел 34
+            const TRANSFER_PREFIX20 = 39;  // передача в жб на тех 34
+            const TRANSFER_PREFIX21 = 40;  // передача админам 35
+            const TRANSFER_PREFIX22 = 41;  // передача в обжалования 35
+            const TRANSFER_PREFIX23 = 42;  // передача в жб на игроков 35
+            const TRANSFER_PREFIX24 = 43;  // передача в тех раздел 35
+            const TRANSFER_PREFIX25 = 44;  // передача в жб на тех 35
+
+            function getPrefixForSection(sectionType, serverId) {
+                const prefixMap = {
+                    'tech_complaint': { 
+                        31: TRANSFER_PREFIX5, 32: TRANSFER_PREFIX10, 33: TRANSFER_PREFIX15, 
+                        34: TRANSFER_PREFIX20, 35: TRANSFER_PREFIX25 
+                    },
+                    'tech': { 
+                        31: TRANSFER_PREFIX4, 32: TRANSFER_PREFIX9, 33: TRANSFER_PREFIX14, 
+                        34: TRANSFER_PREFIX19, 35: TRANSFER_PREFIX24 
+                    },
+                    'player_complaint': { 
+                        31: TRANSFER_PREFIX3, 32: TRANSFER_PREFIX8, 33: TRANSFER_PREFIX13, 
+                        34: TRANSFER_PREFIX18, 35: TRANSFER_PREFIX23 
+                    }
+                };
+                if (prefixMap[sectionType]?.[serverId]) {
+                    return prefixMap[sectionType][serverId];
+                }
+                if (sectionType === 'tech_complaint') return TRANSFER_PREFIX5;
+                if (sectionType === 'tech') return TRANSFER_PREFIX4;
+                if (sectionType === 'player_complaint') return TRANSFER_PREFIX3;
+                return 0;
             }
 
             // Генерация названий серверов (1-91)
@@ -174,6 +214,7 @@
                     header.style.cssText = 'text-align:center; color:#fff; font-weight:bold; font-size:12px; padding:5px 0; margin-bottom:5px; background: rgba(255,255,255,0.1); border-radius:6px;';
                     menu.appendChild(header);
 
+                    // Функция создания кнопки переноса - ТОЛЬКО ПЕРЕМЕЩЕНИЕ, БЕЗ ИЗМЕНЕНИЙ
                     const createMoveButton = (nodeId, serverId, label, color) => {
                         const a = document.createElement('a');
                         a.className = 'fnp-link';
@@ -184,7 +225,7 @@
                         a.addEventListener('click', (e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            moveThreadOnly(nodeId);
+                            moveThreadOnly(nodeId);  // ← ТОЛЬКО ПЕРЕМЕЩЕНИЕ, БЕЗ ПРЕФИКСА/ОТКРЕПЛЕНИЯ/ЗАКРЫТИЯ
                         });
                         
                         return a;
@@ -280,7 +321,7 @@
                 setTimeout(() => overlay.classList.add('open'), 10);
             }
 
-            // Стили
+            // Стили (без изменений)
             const style = document.createElement('style');
             style.textContent = `
                 :root { --fnp-btn: 48px; }
