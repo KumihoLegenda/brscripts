@@ -2,9 +2,9 @@
     'use strict';
 
     const CONFIG = {
-        storageKey: 'blacklog_spring_v1', // новый ключ для хранения состояния
+        storageKey: 'blacklog_spring_v1',
         flowerCount: 70,
-        flowersEnabled: true, // по умолчанию включены
+        flowersEnabled: true,
     };
 
     const springStyles = `
@@ -176,7 +176,7 @@
             font-size: 1.2rem;
         }
         #spring-toggle-btn:hover {
-            background: rgba(255,255,0.1);
+            background: rgba(255,255,255,0.1);
             color: #fff;
         }
         #spring-toggle-btn.spring-mode-active {
@@ -197,13 +197,13 @@
     styleElement.id = 'spring-theme-styles';
     styleElement.innerText = springStyles;
 
-    // Символы цветов для падения
     const FLOWER_SYMBOLS = ['🌷', '🌸', '🌼', '🌹', '💮', '💐', '🌺', '🏵'];
 
     let flowerCanvas, ctx, animationFrame;
     let flowers = [];
 
     function initFlowers() {
+        if (flowerCanvas) return;
         flowerCanvas = document.createElement('canvas');
         flowerCanvas.id = 'spring-flowers-canvas';
         document.body.appendChild(flowerCanvas);
@@ -226,7 +226,7 @@
         return {
             x: Math.random() * window.innerWidth,
             y: Math.random() * window.innerHeight,
-            size: Math.random() * 20 + 12, // размер шрифта
+            size: Math.random() * 20 + 12,
             speed: Math.random() * 1 + 0.5,
             wind: Math.random() * 0.5 - 0.25,
             opacity: Math.random() * 0.5 + 0.5,
@@ -275,9 +275,7 @@
         if (!document.getElementById('spring-theme-styles')) {
             document.head.appendChild(styleElement);
         }
-        if (!flowerCanvas) {
-            initFlowers();
-        }
+        initFlowers();
         updateBtnState(true);
         CONFIG.flowersEnabled = true;
         localStorage.setItem(CONFIG.storageKey, 'true');
@@ -291,7 +289,7 @@
     }
 
     function toggleFlowers() {
-        const isEnabled = localStorage.getItem(CONFIG.storageKey) === 'true';
+        const isEnabled = localStorage.getItem(CONFIG.storageKey) !== 'false';
         if (isEnabled) {
             disableFlowers();
         } else {
@@ -304,10 +302,8 @@
         if (btn) {
             if (isActive) {
                 btn.classList.add('spring-mode-active');
-                btn.innerHTML = '🌷';
             } else {
                 btn.classList.remove('spring-mode-active');
-                btn.innerHTML = '🌷';
             }
         }
     }
@@ -333,19 +329,21 @@
         } else {
             navContainer.appendChild(btn);
         }
+    }
 
-        // Включаем цветы по умолчанию, если сохранённое состояние не "false"
-        const savedState = localStorage.getItem(CONFIG.storageKey);
-        if (savedState === 'false') {
-            // не включаем автоматически
-        } else {
-            enableFlowers();
-        }
+    // Запускаем всё сразу при загрузке страницы
+    function startImmediately() {
+        // Добавляем стили
+        document.head.appendChild(styleElement);
+        // Запускаем цветы
+        enableFlowers();
+        // Добавляем кнопку в интерфейс
+        injectUI();
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', injectUI);
+        document.addEventListener('DOMContentLoaded', startImmediately);
     } else {
-        injectUI();
+        startImmediately();
     }
 })();
