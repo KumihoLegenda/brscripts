@@ -226,7 +226,7 @@
         return {
             x: Math.random() * window.innerWidth,
             y: Math.random() * window.innerHeight,
-            size: Math.random() * 20 + 12, // размер шрифта
+            size: Math.random() * 20 + 12,
             speed: Math.random() * 1 + 0.5,
             wind: Math.random() * 0.5 - 0.25,
             opacity: Math.random() * 0.5 + 0.5,
@@ -272,6 +272,7 @@
     }
 
     function enableFlowers() {
+        // Всегда применяем стили при включении
         if (!document.getElementById('spring-theme-styles')) {
             document.head.appendChild(styleElement);
         }
@@ -303,10 +304,8 @@
         if (btn) {
             if (isActive) {
                 btn.classList.add('spring-mode-active');
-                btn.innerHTML = '🌷';
             } else {
                 btn.classList.remove('spring-mode-active');
-                btn.innerHTML = '🌷';
             }
         }
     }
@@ -315,6 +314,11 @@
         const navContainer = document.querySelector('#site-navbar .container-fluid');
         if (!navContainer) { setTimeout(injectUI, 500); return; }
         if (document.getElementById('spring-toggle-btn')) return;
+
+        // ВСЕГДА применяем стили темы при загрузке страницы
+        if (!document.getElementById('spring-theme-styles')) {
+            document.head.appendChild(styleElement);
+        }
 
         const btn = document.createElement('a');
         btn.id = 'spring-toggle-btn';
@@ -333,18 +337,18 @@
             navContainer.appendChild(btn);
         }
 
-        // Проверяем сохраненное состояние при загрузке
+        // Проверяем сохраненное состояние
         const savedState = localStorage.getItem(CONFIG.storageKey);
         
-        // Если сохраненного состояния нет или оно равно 'true' - включаем цветы
-        if (savedState === null || savedState === 'true') {
-            enableFlowers();
-        } else {
-            // Если сохранено 'false' - оставляем цветы выключенными
-            updateBtnState(false);
+        if (savedState === 'false') {
+            // Цветы должны быть выключены
             CONFIG.flowersEnabled = false;
-            // Убеждаемся, что цветы не запущены
+            updateBtnState(false);
+            // Убеждаемся, что цветы не запущены (стили уже применены выше)
             destroyFlowers();
+        } else {
+            // Цветы включены (первый запуск или было true)
+            enableFlowers();
         }
     }
 
