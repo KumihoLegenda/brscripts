@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         BR Panel (Menu Only)
 // @namespace    http://tampermonkey.net/
-// @version      3.4
-// @description  Floating menu with servers and thread mover - Preserves prefix text
+// @version      3.5
+// @description  Floating menu with servers and thread mover - Pure move, NO prefix changes
 // @author       Black Russia
 // @match        https://forum.blackrussia.online/*
 // @grant        none
@@ -20,138 +20,63 @@
         (function() {
             const STORAGE_PREFIX = 'br_panel_mix_';
 
-            // Получаем текущий префикс темы (текст)
-            function getCurrentPrefixText() {
-                const prefixElement = document.querySelector('.p-title-value .label');
-                if (prefixElement) {
-                    return prefixElement.textContent.trim();
-                }
-                return null;
-            }
-
-            // Устанавливаем префикс по тексту (ищем его ID)
-            function setPrefixByText(prefixText, threadUrl) {
-                if (!prefixText) return Promise.resolve(false);
-                
-                // Ищем ID префикса по тексту на странице со списком префиксов
-                return fetch(threadUrl, { credentials: 'same-origin' })
-                    .then(response => response.text())
-                    .then(html => {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        
-                        // Ищем элемент с нужным текстом префикса
-                        const prefixOptions = doc.querySelectorAll('.p-title-value .label, .formSelect select option, [data-prefix]');
-                        let prefixId = null;
-                        
-                        // Пытаемся найти префикс в селекте формы редактирования
-                        const editPageUrl = threadUrl.replace(/\.(\d+)$/, '/edit');
-                        return fetch(editPageUrl, { credentials: 'same-origin' })
-                            .then(res => res.text())
-                            .then(editHtml => {
-                                const editDoc = parser.parseFromString(editHtml, 'text/html');
-                                const select = editDoc.querySelector('select[name="prefix_id"]');
-                                if (select) {
-                                    for (let option of select.options) {
-                                        if (option.textContent.trim() === prefixText) {
-                                            prefixId = option.value;
-                                            break;
-                                        }
-                                    }
-                                }
-                                
-                                if (prefixId && prefixId !== '0') {
-                                    // Отправляем запрос на установку префикса
-                                    const formData = new FormData();
-                                    formData.append('prefix_id', prefixId);
-                                    formData.append('title', editDoc.querySelector('input[name="title"]')?.value || '');
-                                    formData.append('_xfToken', XF.config.csrf);
-                                    formData.append('_xfRequestUri', threadUrl.split(XF.config.url.fullBase)[1]);
-                                    formData.append('_xfWithData', 1);
-                                    formData.append('_xfResponseType', 'json');
-                                    
-                                    return fetch(editPageUrl, {
-                                        method: 'POST',
-                                        body: formData
-                                    });
-                                }
-                                return false;
-                            });
-                    })
-                    .catch(() => false);
-            }
-
-            // Функция перемещения с сохранением префикса
-            function moveThreadWithPrefix(targetNodeId) {
+            // Функция перемещения - НИКАКИХ изменений префикса
+            function moveThreadOnly(targetNodeId) {
                 const threadId = getThreadIdFromUrl();
                 if (!threadId) {
                     alert('Эта функция доступна только при просмотре темы!');
                     return false;
                 }
                 
-                const currentPrefixText = getCurrentPrefixText();
-                const currentUrl = document.URL;
-                
-                // Выполняем перемещение
-                fetch(`${currentUrl}move`, {
-                    method: 'POST',
-                    body: getFormData({
-                        title: document.querySelector('.p-title-value')?.lastChild?.textContent || '',
-                        target_node_id: targetNodeId,
-                        redirect_type: 'none',
-                        notify_watchers: 1,
-                        starter_alert: 1,
-                        starter_alert_reason: "",
-                        _xfToken: XF.config.csrf,
-                        _xfRequestUri: currentUrl.split(XF.config.url.fullBase)[1],
-                        _xfWithData: 1,
-                        _xfResponseType: 'json',
-                    }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // После успешного перемещения переходим на новый URL темы
-                    if (data && data._redirect) {
-                        const newUrl = data._redirect;
-                        // Сохраняем префикс в localStorage для восстановления после перезагрузки
-                        if (currentPrefixText) {
-                            localStorage.setItem(STORAGE_PREFIX + 'restore_prefix', currentPrefixText);
-                            localStorage.setItem(STORAGE_PREFIX + 'restore_url', newUrl);
-                        }
-                        window.location.href = newUrl;
+                // Получаем заголовок темы
+                const titleElement = document.querySelector('.p-title-value');
+                let title = '';
+                if (titleElement) {
+                    // Убираем префикс из заголовка, если он есть
+                    const label = titleElement.querySelector('.label');
+                    if (label) {
+                        // Заголовок может быть после префикса
+                        const textNodes = [];
+                        titleElement.childNodes.forEach(node => {
+                            if (node.nodeType === Node.TEXT_NODE) {
+                                textNodes.push(node.textContent);
+                            } else if (node !== label) {
+                                textNodes.push(node.textContent);
+                            }
+                        });
+                        title = textNodes.join('').trim();
                     } else {
-                        location.reload();
+                        title = titleElement.textContent.trim();
                     }
-                })
-                .catch(() => location.reload());
-                
-                return true;
-            }
-
-            // Проверяем, нужно ли восстановить префикс после перезагрузки
-            function checkAndRestorePrefix() {
-                const prefixToRestore = localStorage.getItem(STORAGE_PREFIX + 'restore_prefix');
-                const targetUrl = localStorage.getItem(STORAGE_PREFIX + 'restore_url');
-                
-                if (prefixToRestore && targetUrl && window.location.href === targetUrl) {
-                    // Очищаем метки
-                    localStorage.removeItem(STORAGE_PREFIX + 'restore_prefix');
-                    localStorage.removeItem(STORAGE_PREFIX + 'restore_url');
-                    
-                    // Ждём загрузки страницы и восстанавливаем префикс
-                    setTimeout(() => {
-                        const currentPrefix = getCurrentPrefixText();
-                        if (currentPrefix !== prefixToRestore) {
-                            setPrefixByText(prefixToRestore, window.location.href);
-                        }
-                    }, 1000);
                 }
-            }
-
-            function getFormData(data) {
+                
+                // ОТПРАВЛЯЕМ ТОЛЬКО ПЕРЕМЕЩЕНИЕ - БЕЗ ПАРАМЕТРА PREFIX_ID
                 const formData = new FormData();
-                Object.entries(data).forEach(i => formData.append(i[0], i[1]));
-                return formData;
+                formData.append('title', title);
+                formData.append('target_node_id', targetNodeId);
+                formData.append('redirect_type', 'none');
+                formData.append('notify_watchers', 1);
+                formData.append('starter_alert', 1);
+                formData.append('starter_alert_reason', '');
+                formData.append('_xfToken', XF.config.csrf);
+                formData.append('_xfRequestUri', document.URL.split(XF.config.url.fullBase)[1]);
+                formData.append('_xfWithData', 1);
+                formData.append('_xfResponseType', 'json');
+                
+                fetch(`${document.URL}move`, {
+                    method: 'POST',
+                    body: formData,
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data && data._redirect) {
+                          window.location.href = data._redirect;
+                      } else {
+                          location.reload();
+                      }
+                  })
+                  .catch(() => location.reload());
+                  
+                return true;
             }
 
             function getThreadIdFromUrl() {
@@ -259,7 +184,7 @@
                         a.addEventListener('click', (e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            moveThreadWithPrefix(nodeId);
+                            moveThreadOnly(nodeId);
                         });
                         
                         return a;
@@ -450,9 +375,6 @@
                 menu.classList.add('show');
                 toggleBtn.classList.add('active');
             }
-            
-            // Проверяем восстановление префикса после перезагрузки
-            checkAndRestorePrefix();
         })();
     } catch (e) {
         console.error('[BR Script] Panel Error:', e);
