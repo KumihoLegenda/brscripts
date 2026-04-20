@@ -12,7 +12,7 @@
 
     // Уникальный идентификатор для этого скрипта
     const SCRIPT_ID = 'br-theme-manager-full-v3';
-    
+
     if (document.body.getAttribute(`data-${SCRIPT_ID}`)) {
         return;
     }
@@ -495,7 +495,7 @@
         // Удаляем старую кнопку, если есть
         const oldBtn = document.getElementById('br-theme-button-v3');
         if (oldBtn) oldBtn.remove();
-        
+
         // Создаём плавающую кнопку в правом верхнем углу
         const btn = document.createElement('div');
         btn.id = 'br-theme-button-v3';
@@ -521,21 +521,21 @@
             transition: all 0.3s ease;
             font-family: Arial, sans-serif;
         `;
-        
+
         btn.onmouseenter = () => {
             btn.style.transform = 'scale(1.1)';
             btn.style.boxShadow = '0 6px 20px rgba(155, 89, 182, 0.5)';
             btn.style.borderColor = '#c27bd6';
         };
-        
+
         btn.onmouseleave = () => {
             btn.style.transform = 'scale(1)';
             btn.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
             btn.style.borderColor = '#9b59b6';
         };
-        
+
         btn.onclick = openThemeModal;
-        
+
         document.body.appendChild(btn);
     }
 
@@ -576,7 +576,7 @@
         .br-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4); }
         .br-btn-secondary { background: rgba(255,255,255,0.1); color: #fff; }
         .br-btn-secondary:hover { background: rgba(255,255,255,0.2); }
-        
+
         /* Адаптация для мобильных устройств */
         @media (max-width: 768px) {
             #br-theme-button-v3 {
@@ -599,7 +599,7 @@
     } else {
         createButton();
     }
-    
+
     // Следим, чтобы кнопка всегда была на месте (если вдруг исчезнет)
     const observer = new MutationObserver(() => {
         if (!document.getElementById('br-theme-button-v3')) {
