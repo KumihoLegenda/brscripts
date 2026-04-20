@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BR Theme & Background Manager (Full)
 // @namespace    http://tampermonkey.net/
-// @version      3.1
+// @version      3.2
 // @description  Полноценные темы оформления форума + смена фона (РАБОТАЕТ НА ВСЕХ СТРАНИЦАХ)
 // @match        https://forum.blackrussia.online/*
 // @grant        none
@@ -490,7 +490,7 @@
         setTimeout(() => modal.classList.add('open'), 10);
     }
 
-    // ========== СОЗДАНИЕ КНОПКИ 🖼 (ВСЕГДА ВИДИМА) ==========
+    // ========== СОЗДАНИЕ КНОПКИ 🖼 (ВСЕГДА ВИДИМА НА ЛЮБОЙ СТРАНИЦЕ) ==========
     function createButton() {
         // Удаляем старую кнопку, если есть
         const oldBtn = document.getElementById('br-theme-button-v3');
@@ -590,17 +590,23 @@
     `;
     document.head.appendChild(modalStyle);
 
-    // Запуск
+    // ========== ЗАПУСК ==========
+    // Загружаем сохранённые настройки темы и фона
     loadSavedSettings();
 
-    // Добавляем кнопку сразу после загрузки DOM
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', createButton);
-    } else {
-        createButton();
-    }
-    
-    // Следим, чтобы кнопка всегда была на месте (если вдруг исчезнет)
+    // Функция для создания кнопки с проверкой готовности DOM
+    const initButton = () => {
+        if (document.body) {
+            createButton();
+        } else {
+            document.addEventListener('DOMContentLoaded', createButton);
+        }
+    };
+
+    // Запускаем создание кнопки (работает на всех страницах, включая главную)
+    initButton();
+
+    // Следим, чтобы кнопка всегда была на месте (если вдруг исчезнет из-за динамических изменений)
     const observer = new MutationObserver(() => {
         if (!document.getElementById('br-theme-button-v3')) {
             createButton();
