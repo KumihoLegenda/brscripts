@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         BR Theme & Background Manager (Full)
 // @namespace    http://tampermonkey.net/
-// @version      2.2
-// @description  Полноценные темы оформления форума + смена фона
+// @version      2.3
+// @description  Полноценные темы оформления форума + смена фона (работает на всех страницах)
 // @match        https://forum.blackrussia.online/*
 // @grant        none
 // ==/UserScript==
@@ -24,13 +24,13 @@
     // ========== ПОЛНЫЕ ТЕМЫ ОФОРМЛЕНИЯ ФОРУМА ==========
     const themes = [
         { id: 'none', name: '🌙 Стандартная тема', css: '' },
-        { id: 'neon-orange', name: '🔥 Неоново-оранжевый', accent: '#FF4500', accentGlow: '#ff6a2e', accentRgb: '255, 69, 0', css: generateThemeCSS('#FF4500', '#ff6a2e', '255, 69, 0') },
-        { id: 'cyber-blue', name: '💙 Кибер-синий', accent: '#00BFFF', accentGlow: '#4dc3ff', accentRgb: '0, 191, 255', css: generateThemeCSS('#00BFFF', '#4dc3ff', '0, 191, 255') },
-        { id: 'neon-green', name: '💚 Неоново-зеленый', accent: '#39FF14', accentGlow: '#6eff4d', accentRgb: '57, 255, 20', css: generateThemeCSS('#39FF14', '#6eff4d', '57, 255, 20') },
-        { id: 'royal-purple', name: '👑 Королевский пурпурный', accent: '#9b59b6', accentGlow: '#c27bd6', accentRgb: '155, 89, 182', css: generateThemeCSS('#9b59b6', '#c27bd6', '155, 89, 182') },
-        { id: 'hot-pink', name: '💖 Горячий розовый', accent: '#FF69B4', accentGlow: '#ff8dc9', accentRgb: '255, 105, 180', css: generateThemeCSS('#FF69B4', '#ff8dc9', '255, 105, 180') },
+        { id: 'neon-orange', name: '🔥 Неоновый Оранжевый', accent: '#FF4500', accentGlow: '#ff6a2e', accentRgb: '255, 69, 0', css: generateThemeCSS('#FF4500', '#ff6a2e', '255, 69, 0') },
+        { id: 'cyber-blue', name: '💙 Кибер-Синий', accent: '#00BFFF', accentGlow: '#4dc3ff', accentRgb: '0, 191, 255', css: generateThemeCSS('#00BFFF', '#4dc3ff', '0, 191, 255') },
+        { id: 'neon-green', name: '💚 Неоново-Зеленый', accent: '#39FF14', accentGlow: '#6eff4d', accentRgb: '57, 255, 20', css: generateThemeCSS('#39FF14', '#6eff4d', '57, 255, 20') },
+        { id: 'royal-purple', name: '👑 Королевский Пурпурный', accent: '#9b59b6', accentGlow: '#c27bd6', accentRgb: '155, 89, 182', css: generateThemeCSS('#9b59b6', '#c27bd6', '155, 89, 182') },
+        { id: 'hot-pink', name: '💖 Горячий Розовый', accent: '#FF69B4', accentGlow: '#ff8dc9', accentRgb: '255, 105, 180', css: generateThemeCSS('#FF69B4', '#ff8dc9', '255, 105, 180') },
         { id: 'golden', name: '⭐ Золотой', accent: '#FFD700', accentGlow: '#ffe44d', accentRgb: '255, 215, 0', css: generateThemeCSS('#FFD700', '#ffe44d', '255, 215, 0') },
-        { id: 'crimson-red', name: '❤️ Багровый красный', accent: '#DC143C', accentGlow: '#ff3355', accentRgb: '220, 20, 60', css: generateThemeCSS('#DC143C', '#ff3355', '220, 20, 60') },
+        { id: 'crimson-red', name: '❤️ Багровый Красный', accent: '#DC143C', accentGlow: '#ff3355', accentRgb: '220, 20, 60', css: generateThemeCSS('#DC143C', '#ff3355', '220, 20, 60') },
         { id: 'teal', name: '🐚 Бирюзовый', accent: '#00CED1', accentGlow: '#33e5e8', accentRgb: '0, 206, 209', css: generateThemeCSS('#00CED1', '#33e5e8', '0, 206, 209') },
         { id: 'dark-knight', name: '🦇 Тёмный рыцарь', css: generateDarkKnightCSS() }
     ];
@@ -423,35 +423,82 @@
         setTimeout(() => modal.classList.add('open'), 10);
     }
 
-    // ========== КНОПКА С ЭМОДЗИ 🖼 (КАК ВО ВТОРОМ СКРИПТЕ) ==========
-    function addButton() {
-        // Ищем контейнер с кнопками (созданный первым скриптом)
-        let container = document.querySelector('.bgButtonsContainer');
-        
-        if (!container) {
-            // Если контейнера нет - пробуем найти .pageContent и создаем свой контейнер
-            const pageContent = document.querySelector('.pageContent');
-            if (pageContent) {
-                let newContainer = document.querySelector('.bgButtonsContainer-custom');
-                if (!newContainer) {
-                    newContainer = document.createElement('div');
-                    newContainer.className = 'bgButtonsContainer bgButtonsContainer-custom';
-                    newContainer.style.cssText = 'display: flex; gap: 2px; flex-wrap: wrap; padding: 5px 0; margin-bottom: 10px;';
-                    pageContent.insertBefore(newContainer, pageContent.firstChild);
-                }
-                container = newContainer;
-            } else {
-                setTimeout(addButton, 500);
-                return;
-            }
-        }
-        
-        // Проверяем, есть ли уже наша кнопка (по уникальному ID)
+    // ========== СОЗДАНИЕ СОБСТВЕННОЙ ПАНЕЛИ КНОПОК (РАБОТАЕТ НА ВСЕХ СТРАНИЦАХ) ==========
+    function createFloatingButton() {
+        // Проверяем, есть ли уже наша кнопка
         if (document.getElementById('br-theme-button-full')) {
             return;
         }
         
-        // Создаем кнопку с эмодзи 🖼 (как во втором скрипте)
+        // Ищем подходящее место для кнопки
+        let container = null;
+        
+        // Вариант 1: Если есть контейнер от первого скрипта - добавляем туда
+        const existingContainer = document.querySelector('.bgButtonsContainer');
+        if (existingContainer) {
+            container = existingContainer;
+        }
+        
+        // Вариант 2: Ищем другие подходящие контейнеры в шапке
+        if (!container) {
+            // Пробуем найти панель навигации или блок с кнопками
+            const possibleContainers = [
+                '.p-nav-inner',
+                '.p-header-inner',
+                '.p-body-header .contentRow',
+                '.block-container .block-body',
+                '.p-body-content'
+            ];
+            
+            for (const selector of possibleContainers) {
+                const el = document.querySelector(selector);
+                if (el) {
+                    container = el;
+                    break;
+                }
+            }
+        }
+        
+        // Вариант 3: Создаём свой контейнер в правом верхнем углу (как плавающую кнопку)
+        if (!container) {
+            // Создаём отдельную плавающую кнопку, которая всегда видна
+            const floatingBtn = document.createElement('div');
+            floatingBtn.id = 'br-floating-theme-btn';
+            floatingBtn.innerHTML = '🖼';
+            floatingBtn.title = 'Полное оформление форума';
+            floatingBtn.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                width: 48px;
+                height: 48px;
+                background: linear-gradient(135deg, #1a1a2e, #16213e);
+                border: 1px solid rgba(155, 89, 182, 0.5);
+                border-radius: 50%;
+                color: white;
+                font-size: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                z-index: 9999;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                transition: all 0.3s ease;
+            `;
+            floatingBtn.onmouseenter = () => {
+                floatingBtn.style.transform = 'scale(1.1)';
+                floatingBtn.style.boxShadow = '0 6px 20px rgba(155, 89, 182, 0.4)';
+            };
+            floatingBtn.onmouseleave = () => {
+                floatingBtn.style.transform = 'scale(1)';
+                floatingBtn.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+            };
+            floatingBtn.onclick = openThemeModal;
+            document.body.appendChild(floatingBtn);
+            return;
+        }
+        
+        // Создаём кнопку и добавляем в контейнер
         const btn = document.createElement('button');
         btn.id = 'br-theme-button-full';
         btn.textContent = '🖼';
@@ -463,7 +510,7 @@
         container.appendChild(btn);
     }
 
-    // Стили модального окна (без конфликта с первым скриптом)
+    // Стили модального окна
     const modalStyle = document.createElement('style');
     modalStyle.textContent = `
         .br-modal {
@@ -506,16 +553,21 @@
     // Запуск
     loadSavedSettings();
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', addButton);
-    } else {
-        addButton();
+    // Функция для добавления кнопки с задержкой (ждём загрузки DOM)
+    function init() {
+        createFloatingButton();
     }
-
-    // Следим за изменениями (на случай если контейнер пересоздадут)
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+    
+    // Следим за изменениями (на случай если появится контейнер от первого скрипта позже)
     const observer = new MutationObserver(() => {
         if (!document.getElementById('br-theme-button-full')) {
-            addButton();
+            createFloatingButton();
         }
     });
     observer.observe(document.body, { childList: true, subtree: true });
