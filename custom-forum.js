@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BR Theme & Background Manager (Full)
 // @namespace    http://tampermonkey.net/
-// @version      2.3
+// @version      2.4
 // @description  Полноценные темы оформления форума + смена фона (работает на всех страницах)
 // @match        https://forum.blackrussia.online/*
 // @grant        none
@@ -423,91 +423,112 @@
         setTimeout(() => modal.classList.add('open'), 10);
     }
 
-    // ========== СОЗДАНИЕ СОБСТВЕННОЙ ПАНЕЛИ КНОПОК (РАБОТАЕТ НА ВСЕХ СТРАНИЦАХ) ==========
-    function createFloatingButton() {
+    // ========== ДОБАВЛЕНИЕ КНОПКИ В НАВИГАЦИОННУЮ ПАНЕЛЬ (РАБОТАЕТ НА ВСЕХ СТРАНИЦАХ) ==========
+    function addButtonToNavigation() {
         // Проверяем, есть ли уже наша кнопка
         if (document.getElementById('br-theme-button-full')) {
             return;
         }
         
-        // Ищем подходящее место для кнопки
-        let container = null;
+        // Ищем контейнер навигации (есть на всех страницах)
+        let navContainer = document.querySelector('.p-nav-list');
         
-        // Вариант 1: Если есть контейнер от первого скрипта - добавляем туда
-        const existingContainer = document.querySelector('.bgButtonsContainer');
-        if (existingContainer) {
-            container = existingContainer;
+        if (!navContainer) {
+            // Пробуем другие возможные контейнеры
+            navContainer = document.querySelector('.p-nav-inner .p-nav-list');
         }
         
-        // Вариант 2: Ищем другие подходящие контейнеры в шапке
-        if (!container) {
-            // Пробуем найти панель навигации или блок с кнопками
-            const possibleContainers = [
-                '.p-nav-inner',
-                '.p-header-inner',
-                '.p-body-header .contentRow',
-                '.block-container .block-body',
-                '.p-body-content'
-            ];
-            
-            for (const selector of possibleContainers) {
-                const el = document.querySelector(selector);
-                if (el) {
-                    container = el;
-                    break;
-                }
+        if (!navContainer) {
+            // Если навигации нет, пробуем добавить в правую часть навигационной панели
+            const navRight = document.querySelector('.p-nav-opposite');
+            if (navRight) {
+                navContainer = navRight;
             }
         }
         
-        // Вариант 3: Создаём свой контейнер в правом верхнем углу (как плавающую кнопку)
-        if (!container) {
-            // Создаём отдельную плавающую кнопку, которая всегда видна
-            const floatingBtn = document.createElement('div');
-            floatingBtn.id = 'br-floating-theme-btn';
-            floatingBtn.innerHTML = '🖼';
-            floatingBtn.title = 'Полное оформление форума';
-            floatingBtn.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                width: 48px;
-                height: 48px;
-                background: linear-gradient(135deg, #1a1a2e, #16213e);
-                border: 1px solid rgba(155, 89, 182, 0.5);
-                border-radius: 50%;
-                color: white;
-                font-size: 24px;
-                display: flex;
+        if (!navContainer) {
+            // Последняя попытка - ищем любую навигационную панель
+            navContainer = document.querySelector('.p-nav');
+        }
+        
+        if (navContainer) {
+            // Создаём кнопку
+            const btn = document.createElement('a');
+            btn.id = 'br-theme-button-full';
+            btn.textContent = '🖼';
+            btn.href = 'javascript:void(0)';
+            btn.title = 'Полное оформление форума';
+            btn.style.cssText = `
+                display: inline-flex;
                 align-items: center;
                 justify-content: center;
+                background: rgba(155, 89, 182, 0.2);
+                border: 1px solid rgba(155, 89, 182, 0.5);
+                border-radius: 4px;
+                padding: 6px 12px;
+                margin-left: 10px;
+                font-size: 16px;
                 cursor: pointer;
-                z-index: 9999;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-                transition: all 0.3s ease;
+                transition: all 0.2s ease;
+                text-decoration: none;
+                color: #fff;
             `;
-            floatingBtn.onmouseenter = () => {
-                floatingBtn.style.transform = 'scale(1.1)';
-                floatingBtn.style.boxShadow = '0 6px 20px rgba(155, 89, 182, 0.4)';
+            btn.onmouseenter = () => {
+                btn.style.background = 'rgba(155, 89, 182, 0.4)';
+                btn.style.borderColor = 'rgba(155, 89, 182, 0.8)';
             };
-            floatingBtn.onmouseleave = () => {
-                floatingBtn.style.transform = 'scale(1)';
-                floatingBtn.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+            btn.onmouseleave = () => {
+                btn.style.background = 'rgba(155, 89, 182, 0.2)';
+                btn.style.borderColor = 'rgba(155, 89, 182, 0.5)';
             };
-            floatingBtn.onclick = openThemeModal;
-            document.body.appendChild(floatingBtn);
+            btn.onclick = openThemeModal;
+            
+            // Добавляем в конец навигации
+            if (navContainer.tagName === 'UL') {
+                const li = document.createElement('li');
+                li.appendChild(btn);
+                navContainer.appendChild(li);
+            } else {
+                navContainer.appendChild(btn);
+            }
+            
             return;
         }
         
-        // Создаём кнопку и добавляем в контейнер
-        const btn = document.createElement('button');
-        btn.id = 'br-theme-button-full';
-        btn.textContent = '🖼';
-        btn.className = 'bgButton';
-        btn.style.cssText = 'border-bottom: 2px solid #9b59b6; font-size: 14px;';
-        btn.title = 'Полное оформление форума';
-        btn.onclick = openThemeModal;
-        
-        container.appendChild(btn);
+        // Если навигация не найдена, создаём плавающую кнопку
+        const floatingBtn = document.createElement('div');
+        floatingBtn.id = 'br-theme-button-full';
+        floatingBtn.innerHTML = '🖼';
+        floatingBtn.title = 'Полное оформление форума';
+        floatingBtn.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 1px solid rgba(155, 89, 182, 0.5);
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 9999;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        `;
+        floatingBtn.onmouseenter = () => {
+            floatingBtn.style.transform = 'scale(1.1)';
+            floatingBtn.style.boxShadow = '0 6px 20px rgba(155, 89, 182, 0.4)';
+        };
+        floatingBtn.onmouseleave = () => {
+            floatingBtn.style.transform = 'scale(1)';
+            floatingBtn.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+        };
+        floatingBtn.onclick = openThemeModal;
+        document.body.appendChild(floatingBtn);
     }
 
     // Стили модального окна
@@ -555,7 +576,7 @@
 
     // Функция для добавления кнопки с задержкой (ждём загрузки DOM)
     function init() {
-        createFloatingButton();
+        addButtonToNavigation();
     }
     
     if (document.readyState === 'loading') {
@@ -564,10 +585,10 @@
         init();
     }
     
-    // Следим за изменениями (на случай если появится контейнер от первого скрипта позже)
+    // Следим за изменениями (на случай если навигация появится позже)
     const observer = new MutationObserver(() => {
         if (!document.getElementById('br-theme-button-full')) {
-            createFloatingButton();
+            addButtonToNavigation();
         }
     });
     observer.observe(document.body, { childList: true, subtree: true });
