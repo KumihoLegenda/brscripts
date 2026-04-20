@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Crystal Dark Theme (Universal)
+// @name         Crystal Dark Theme (Universal v3)
 // @namespace    http://tampermonkey.net/
-// @version      2.0
-// @description  Тёмная тема с кристальными обводками для всех разделов форума
+// @version      3.0
+// @description  Тёмная тема для ВСЕХ разделов форума (включая /forums/, /threads/, /categories/ и т.д.)
 // @author       Request
 // @match        https://forum.blackrussia.online/*
 // @grant        GM_getValue
@@ -13,101 +13,201 @@
 (function() {
     'use strict';
 
-    // Уникальный идентификатор для предотвращения конфликтов
-    if (window.__CRYSTAL_DARK_UNIVERSAL_LOADED) {
+    // Уникальный идентификатор
+    if (window.__CRYSTAL_DARK_FINAL_LOADED) {
         return;
     }
-    window.__CRYSTAL_DARK_UNIVERSAL_LOADED = true;
+    window.__CRYSTAL_DARK_FINAL_LOADED = true;
 
-    const STORAGE_KEY = 'crystal_dark_universal_enabled';
+    const STORAGE_KEY = 'crystal_dark_final_enabled';
     let isEnabled = true;
     let styleElement = null;
-    let observer = null;
+    let buttonCreated = false;
 
-    // --- МАКСИМАЛЬНО АГРЕССИВНЫЕ СТИЛИ С !important ДЛЯ ВСЕХ ЭЛЕМЕНТОВ ---
+    // === УНИВЕРСАЛЬНЫЕ СТИЛИ ДЛЯ ВСЕХ ТИПОВ СТРАНИЦ ===
     const getThemeCSS = () => `
-        /* Базовые стили для ВСЕХ страниц */
-        html, body, 
-        .p-body, .p-body-wrapper, .p-body-main, .p-body-content,
-        .p-pageWrapper, .p-content, .p-main,
-        .pageContent, .pageContent-main,
-        .block, .block-container, .block-body, .block-row,
-        .block--category, .block--category .block-container,
-        .structItem, .structItem-container,
-        .node, .node-body, .node-main,
-        .message, .message-inner, .message-cell,
-        .message-user, .message-content, .message-body,
-        .bbWrapper, .bbCodeBlock, .bbCodeBlock-content,
-        .p-nav, .p-nav-inner, .p-nav-list, .p-navgroup,
-        .p-sectionLinks, .p-sectionLinks-inner,
-        .p-breadcrumbs, .p-breadcrumbs-inner,
-        .p-footer, .p-footer-inner,
-        .sidebar, .sidebar-block,
-        .block--sidebar, .block--sidebar .block-container,
-        .menu, .menu-content, .menu-row,
-        .dialog, .dialog-content, .overlay,
-        .quickReply, .quickReply-content,
-        .fr-box, .fr-toolbar, .fr-wrapper, .fr-element,
-        .formRow, .formRow-title, .formRow-field,
-        .input, .input-group,
-        .button, .button--primary, .button--cta, .button--link,
-        .actionBar, .actionBar-set, .actionBar-action,
-        .reactionsBar, .reaction, .reaction-text,
-        .tabs, .tabs-tab, .tabPanes, .tabPane,
-        .filterBar, .filterBar-filter, .filterBar-text,
-        .pageNav, .pageNav-page, .pageNav-jump,
-        .pairs, .pairs--plain, .pairs--inline,
-        .contentRow, .contentRow-main, .contentRow-figure,
-        .structItem-cell, .structItem-title, .structItem-startDate,
-        .node-stats, .node-extra, .node-icon, .node-info,
-        .message-name, .message-userTitle, .message-userExtras,
-        .message-attribution, .message-signature,
-        .message-lastEdit, .message-notices, .message-notice,
-        .bbCodeQuote, .bbCodeSpoiler, .bbCodeSpoiler-content,
-        .attachmentList, .attachment, .attachment-thumb,
-        .p-title, .p-title-value, .p-description,
-        .pairs--plain dt, .pairs--plain dd,
-        .offCanvasMenu, .offCanvasMenu-content,
-        .tooltip, .tooltip-content,
-        .alert, .notice, .notices,
-        .staffBar, .staffBar-inner,
-        .block-header, .block-footer, .block-filterBar,
-        .message-newIndicator, .message-staffPost,
-        .p-footer-default, .footer-row, .footer-legal, .footer-copyright,
-        .breadcrumb, .breadcrumb-item, .breadcrumb-link,
-        .buttonGroup, .buttonGroup-button,
-        .selectMenu, .selectMenu-row,
-        .sharePage, .sharePage-link,
-        .tagList, .tag,
-        .pollBlock, .pollBlock-row,
-        .ratingStars, .ratingStars-star,
-        .p-navEl, .p-navEl-link, .p-navEl-splitTrigger,
-        .p-navgroup-link, .p-navgroup-link--bookmark,
-        .p-navgroup-link--conversation, .p-navgroup-link--alerts,
-        .p-navgroup-link--account,
-        .uix_sidebarTrigger, .uix_sidebarTrigger--inline,
-        .uix_extraTab, .uix_extraTab-trigger,
-        .uix_quickReply--button,
-        .uix_fixedSidebar, .uix_fixedSidebar-scroll {
-            background: transparent !important;
-            background-color: transparent !important;
-            background-image: none !important;
-        }
-
-        /* Основной тёмный фон */
-        html {
-            background: #0a0a0c !important;
+        /* РАДИКАЛЬНОЕ РЕШЕНИЕ - перекрываем ВСЁ */
+        * {
+            transition: background-color 0.1s ease, border-color 0.1s ease !important;
         }
         
+        /* Базовый фон для ВСЕХ страниц */
+        html, 
         body,
+        body > div,
+        .p-pageWrapper,
+        .p-body,
         .p-body-wrapper,
         .p-body-main,
         .p-body-content,
-        .pageContent {
+        .p-content,
+        .pageContent,
+        .pageContent-wrapper,
+        [class*="page"],
+        [class*="content"],
+        [class*="wrapper"],
+        [role="main"],
+        main,
+        .blockContainer,
+        .block-container {
+            background-color: #0a0a0c !important;
             background: #0a0a0c !important;
         }
-
-        /* Затемняем блоки с полупрозрачным фоном и размытием */
+        
+        /* ===== БЛОКИ И КОНТЕЙНЕРЫ (для всех страниц) ===== */
+        .block,
+        .block-container,
+        .block-body,
+        .block-row,
+        .block-header,
+        .block-footer,
+        .block-filterBar,
+        .block--category,
+        .block--category .block-container,
+        .structItem,
+        .structItem-container,
+        .structItem-cell,
+        .node,
+        .node-body,
+        .node-main,
+        .node-info,
+        .node-stats,
+        .node-extra,
+        .node-icon,
+        .node-title,
+        .node-description,
+        .node-meta,
+        .categoryList,
+        .categoryListItem,
+        .forumList,
+        .forumListItem,
+        .discussionList,
+        .discussionListItem,
+        .threadList,
+        .threadListItem,
+        .message,
+        .message-inner,
+        .message-cell,
+        .message-content,
+        .message-body,
+        .message-user,
+        .message-attribution,
+        .message-signature,
+        .message-name,
+        .message-userTitle,
+        .message-userExtras,
+        .message-staffPost,
+        .message-newIndicator,
+        .message-notices,
+        .message-notice,
+        .message-lastEdit,
+        .bbWrapper,
+        .bbCodeBlock,
+        .bbCodeBlock-title,
+        .bbCodeBlock-content,
+        .bbCodeQuote,
+        .bbCodeSpoiler,
+        .bbCodeSpoiler-button,
+        .bbCodeSpoiler-content,
+        .p-nav,
+        .p-nav-inner,
+        .p-nav-list,
+        .p-navEl,
+        .p-navgroup,
+        .p-navgroup-link,
+        .p-sectionLinks,
+        .p-sectionLinks-inner,
+        .p-breadcrumbs,
+        .p-breadcrumbs-inner,
+        .p-footer,
+        .p-footer-inner,
+        .footer-row,
+        .footer-legal,
+        .footer-copyright,
+        .p-title,
+        .p-title-value,
+        .p-description,
+        .sidebar,
+        .sidebar-block,
+        .block--sidebar,
+        .menu,
+        .menu-content,
+        .menu-row,
+        .menu-header,
+        .menu-footer,
+        .dialog,
+        .dialog-content,
+        .overlay,
+        .overlay-container,
+        .quickReply,
+        .quickReply-content,
+        .fr-box,
+        .fr-toolbar,
+        .fr-wrapper,
+        .fr-element,
+        .fr-view,
+        .formRow,
+        .formRow-title,
+        .formRow-field,
+        .input,
+        .input-group,
+        .button,
+        .button--primary,
+        .button--cta,
+        .button--link,
+        .actionBar,
+        .actionBar-set,
+        .actionBar-action,
+        .reactionsBar,
+        .reaction,
+        .reaction-text,
+        .tabs,
+        .tabs-tab,
+        .tabPanes,
+        .tabPane,
+        .filterBar,
+        .filterBar-filter,
+        .pageNav,
+        .pageNav-page,
+        .pageNav-jump,
+        .pairs,
+        .pairs--plain,
+        .pairs--inline,
+        .contentRow,
+        .contentRow-main,
+        .contentRow-figure,
+        .contentRow-title,
+        .contentRow-lesser,
+        .contentRow-mute,
+        .attachmentList,
+        .attachment,
+        .attachment-thumb,
+        .attachment-name,
+        .pollBlock,
+        .pollBlock-row,
+        .pollBlock-question,
+        .tagList,
+        .tag,
+        .ratingStars,
+        .alert,
+        .notice,
+        .notices,
+        .staffBar,
+        .offCanvasMenu,
+        .offCanvasMenu-content,
+        .tooltip,
+        .tooltip-content,
+        .selectMenu,
+        .selectMenu-row,
+        .buttonGroup,
+        .buttonGroup-button,
+        .sharePage,
+        .sharePage-link {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+        
+        /* ===== ПОЛУПРОЗРАЧНЫЕ БЛОКИ С РАЗМЫТИЕМ ===== */
         .block-container,
         .structItem,
         .node,
@@ -133,12 +233,16 @@
         .overlay-container,
         .offCanvasMenu-content,
         .selectMenu,
-        .staffBar {
-            background: rgba(18, 18, 24, 0.88) !important;
-            backdrop-filter: blur(3px) !important;
+        .staffBar,
+        .pollBlock,
+        .tag,
+        .contentRow,
+        .block-header {
+            background: rgba(18, 18, 24, 0.85) !important;
+            backdrop-filter: blur(4px) !important;
         }
-
-        /* Кристальные обводки */
+        
+        /* ===== КРИСТАЛЬНЫЕ ОБВОДКИ ===== */
         .block-container,
         .structItem,
         .node,
@@ -164,13 +268,15 @@
         .notice,
         .offCanvasMenu-content,
         .staffBar,
-        .tag {
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        .tag,
+        .contentRow,
+        .pollBlock {
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
             border-radius: 14px !important;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
         }
-
-        /* Убираем внутренние границы */
+        
+        /* Убираем лишние двойные границы */
         .message-inner,
         .structItem-container,
         .node-body,
@@ -178,14 +284,15 @@
         .p-sectionLinks-inner,
         .block-body,
         .block-row,
-        .block-header,
-        .block-footer {
+        .block-footer,
+        .p-breadcrumbs-inner,
+        .p-footer-inner {
             border: none !important;
             box-shadow: none !important;
             background: transparent !important;
         }
-
-        /* Основной текст */
+        
+        /* ===== ЦВЕТА ТЕКСТА ===== */
         body, html,
         .p-body-content,
         .message-content,
@@ -222,11 +329,17 @@
         .tag,
         .pollBlock-question,
         .pollBlock-row label,
-        .selectMenu-row {
+        .selectMenu-row,
+        .node-description,
+        .node-stats,
+        .node-extra,
+        .structItem-startDate,
+        .structItem-status,
+        .categoryListItem-title {
             color: #e8e8ed !important;
         }
-
-        /* Ссылки */
+        
+        /* ===== ССЫЛКИ ===== */
         a,
         .structItem-title a,
         .node-title a,
@@ -237,11 +350,14 @@
         .breadcrumb-link,
         .button--link,
         .tag a,
-        .message-name a {
+        .message-name a,
+        .node-title a,
+        .structItem-title a,
+        .categoryListItem-title a {
             color: #8bb9fe !important;
             transition: color 0.2s ease, text-shadow 0.2s ease !important;
         }
-
+        
         a:hover,
         .structItem-title a:hover,
         .node-title a:hover,
@@ -253,19 +369,20 @@
             color: #c0dbff !important;
             text-shadow: 0 0 6px rgba(139, 185, 254, 0.4) !important;
         }
-
-        /* Заголовки */
+        
+        /* ===== ЗАГОЛОВКИ ===== */
         .p-title-value,
         .block-header,
         .message-name,
         .structItem-title,
         .node-title,
-        .p-navEl.is-selected a {
+        .p-navEl.is-selected a,
+        .categoryListItem-title {
             font-weight: 600 !important;
             color: #ffffff !important;
         }
-
-        /* Второстепенный текст */
+        
+        /* ===== ВТОРОСТЕПЕННЫЙ ТЕКСТ ===== */
         .pairs--plain dd,
         .message-userExtras,
         .message-attribution,
@@ -280,11 +397,12 @@
         .message-lastEdit,
         .p-description,
         .filterBar-text,
-        .pollBlock-row .pollBlock-result {
+        .pollBlock-row .pollBlock-result,
+        .node-description {
             color: #9a9aa8 !important;
         }
-
-        /* Поля ввода */
+        
+        /* ===== ПОЛЯ ВВОДА ===== */
         .input,
         .fr-element.fr-view,
         .fr-box.fr-basic .fr-element,
@@ -294,23 +412,25 @@
         input[type="password"],
         input[type="email"],
         input[type="search"],
-        input[type="number"] {
+        input[type="number"],
+        select {
             background: rgba(30, 30, 38, 0.95) !important;
             border: 1px solid rgba(255, 255, 255, 0.15) !important;
             color: #e8e8ed !important;
             border-radius: 10px !important;
         }
-
+        
         .input:focus,
         .fr-element.fr-view:focus,
         textarea:focus,
-        input:focus {
+        input:focus,
+        select:focus {
             border-color: #8bb9fe !important;
             box-shadow: 0 0 0 3px rgba(139, 185, 254, 0.2) !important;
             outline: none !important;
         }
-
-        /* Кнопки */
+        
+        /* ===== КНОПКИ ===== */
         .button,
         .button--primary,
         .button--cta,
@@ -326,7 +446,7 @@
             transition: all 0.2s ease !important;
             border-radius: 10px !important;
         }
-
+        
         .button:hover,
         .button--primary:hover,
         .button--cta:hover,
@@ -338,96 +458,74 @@
             border-color: rgba(139, 185, 254, 0.5) !important;
             transform: translateY(-1px) !important;
         }
-
-        .button:active {
-            transform: translateY(1px) !important;
+        
+        /* ===== ВЫДЕЛЕННЫЕ СООБЩЕНИЯ ===== */
+        .message--highlighted .message-cell {
+            background: rgba(139, 185, 254, 0.08) !important;
         }
-
-        /* Реакции и лайки */
-        .reactionsBar {
-            background: rgba(25, 25, 32, 0.75) !important;
-            border-radius: 20px !important;
+        
+        /* ===== НАВИГАЦИЯ ===== */
+        .p-nav-list .p-navEl a {
+            color: #e8e8ed !important;
         }
-
-        .reaction {
-            filter: brightness(0.9) !important;
-            transition: filter 0.2s !important;
+        
+        .p-nav-list .p-navEl.is-selected a {
+            color: #8bb9fe !important;
+            border-bottom: 2px solid #8bb9fe !important;
         }
-
-        .reaction:hover {
-            filter: brightness(1.1) !important;
+        
+        /* ===== ВЫПАДАЮЩИЕ МЕНЮ ===== */
+        .menu-content .menu-row:hover {
+            background: rgba(60, 60, 72, 0.6) !important;
         }
-
-        /* Цитаты и спойлеры */
+        
+        /* ===== ПОЛОСЫ ПРОКРУТКИ ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(20, 20, 28, 0.7) !important;
+            border-radius: 4px !important;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 185, 254, 0.4) !important;
+            border-radius: 4px !important;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 185, 254, 0.6) !important;
+        }
+        
+        /* ===== ЦИТАТЫ И СПОЙЛЕРЫ ===== */
         .bbCodeQuote,
         .bbCodeSpoiler {
             background: rgba(25, 25, 35, 0.7) !important;
             border-left: 3px solid #8bb9fe !important;
             border-radius: 10px !important;
         }
-
+        
         .bbCodeQuote .attribution,
         .bbCodeSpoiler-button {
             background: rgba(35, 35, 45, 0.85) !important;
             color: #c0dbff !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
         }
-
-        /* Выделенные сообщения */
-        .message--highlighted .message-cell {
-            background: rgba(139, 185, 254, 0.08) !important;
+        
+        /* ===== РЕАКЦИИ ===== */
+        .reactionsBar {
+            background: rgba(25, 25, 32, 0.75) !important;
+            border-radius: 20px !important;
         }
-
-        /* Навигация */
-        .p-nav-list .p-navEl a {
-            color: #e8e8ed !important;
-        }
-
-        .p-nav-list .p-navEl.is-selected a {
-            color: #8bb9fe !important;
-            border-bottom: 2px solid #8bb9fe !important;
-        }
-
-        /* Выпадающие меню */
-        .menu-content .menu-row:hover {
-            background: rgba(60, 60, 72, 0.6) !important;
-        }
-
-        /* Полосы прокрутки */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(20, 20, 28, 0.7) !important;
-            border-radius: 4px !important;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(139, 185, 254, 0.4) !important;
-            border-radius: 4px !important;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(139, 185, 254, 0.6) !important;
-        }
-
-        /* Скрываем стандартный белый фон у некоторых элементов */
-        .fr-view .fr-element,
-        .fr-box .fr-wrapper {
-            background: transparent !important;
-        }
-
-        /* Таблицы */
+        
+        /* ===== ТАБЛИЦЫ ===== */
         .bbTable table,
         .table,
         .table-responsive table {
             background: rgba(20, 20, 28, 0.7) !important;
-            border-collapse: separate !important;
-            border-spacing: 0 !important;
         }
-
+        
         .bbTable th,
         .bbTable td,
         .table th,
@@ -435,8 +533,8 @@
             border-color: rgba(255, 255, 255, 0.08) !important;
             color: #e8e8ed !important;
         }
-
-        /* Сообщения об ошибках и предупреждения */
+        
+        /* ===== ОШИБКИ И УВЕДОМЛЕНИЯ ===== */
         .blockMessage,
         .blockMessage--error,
         .blockMessage--warning {
@@ -444,72 +542,73 @@
             border: 1px solid rgba(255, 80, 80, 0.3) !important;
             color: #ffaaaa !important;
         }
-
+        
         .blockMessage--success {
             background: rgba(80, 255, 80, 0.1) !important;
             border: 1px solid rgba(80, 255, 80, 0.3) !important;
             color: #aaffaa !important;
         }
+        
+        /* ===== КНОПКА ПЕРЕКЛЮЧЕНИЯ ===== */
+        .crystal-dark-toggle-btn {
+            position: fixed !important;
+            bottom: 20px !important;
+            left: 20px !important;
+            width: 52px !important;
+            height: 52px !important;
+            border-radius: 50% !important;
+            background: rgba(30, 30, 38, 0.95) !important;
+            backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(139, 185, 254, 0.6) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+            color: #8bb9fe !important;
+            font-size: 26px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer !important;
+            z-index: 2147483647 !important;
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1) !important;
+            font-family: system-ui, -apple-system, sans-serif !important;
+        }
+        
+        .crystal-dark-toggle-btn:hover {
+            transform: scale(1.08) !important;
+            background: rgba(50, 50, 62, 0.98) !important;
+            border-color: rgba(139, 185, 254, 0.8) !important;
+        }
+        
+        .crystal-dark-toggle-btn.disabled {
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            color: #e8e8ed !important;
+        }
+        
+        .crystal-dark-toggle-btn.disabled:hover {
+            border-color: rgba(255, 255, 255, 0.4) !important;
+        }
     `;
-
-    // --- СОЗДАНИЕ КНОПКИ ---
+    
+    // === СОЗДАНИЕ КНОПКИ ===
     function createToggleButton() {
+        if (document.getElementById('crystal-dark-toggle-btn')) return;
+        
         const button = document.createElement('div');
-        button.id = 'crystal-dark-universal-toggle';
+        button.id = 'crystal-dark-toggle-btn';
+        button.className = 'crystal-dark-toggle-btn' + (isEnabled ? '' : ' disabled');
         button.innerHTML = '🎨';
         button.setAttribute('aria-label', 'Toggle Crystal Dark Theme');
         
-        const updateButtonStyle = () => {
-            button.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                left: 20px;
-                width: 52px;
-                height: 52px;
-                border-radius: 50%;
-                background: rgba(30, 30, 38, 0.95);
-                backdrop-filter: blur(12px);
-                border: 1px solid ${isEnabled ? 'rgba(139, 185, 254, 0.6)' : 'rgba(255, 255, 255, 0.2)'};
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-                color: ${isEnabled ? '#8bb9fe' : '#e8e8ed'};
-                font-size: 26px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                z-index: 2147483647;
-                transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-                font-family: system-ui, -apple-system, sans-serif;
-            `;
-        };
-        
-        updateButtonStyle();
-        
-        // Эффекты при наведении
-        button.addEventListener('mouseenter', () => {
-            button.style.transform = 'scale(1.08)';
-            button.style.background = 'rgba(50, 50, 62, 0.98)';
-            button.style.borderColor = 'rgba(139, 185, 254, 0.7)';
-        });
-        
-        button.addEventListener('mouseleave', () => {
-            button.style.transform = 'scale(1)';
-            button.style.background = 'rgba(30, 30, 38, 0.95)';
-            button.style.borderColor = isEnabled ? 'rgba(139, 185, 254, 0.6)' : 'rgba(255, 255, 255, 0.2)';
-        });
-        
-        // Обработчик клика
         button.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             toggleTheme();
-            updateButtonStyle();
         });
         
-        return button;
+        document.body.appendChild(button);
+        buttonCreated = true;
     }
     
-    // --- УПРАВЛЕНИЕ ТЕМОЙ ---
+    // === УПРАВЛЕНИЕ ТЕМОЙ ===
     function applyTheme() {
         if (!styleElement) {
             styleElement = document.createElement('style');
@@ -519,18 +618,20 @@
         }
         styleElement.disabled = !isEnabled;
         
-        // Обновляем класс на body
-        if (isEnabled) {
-            document.body.classList.add('crystal-dark-universal-active');
-        } else {
-            document.body.classList.remove('crystal-dark-universal-active');
+        const button = document.getElementById('crystal-dark-toggle-btn');
+        if (button) {
+            if (isEnabled) {
+                button.classList.remove('disabled');
+            } else {
+                button.classList.add('disabled');
+            }
         }
         
-        // Обновляем цвет кнопки если она уже существует
-        const toggleBtn = document.getElementById('crystal-dark-universal-toggle');
-        if (toggleBtn) {
-            toggleBtn.style.color = isEnabled ? '#8bb9fe' : '#e8e8ed';
-            toggleBtn.style.borderColor = isEnabled ? 'rgba(139, 185, 254, 0.6)' : 'rgba(255, 255, 255, 0.2)';
+        // Сохраняем класс на body
+        if (isEnabled) {
+            document.body.classList.add('crystal-dark-active');
+        } else {
+            document.body.classList.remove('crystal-dark-active');
         }
     }
     
@@ -540,23 +641,36 @@
         applyTheme();
     }
     
-    // --- ДИНАМИЧЕСКОЕ ОТСЛЕЖИВАНИЕ НОВЫХ ЭЛЕМЕНТОВ ---
-    function watchForNewContent() {
-        if (observer) {
-            observer.disconnect();
-        }
+    // === ПРИНУДИТЕЛЬНОЕ ПРИМЕНЕНИЕ СТИЛЕЙ ===
+    function forceApplyStyles() {
+        if (!styleElement || styleElement.disabled) return;
         
-        observer = new MutationObserver(() => {
-            // Просто переприменяем стили (они уже есть в head)
-            // Это нужно чтобы стили применялись к динамически добавленным элементам
-            if (styleElement && !styleElement.disabled) {
-                // Небольшой трюк: перезаписываем стили, чтобы браузер пересчитал их
-                const currentCSS = styleElement.textContent;
-                styleElement.textContent = '';
-                setTimeout(() => {
-                    styleElement.textContent = currentCSS;
-                }, 10);
+        // Перезаписываем стили, чтобы они точно применились
+        const currentCSS = styleElement.textContent;
+        styleElement.textContent = '';
+        setTimeout(() => {
+            styleElement.textContent = currentCSS;
+        }, 5);
+    }
+    
+    // === ОСНОВНАЯ ИНИЦИАЛИЗАЦИЯ ===
+    function init() {
+        // Загружаем сохранённое состояние
+        const savedState = GM_getValue(STORAGE_KEY);
+        isEnabled = savedState !== undefined ? savedState : true;
+        
+        // Применяем стили
+        applyTheme();
+        
+        // Создаём кнопку
+        createToggleButton();
+        
+        // Наблюдаем за изменениями в DOM
+        const observer = new MutationObserver(() => {
+            if (!buttonCreated) {
+                createToggleButton();
             }
+            forceApplyStyles();
         });
         
         observer.observe(document.body, {
@@ -566,32 +680,7 @@
         });
     }
     
-    // --- ИНИЦИАЛИЗАЦИЯ ---
-    function init() {
-        // Загружаем сохранённое состояние
-        const savedState = GM_getValue(STORAGE_KEY);
-        isEnabled = savedState !== undefined ? savedState : true;
-        
-        // Ждём загрузки head и body
-        const applyAfterLoad = () => {
-            applyTheme();
-            
-            // Добавляем кнопку
-            const button = createToggleButton();
-            document.body.appendChild(button);
-            
-            // Запускаем отслеживание новых элементов
-            watchForNewContent();
-        };
-        
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', applyAfterLoad);
-        } else {
-            applyAfterLoad();
-        }
-    }
-    
-    // Запускаем как можно раньше
+    // Запускаем
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
