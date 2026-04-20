@@ -1,0 +1,17 @@
+(function() {
+    'use strict';
+
+    const HOURS_TO_SHOW = 5000;
+    const currentUrl = new URL(window.location.href);
+    const params = currentUrl.searchParams;
+    if (!params.has('tstart')) {
+        try { window.stop(); } catch(e) {}
+        document.documentElement.innerHTML = '<style>body{background:#111;color:#555;display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;}</style><body>Загрузка логов за ' + HOURS_TO_SHOW + 'ч...</body>';
+        const now = new Date();
+        const startTime = new Date(now.getTime() - (HOURS_TO_SHOW * 60 * 60 * 1000));
+        params.set('tstart', startTime.getTime());
+        params.set('tend', now.getTime());
+        window.location.replace(currentUrl.toString());
+    }
+
+})();
