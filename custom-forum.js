@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         BR Theme & Background Customizer
+// @name         BR Theme & Background Manager
 // @namespace    http://tampermonkey.net/
-// @version      1.1
-// @description  Adds theme and background customization for Black Russia forum
-// @author       Customizer Addon
+// @version      1.0
+// @description  Добавляет кнопку для смены темы и фона форума Black Russia
+// @author       Custom Script
 // @match        https://forum.blackrussia.online/*
 // @grant        none
 // ==/UserScript==
@@ -11,354 +11,506 @@
 (function() {
     'use strict';
 
-    // Предотвращаем двойную загрузку
-    if (window._brThemeCustomizerLoaded) return;
-    window._brThemeCustomizerLoaded = true;
+    // Проверка на двойную загрузку
+    if (document.body.getAttribute('data-br-theme-manager')) {
+        return;
+    }
+    document.body.setAttribute('data-br-theme-manager', 'true');
 
-    // Конфигурация тем
-    const THEMES = {
-        none: {
+    // Ключи для localStorage
+    const STORAGE_THEME = 'br_selected_theme';
+    const STORAGE_BG = 'br_custom_background';
+
+    // Предустановленные темы (10 ярких цветных тем)
+    const themes = [
+        {
+            id: 'none',
             name: 'Без темы',
             css: ''
         },
-        orange: {
-            name: 'Огненная Оранжевая',
+        {
+            id: 'neon-orange',
+            name: '🔥 Неоновый Оранжевый',
             css: `
+                .button-text { font-weight: bold; }
+                .button, a.button { color: #fff; }
+                .block.block--category .block-header { text-shadow: 0 0 1px rgba(255, 69, 0, 0.7); }
                 .menu-tabHeader .tabs-tab.is-active { border-color: #FF4500; }
                 .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #FF4500; }
                 .tabs-tab { color: #FF4500; }
                 .blockLink.is-selected { color: #FF4500; border-left: 2px solid #FF4500; }
                 .block-tabHeader .tabs-tab:hover { color: #FF4500; }
                 .button.button--primary, a.button.button--primary { background: linear-gradient(#FF4500, #FF4500); }
+                .button.button--primary:hover, a.button.button--primary:hover { background: linear-gradient(#FF4500, #FF4500); }
                 .menu-linkRow.is-selected, .menu-linkRow:hover { color: #FF4500; }
                 .fr-toolbar { border-top: 1px solid #FF4500; }
                 .block-tabHeader .tabs-tab.is-active { color: #FF4500; border-color: #FF4500; }
                 .messageNotice { border-left: 2px solid #FF4500; }
+                .messageNotice:before { color: #FF4500; }
                 .bbCodeBlock { border-left: 2px solid #FF4500; }
                 .bbCodeBlock-title { color: #FF4500; }
+                .button.button--scroll, a.button.button--scroll { background: linear-gradient(#FF4500, #FF4500); }
+                .bbCodeBlock-expandLink a { color: #FF4500; }
                 .message-newIndicator { background: #FF4500; }
+                .menu-content:before { background: linear-gradient(-270deg, #FF4500 0%, #FF4500 100%); }
+                .tabs--standalone .tabs-tab.is-active { color: #FF4500; border-color: #FF4500; }
+                .tabs--standalone .tabs-tab:hover { color: #FF4500; }
                 .p-nav-list .p-navEl.is-selected:after { background: linear-gradient(-270deg, #FF4500 0%, #FF4500 100%); }
                 .p-nav-list .p-navEl.is-selected { color: #FF4500; }
+                .button.button--link, a.button.button--link { background: #FF4500; }
+                .block-body .block-minorHeader.uix_threadListSeparator:before { background: linear-gradient(-270deg, #FF4500 0%, #FF4500 100%); }
+                .button.button--cta, a.button.button--cta { background: #FF4500; border-color: #00A8FF00; background-color: #FF4500; }
+                .button.button--cta:hover, a.button.button--cta:hover { background: #FF4500; }
             `
         },
-        neon: {
-            name: 'Неоновая Зеленая',
+        {
+            id: 'cyber-blue',
+            name: '💙 Кибер-Синий',
             css: `
-                .menu-tabHeader .tabs-tab.is-active { border-color: #00FF41; }
-                .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #00FF41; }
-                .tabs-tab { color: #00FF41; }
-                .blockLink.is-selected { color: #00FF41; border-left: 2px solid #00FF41; }
-                .block-tabHeader .tabs-tab:hover { color: #00FF41; }
-                .button.button--primary, a.button.button--primary { background: linear-gradient(#00FF41, #00CC33); }
-                .menu-linkRow.is-selected, .menu-linkRow:hover { color: #00FF41; }
-                .fr-toolbar { border-top: 1px solid #00FF41; }
-                .block-tabHeader .tabs-tab.is-active { color: #00FF41; border-color: #00FF41; }
-                .messageNotice { border-left: 2px solid #00FF41; }
-                .bbCodeBlock { border-left: 2px solid #00FF41; }
-                .bbCodeBlock-title { color: #00FF41; }
-                .message-newIndicator { background: #00FF41; }
-                .p-nav-list .p-navEl.is-selected:after { background: linear-gradient(-270deg, #00FF41 0%, #00CC33 100%); }
-                .p-nav-list .p-navEl.is-selected { color: #00FF41; }
+                .block.block--category .block-header { text-shadow: 0 0 1px rgba(0, 191, 255, 0.7); }
+                .menu-tabHeader .tabs-tab.is-active { border-color: #00BFFF; }
+                .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #00BFFF; }
+                .tabs-tab { color: #00BFFF; }
+                .blockLink.is-selected { color: #00BFFF; border-left: 2px solid #00BFFF; }
+                .block-tabHeader .tabs-tab:hover { color: #00BFFF; }
+                .button.button--primary, a.button.button--primary { background: linear-gradient(#00BFFF, #00BFFF); }
+                .button.button--primary:hover { background: linear-gradient(#009ACD, #009ACD); }
+                .menu-linkRow.is-selected, .menu-linkRow:hover { color: #00BFFF; }
+                .fr-toolbar { border-top: 1px solid #00BFFF; }
+                .block-tabHeader .tabs-tab.is-active { color: #00BFFF; border-color: #00BFFF; }
+                .messageNotice { border-left: 2px solid #00BFFF; }
+                .messageNotice:before { color: #00BFFF; }
+                .bbCodeBlock { border-left: 2px solid #00BFFF; }
+                .bbCodeBlock-title { color: #00BFFF; }
+                .button.button--scroll { background: linear-gradient(#00BFFF, #00BFFF); }
+                .bbCodeBlock-expandLink a { color: #00BFFF; }
+                .message-newIndicator { background: #00BFFF; }
+                .menu-content:before { background: linear-gradient(-270deg, #00BFFF 0%, #00BFFF 100%); }
+                .tabs--standalone .tabs-tab.is-active { color: #00BFFF; border-color: #00BFFF; }
+                .tabs--standalone .tabs-tab:hover { color: #00BFFF; }
+                .p-nav-list .p-navEl.is-selected:after { background: linear-gradient(-270deg, #00BFFF 0%, #00BFFF 100%); }
+                .p-nav-list .p-navEl.is-selected { color: #00BFFF; }
+                .button.button--cta { background: #00BFFF; background-color: #00BFFF; }
             `
         },
-        cyber: {
-            name: 'Кибер-Синяя',
+        {
+            id: 'neon-green',
+            name: '💚 Неоново-Зеленый',
             css: `
-                .menu-tabHeader .tabs-tab.is-active { border-color: #00FFFF; }
-                .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #00FFFF; }
-                .tabs-tab { color: #00FFFF; }
-                .blockLink.is-selected { color: #00FFFF; border-left: 2px solid #00FFFF; }
-                .block-tabHeader .tabs-tab:hover { color: #00FFFF; }
-                .button.button--primary, a.button.button--primary { background: linear-gradient(#00FFFF, #0099FF); }
-                .menu-linkRow.is-selected, .menu-linkRow:hover { color: #00FFFF; }
-                .fr-toolbar { border-top: 1px solid #00FFFF; }
-                .block-tabHeader .tabs-tab.is-active { color: #00FFFF; border-color: #00FFFF; }
-                .messageNotice { border-left: 2px solid #00FFFF; }
-                .bbCodeBlock { border-left: 2px solid #00FFFF; }
-                .bbCodeBlock-title { color: #00FFFF; }
-                .message-newIndicator { background: #00FFFF; }
-                .p-nav-list .p-navEl.is-selected:after { background: linear-gradient(-270deg, #00FFFF 0%, #0099FF 100%); }
-                .p-nav-list .p-navEl.is-selected { color: #00FFFF; }
+                .block.block--category .block-header { text-shadow: 0 0 1px rgba(57, 255, 20, 0.7); }
+                .menu-tabHeader .tabs-tab.is-active { border-color: #39FF14; }
+                .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #39FF14; }
+                .tabs-tab { color: #39FF14; }
+                .blockLink.is-selected { color: #39FF14; border-left: 2px solid #39FF14; }
+                .block-tabHeader .tabs-tab:hover { color: #39FF14; }
+                .button.button--primary, a.button.button--primary { background: linear-gradient(#39FF14, #39FF14); }
+                .menu-linkRow.is-selected, .menu-linkRow:hover { color: #39FF14; }
+                .fr-toolbar { border-top: 1px solid #39FF14; }
+                .block-tabHeader .tabs-tab.is-active { color: #39FF14; border-color: #39FF14; }
+                .messageNotice { border-left: 2px solid #39FF14; }
+                .messageNotice:before { color: #39FF14; }
+                .bbCodeBlock { border-left: 2px solid #39FF14; }
+                .bbCodeBlock-title { color: #39FF14; }
+                .button.button--scroll { background: linear-gradient(#39FF14, #39FF14); }
+                .bbCodeBlock-expandLink a { color: #39FF14; }
+                .message-newIndicator { background: #39FF14; }
+                .menu-content:before { background: linear-gradient(-270deg, #39FF14 0%, #39FF14 100%); }
+                .p-nav-list .p-navEl.is-selected:after { background: linear-gradient(-270deg, #39FF14 0%, #39FF14 100%); }
+                .p-nav-list .p-navEl.is-selected { color: #39FF14; }
+                .button.button--cta { background: #39FF14; background-color: #39FF14; }
             `
         },
-        royal: {
-            name: 'Королевский Пурпурный',
+        {
+            id: 'royal-purple',
+            name: '👑 Королевский Пурпурный',
             css: `
-                .menu-tabHeader .tabs-tab.is-active { border-color: #9B30FF; }
-                .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #9B30FF; }
-                .tabs-tab { color: #9B30FF; }
-                .blockLink.is-selected { color: #9B30FF; border-left: 2px solid #9B30FF; }
-                .block-tabHeader .tabs-tab:hover { color: #9B30FF; }
-                .button.button--primary, a.button.button--primary { background: linear-gradient(#9B30FF, #7B1FA2); }
-                .menu-linkRow.is-selected, .menu-linkRow:hover { color: #9B30FF; }
-                .fr-toolbar { border-top: 1px solid #9B30FF; }
-                .block-tabHeader .tabs-tab.is-active { color: #9B30FF; border-color: #9B30FF; }
-                .messageNotice { border-left: 2px solid #9B30FF; }
-                .bbCodeBlock { border-left: 2px solid #9B30FF; }
-                .bbCodeBlock-title { color: #9B30FF; }
-                .message-newIndicator { background: #9B30FF; }
-                .p-nav-list .p-navEl.is-selected:after { background: linear-gradient(-270deg, #9B30FF 0%, #7B1FA2 100%); }
-                .p-nav-list .p-navEl.is-selected { color: #9B30FF; }
+                .block.block--category .block-header { text-shadow: 0 0 1px rgba(138, 43, 226, 0.7); }
+                .menu-tabHeader .tabs-tab.is-active { border-color: #8A2BE2; }
+                .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #8A2BE2; }
+                .tabs-tab { color: #8A2BE2; }
+                .blockLink.is-selected { color: #8A2BE2; border-left: 2px solid #8A2BE2; }
+                .block-tabHeader .tabs-tab:hover { color: #8A2BE2; }
+                .button.button--primary { background: linear-gradient(#8A2BE2, #8A2BE2); }
+                .menu-linkRow.is-selected, .menu-linkRow:hover { color: #8A2BE2; }
+                .fr-toolbar { border-top: 1px solid #8A2BE2; }
+                .block-tabHeader .tabs-tab.is-active { color: #8A2BE2; border-color: #8A2BE2; }
+                .messageNotice { border-left: 2px solid #8A2BE2; }
+                .bbCodeBlock { border-left: 2px solid #8A2BE2; }
+                .bbCodeBlock-title { color: #8A2BE2; }
+                .button.button--scroll { background: linear-gradient(#8A2BE2, #8A2BE2); }
+                .message-newIndicator { background: #8A2BE2; }
+                .menu-content:before { background: linear-gradient(-270deg, #8A2BE2 0%, #8A2BE2 100%); }
+                .p-nav-list .p-navEl.is-selected:after { background: linear-gradient(-270deg, #8A2BE2 0%, #8A2BE2 100%); }
+                .p-nav-list .p-navEl.is-selected { color: #8A2BE2; }
+                .button.button--cta { background: #8A2BE2; background-color: #8A2BE2; }
             `
         },
-        gold: {
-            name: 'Золотая Роскошь',
+        {
+            id: 'hot-pink',
+            name: '💖 Горячий Розовый',
             css: `
+                .block.block--category .block-header { text-shadow: 0 0 1px rgba(255, 105, 180, 0.7); }
+                .menu-tabHeader .tabs-tab.is-active { border-color: #FF69B4; }
+                .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #FF69B4; }
+                .tabs-tab { color: #FF69B4; }
+                .blockLink.is-selected { color: #FF69B4; border-left: 2px solid #FF69B4; }
+                .block-tabHeader .tabs-tab:hover { color: #FF69B4; }
+                .button.button--primary { background: linear-gradient(#FF69B4, #FF69B4); }
+                .menu-linkRow.is-selected, .menu-linkRow:hover { color: #FF69B4; }
+                .fr-toolbar { border-top: 1px solid #FF69B4; }
+                .block-tabHeader .tabs-tab.is-active { color: #FF69B4; border-color: #FF69B4; }
+                .messageNotice { border-left: 2px solid #FF69B4; }
+                .bbCodeBlock { border-left: 2px solid #FF69B4; }
+                .bbCodeBlock-title { color: #FF69B4; }
+                .button.button--scroll { background: linear-gradient(#FF69B4, #FF69B4); }
+                .message-newIndicator { background: #FF69B4; }
+                .menu-content:before { background: linear-gradient(-270deg, #FF69B4 0%, #FF69B4 100%); }
+                .p-nav-list .p-navEl.is-selected:after { background: linear-gradient(-270deg, #FF69B4 0%, #FF69B4 100%); }
+                .p-nav-list .p-navEl.is-selected { color: #FF69B4; }
+                .button.button--cta { background: #FF69B4; background-color: #FF69B4; }
+            `
+        },
+        {
+            id: 'golden',
+            name: '⭐ Золотой',
+            css: `
+                .block.block--category .block-header { text-shadow: 0 0 1px rgba(255, 215, 0, 0.7); }
                 .menu-tabHeader .tabs-tab.is-active { border-color: #FFD700; }
                 .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #FFD700; }
                 .tabs-tab { color: #FFD700; }
                 .blockLink.is-selected { color: #FFD700; border-left: 2px solid #FFD700; }
                 .block-tabHeader .tabs-tab:hover { color: #FFD700; }
-                .button.button--primary, a.button.button--primary { background: linear-gradient(#FFD700, #FFA500); }
+                .button.button--primary { background: linear-gradient(#FFD700, #FFD700); }
                 .menu-linkRow.is-selected, .menu-linkRow:hover { color: #FFD700; }
                 .fr-toolbar { border-top: 1px solid #FFD700; }
                 .block-tabHeader .tabs-tab.is-active { color: #FFD700; border-color: #FFD700; }
                 .messageNotice { border-left: 2px solid #FFD700; }
                 .bbCodeBlock { border-left: 2px solid #FFD700; }
                 .bbCodeBlock-title { color: #FFD700; }
+                .button.button--scroll { background: linear-gradient(#FFD700, #FFD700); }
                 .message-newIndicator { background: #FFD700; }
-                .p-nav-list .p-navEl.is-selected:after { background: linear-gradient(-270deg, #FFD700 0%, #FFA500 100%); }
+                .menu-content:before { background: linear-gradient(-270deg, #FFD700 0%, #FFD700 100%); }
+                .p-nav-list .p-navEl.is-selected:after { background: linear-gradient(-270deg, #FFD700 0%, #FFD700 100%); }
                 .p-nav-list .p-navEl.is-selected { color: #FFD700; }
+                .button.button--cta { background: #FFD700; background-color: #FFD700; }
             `
         },
-        ruby: {
-            name: 'Рубиново-Красная',
+        {
+            id: 'crimson-red',
+            name: '❤️ Багровый Красный',
             css: `
-                .menu-tabHeader .tabs-tab.is-active { border-color: #FF1493; }
-                .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #FF1493; }
-                .tabs-tab { color: #FF1493; }
-                .blockLink.is-selected { color: #FF1493; border-left: 2px solid #FF1493; }
-                .block-tabHeader .tabs-tab:hover { color: #FF1493; }
-                .button.button--primary, a.button.button--primary { background: linear-gradient(#FF1493, #C71585); }
-                .menu-linkRow.is-selected, .menu-linkRow:hover { color: #FF1493; }
-                .fr-toolbar { border-top: 1px solid #FF1493; }
-                .block-tabHeader .tabs-tab.is-active { color: #FF1493; border-color: #FF1493; }
-                .messageNotice { border-left: 2px solid #FF1493; }
-                .bbCodeBlock { border-left: 2px solid #FF1493; }
-                .bbCodeBlock-title { color: #FF1493; }
-                .message-newIndicator { background: #FF1493; }
-                .p-nav-list .p-navEl.is-selected:after { background: linear-gradient(-270deg, #FF1493 0%, #C71585 100%); }
-                .p-nav-list .p-navEl.is-selected { color: #FF1493; }
+                .block.block--category .block-header { text-shadow: 0 0 1px rgba(220, 20, 60, 0.7); }
+                .menu-tabHeader .tabs-tab.is-active { border-color: #DC143C; }
+                .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #DC143C; }
+                .tabs-tab { color: #DC143C; }
+                .blockLink.is-selected { color: #DC143C; border-left: 2px solid #DC143C; }
+                .block-tabHeader .tabs-tab:hover { color: #DC143C; }
+                .button.button--primary { background: linear-gradient(#DC143C, #DC143C); }
+                .menu-linkRow.is-selected, .menu-linkRow:hover { color: #DC143C; }
+                .fr-toolbar { border-top: 1px solid #DC143C; }
+                .block-tabHeader .tabs-tab.is-active { color: #DC143C; border-color: #DC143C; }
+                .messageNotice { border-left: 2px solid #DC143C; }
+                .bbCodeBlock { border-left: 2px solid #DC143C; }
+                .bbCodeBlock-title { color: #DC143C; }
+                .button.button--scroll { background: linear-gradient(#DC143C, #DC143C); }
+                .message-newIndicator { background: #DC143C; }
+                .menu-content:before { background: linear-gradient(-270deg, #DC143C 0%, #DC143C 100%); }
+                .p-nav-list .p-navEl.is-selected:after { background: linear-gradient(-270deg, #DC143C 0%, #DC143C 100%); }
+                .p-nav-list .p-navEl.is-selected { color: #DC143C; }
+                .button.button--cta { background: #DC143C; background-color: #DC143C; }
+            `
+        },
+        {
+            id: 'teal',
+            name: '🐚 Бирюзовый',
+            css: `
+                .block.block--category .block-header { text-shadow: 0 0 1px rgba(0, 206, 209, 0.7); }
+                .menu-tabHeader .tabs-tab.is-active { border-color: #00CED1; }
+                .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #00CED1; }
+                .tabs-tab { color: #00CED1; }
+                .blockLink.is-selected { color: #00CED1; border-left: 2px solid #00CED1; }
+                .block-tabHeader .tabs-tab:hover { color: #00CED1; }
+                .button.button--primary { background: linear-gradient(#00CED1, #00CED1); }
+                .menu-linkRow.is-selected, .menu-linkRow:hover { color: #00CED1; }
+                .fr-toolbar { border-top: 1px solid #00CED1; }
+                .block-tabHeader .tabs-tab.is-active { color: #00CED1; border-color: #00CED1; }
+                .messageNotice { border-left: 2px solid #00CED1; }
+                .bbCodeBlock { border-left: 2px solid #00CED1; }
+                .bbCodeBlock-title { color: #00CED1; }
+                .button.button--scroll { background: linear-gradient(#00CED1, #00CED1); }
+                .message-newIndicator { background: #00CED1; }
+                .menu-content:before { background: linear-gradient(-270deg, #00CED1 0%, #00CED1 100%); }
+                .p-nav-list .p-navEl.is-selected:after { background: linear-gradient(-270deg, #00CED1 0%, #00CED1 100%); }
+                .p-nav-list .p-navEl.is-selected { color: #00CED1; }
+                .button.button--cta { background: #00CED1; background-color: #00CED1; }
+            `
+        },
+        {
+            id: 'lavender',
+            name: '🌸 Лавандовый',
+            css: `
+                .block.block--category .block-header { text-shadow: 0 0 1px rgba(230, 230, 250, 0.7); }
+                .menu-tabHeader .tabs-tab.is-active { border-color: #E6E6FA; }
+                .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #E6E6FA; }
+                .tabs-tab { color: #E6E6FA; }
+                .blockLink.is-selected { color: #E6E6FA; border-left: 2px solid #E6E6FA; }
+                .block-tabHeader .tabs-tab:hover { color: #E6E6FA; }
+                .button.button--primary { background: linear-gradient(#E6E6FA, #E6E6FA); color: #333; }
+                .menu-linkRow.is-selected, .menu-linkRow:hover { color: #E6E6FA; }
+                .fr-toolbar { border-top: 1px solid #E6E6FA; }
+                .block-tabHeader .tabs-tab.is-active { color: #E6E6FA; border-color: #E6E6FA; }
+                .messageNotice { border-left: 2px solid #E6E6FA; }
+                .bbCodeBlock { border-left: 2px solid #E6E6FA; }
+                .bbCodeBlock-title { color: #E6E6FA; }
+                .button.button--scroll { background: linear-gradient(#E6E6FA, #E6E6FA); }
+                .message-newIndicator { background: #E6E6FA; }
+                .menu-content:before { background: linear-gradient(-270deg, #E6E6FA 0%, #E6E6FA 100%); }
+                .p-nav-list .p-navEl.is-selected:after { background: linear-gradient(-270deg, #E6E6FA 0%, #E6E6FA 100%); }
+                .p-nav-list .p-navEl.is-selected { color: #E6E6FA; }
+                .button.button--cta { background: #E6E6FA; background-color: #E6E6FA; color: #333; }
+            `
+        },
+        {
+            id: 'rainbow',
+            name: '🌈 Радужный (мультиколор)',
+            css: `
+                .block.block--category .block-header { text-shadow: 0 0 2px rgba(255,0,0,0.7); }
+                .menu-tabHeader .tabs-tab.is-active { border-color: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); }
+                .tabs-tab { color: #ff6b6b; }
+                .blockLink.is-selected { color: #ff6b6b; border-left: 2px solid #ff6b6b; }
+                .block-tabHeader .tabs-tab:hover { color: #ff6b6b; }
+                .button.button--primary { background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); }
+                .menu-linkRow.is-selected, .menu-linkRow:hover { color: #ff6b6b; }
+                .fr-toolbar { border-top: 2px solid transparent; border-image: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); border-image-slice: 1; }
+                .block-tabHeader .tabs-tab.is-active { color: #ff6b6b; border-color: #ff6b6b; }
+                .messageNotice { border-left: 2px solid #ff6b6b; }
+                .bbCodeBlock { border-left: 2px solid #ff6b6b; }
+                .bbCodeBlock-title { color: #ff6b6b; }
+                .button.button--scroll { background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); }
+                .message-newIndicator { background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); }
+                .p-nav-list .p-navEl.is-selected { color: #ff6b6b; }
+                .button.button--cta { background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); border-color: transparent; }
             `
         }
-    };
+    ];
 
-    // Ключи для localStorage
-    const STORAGE_KEYS = {
-        theme: 'br_custom_theme',
-        background: 'br_custom_background'
-    };
-
-    // Функция применения темы
+    // Функция применения CSS темы
     function applyTheme(themeId) {
-        const oldStyle = document.getElementById('br-theme-style');
-        if (oldStyle) oldStyle.remove();
-
-        if (themeId !== 'none' && THEMES[themeId]) {
-            const style = document.createElement('style');
-            style.id = 'br-theme-style';
-            style.textContent = THEMES[themeId].css;
-            document.head.appendChild(style);
+        let styleElement = document.getElementById('br-theme-styles');
+        if (!styleElement) {
+            styleElement = document.createElement('style');
+            styleElement.id = 'br-theme-styles';
+            document.head.appendChild(styleElement);
         }
+
+        const theme = themes.find(t => t.id === themeId);
+        if (theme && theme.id !== 'none') {
+            styleElement.textContent = theme.css;
+        } else {
+            styleElement.textContent = '';
+        }
+        
+        localStorage.setItem(STORAGE_THEME, themeId);
     }
 
     // Функция применения фона
-    function applyBackground(url) {
-        if (!url || url.trim() === '') {
-            document.body.style.backgroundImage = '';
-            document.body.style.backgroundAttachment = '';
-            document.body.style.backgroundSize = '';
-            return;
+    function applyBackground(bgUrl) {
+        let bgStyle = document.getElementById('br-bg-styles');
+        if (!bgStyle) {
+            bgStyle = document.createElement('style');
+            bgStyle.id = 'br-bg-styles';
+            document.head.appendChild(bgStyle);
         }
-        document.body.style.backgroundImage = `url("${url}")`;
-        document.body.style.backgroundAttachment = 'fixed';
-        document.body.style.backgroundSize = 'cover';
+
+        if (bgUrl && bgUrl.trim() !== '') {
+            bgStyle.textContent = `
+                body {
+                    background-image: url("${bgUrl}");
+                    background-attachment: fixed;
+                    background-size: cover;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                }
+                .p-nav, .block-container, .p-footer, .button.button--cta,
+                .buttonGroup, .pageNav-main, .tabPanes, .menu-content,
+                .overlay, span[class="hScroller-scroll is-calculated"],
+                .block-minorHeader {
+                    opacity: 0.95;
+                }
+            `;
+            localStorage.setItem(STORAGE_BG, bgUrl);
+        } else {
+            bgStyle.textContent = '';
+            localStorage.removeItem(STORAGE_BG);
+        }
     }
 
-    // Функция загрузки сохраненных настроек
+    // Загрузка сохраненных настроек
     function loadSavedSettings() {
-        const savedTheme = localStorage.getItem(STORAGE_KEYS.theme);
-        const savedBackground = localStorage.getItem(STORAGE_KEYS.background);
-        
+        const savedTheme = localStorage.getItem(STORAGE_THEME);
         if (savedTheme && savedTheme !== 'none') {
             applyTheme(savedTheme);
         }
-        if (savedBackground && savedBackground.trim() !== '') {
-            applyBackground(savedBackground);
+        
+        const savedBg = localStorage.getItem(STORAGE_BG);
+        if (savedBg) {
+            applyBackground(savedBg);
         }
     }
 
-    // Функция создания модального окна
-    function createModal() {
+    // Создание модального окна
+    function createThemeModal() {
         const modal = document.createElement('div');
-        modal.id = 'br-customizer-modal';
+        modal.id = 'br-theme-modal';
         modal.className = 'br-modal';
         modal.innerHTML = `
             <div class="br-modal-content">
                 <div class="br-modal-header">
-                    <div class="br-modal-title">🎨 Кастомизация форума</div>
+                    <div class="br-modal-title">🎨 Настройка темы и фона</div>
                     <button class="br-modal-close">&times;</button>
                 </div>
                 <div class="br-modal-body">
                     <div class="br-form-group">
-                        <label class="br-label">🎭 Выберите тему оформления:</label>
+                        <label class="br-label">Выберите цветовую тему:</label>
                         <select id="br-theme-select" class="br-select">
-                            ${Object.entries(THEMES).map(([id, theme]) => 
-                                `<option value="${id}">${theme.name}</option>`
-                            ).join('')}
+                            ${themes.map(theme => `<option value="${theme.id}">${theme.name}</option>`).join('')}
                         </select>
                     </div>
-                    
-                    <div class="br-divider"></div>
-                    
                     <div class="br-form-group">
-                        <label class="br-label">🖼️ URL фонового изображения:</label>
-                        <input type="text" id="br-bg-url" class="br-input" 
-                               placeholder="https://example.com/image.jpg">
-                        <div class="br-hint">Поддерживаются любые форматы изображений (jpg, png, gif, webp)</div>
+                        <label class="br-label">URL адрес фонового изображения:</label>
+                        <input type="text" id="br-bg-input" class="br-input" placeholder="https://example.com/background.jpg">
+                        <small class="br-hint">Вставьте прямую ссылку на изображение (JPG, PNG, GIF)</small>
                     </div>
                 </div>
                 <div class="br-modal-footer">
-                    <button class="br-btn br-btn-secondary" id="br-reset-bg">Сбросить фон</button>
-                    <button class="br-btn br-btn-primary" id="br-save-settings">Сохранить</button>
+                    <button class="br-btn br-btn-secondary" id="br-cancel">Отмена</button>
+                    <button class="br-btn br-btn-primary" id="br-save">Сохранить</button>
                 </div>
             </div>
         `;
+
+        // Заполняем текущие значения
+        const currentTheme = localStorage.getItem(STORAGE_THEME) || 'none';
+        const currentBg = localStorage.getItem(STORAGE_BG) || '';
         
-        document.body.appendChild(modal);
+        const themeSelect = modal.querySelector('#br-theme-select');
+        const bgInput = modal.querySelector('#br-bg-input');
+        
+        themeSelect.value = currentTheme;
+        bgInput.value = currentBg;
+
+        // Обработчики
+        modal.querySelector('.br-modal-close').addEventListener('click', () => closeModal(modal));
+        modal.querySelector('#br-cancel').addEventListener('click', () => closeModal(modal));
+        modal.querySelector('#br-save').addEventListener('click', () => {
+            const selectedTheme = themeSelect.value;
+            const bgUrl = bgInput.value.trim();
+            
+            applyTheme(selectedTheme);
+            applyBackground(bgUrl);
+            
+            closeModal(modal);
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal(modal);
+        });
+
         return modal;
     }
 
-    function openModal() {
-        let modal = document.getElementById('br-customizer-modal');
-        if (!modal) {
-            modal = createModal();
-            
-            const savedTheme = localStorage.getItem(STORAGE_KEYS.theme) || 'none';
-            const savedBg = localStorage.getItem(STORAGE_KEYS.background) || '';
-            
-            const themeSelect = modal.querySelector('#br-theme-select');
-            const bgUrlInput = modal.querySelector('#br-bg-url');
-            
-            if (themeSelect) themeSelect.value = savedTheme;
-            if (bgUrlInput) bgUrlInput.value = savedBg;
-            
-            modal.querySelector('#br-save-settings').addEventListener('click', () => {
-                const selectedTheme = themeSelect.value;
-                const bgUrl = bgUrlInput.value.trim();
-                
-                localStorage.setItem(STORAGE_KEYS.theme, selectedTheme);
-                localStorage.setItem(STORAGE_KEYS.background, bgUrl);
-                
-                applyTheme(selectedTheme);
-                applyBackground(bgUrl);
-                closeModal();
-                showNotification('✅ Настройки сохранены!');
-            });
-            
-            modal.querySelector('#br-reset-bg').addEventListener('click', () => {
-                bgUrlInput.value = '';
-                showNotification('🖼️ Фон сброшен');
-            });
-            
-            modal.querySelector('.br-modal-close').addEventListener('click', closeModal);
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) closeModal();
-            });
-        }
-        
-        modal.style.display = 'flex';
-    }
-    
-    function closeModal() {
-        const modal = document.getElementById('br-customizer-modal');
-        if (modal) modal.style.display = 'none';
-    }
-    
-    function showNotification(message, duration = 3000) {
-        let notification = document.getElementById('br-notification');
-        if (!notification) {
-            notification = document.createElement('div');
-            notification.id = 'br-notification';
-            notification.className = 'br-notification';
-            document.body.appendChild(notification);
-        }
-        
-        notification.textContent = message;
-        notification.classList.add('show');
-        setTimeout(() => notification.classList.remove('show'), duration);
+    function closeModal(modal) {
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (modal.parentNode) modal.parentNode.removeChild(modal);
+        }, 300);
     }
 
-    // ГЛАВНАЯ ФУНКЦИЯ - добавляем кнопку вручную в нужное место
-    function addCustomizeButton() {
-        // Ищем контейнер с кнопками
-        let container = document.querySelector('.bgButtonsContainer');
+    function openThemeModal() {
+        let modal = document.getElementById('br-theme-modal');
+        if (modal) {
+            modal.classList.add('open');
+            return;
+        }
         
-        // Если контейнера нет, создаем свой и вставляем после pageContent
-        if (!container) {
-            const pageContent = document.querySelector('.pageContent');
-            if (pageContent && !document.querySelector('.bgButtonsContainer')) {
-                // Создаем временный контейнер
-                container = document.createElement('div');
-                container.className = 'bgButtonsContainer';
-                pageContent.appendChild(container);
+        modal = createThemeModal();
+        document.body.appendChild(modal);
+        setTimeout(() => modal.classList.add('open'), 10);
+    }
+
+    // Добавление кнопки в существующую панель
+    function addThemeButton() {
+        // Ждем появления контейнера с кнопками
+        const checkInterval = setInterval(() => {
+            const container = document.querySelector('.bgButtonsContainer');
+            if (container && !document.querySelector('.bgButtonTheme')) {
+                const themeBtn = document.createElement('button');
+                themeBtn.textContent = '🖼';
+                themeBtn.className = 'bgButton bgButtonTheme';
+                themeBtn.style.borderBottom = '2px solid #9b59b6';
+                themeBtn.style.fontSize = '14px';
+                themeBtn.addEventListener('click', openThemeModal);
+                container.appendChild(themeBtn);
+                clearInterval(checkInterval);
             }
-        }
-        
-        // Если контейнер существует, добавляем кнопку
-        if (container && !container.querySelector('.br-customize-btn')) {
-            const customizeBtn = document.createElement('button');
-            customizeBtn.textContent = '🖼';
-            customizeBtn.className = 'bgButton br-customize-btn';
-            customizeBtn.style.borderBottom = '2px solid #FF69B4';
-            customizeBtn.style.fontSize = '16px';
-            customizeBtn.title = 'Кастомизация темы и фона';
-            customizeBtn.addEventListener('click', openModal);
-            container.appendChild(customizeBtn);
-            console.log('[BR Customizer] Кнопка добавлена!');
-        }
+        }, 500);
     }
 
-    // Стили
-    const style = document.createElement('style');
-    style.textContent = `
+    // Добавляем стили для модального окна
+    const modalStyles = document.createElement('style');
+    modalStyles.textContent = `
         .br-modal {
-            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 2147483647;
+            background: rgba(0,0,0,0.85);
+            z-index: 2147483648;
+            display: flex;
             align-items: center;
             justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .br-modal.open {
+            opacity: 1;
+            visibility: visible;
         }
         
         .br-modal-content {
-            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
-            border: 1px solid #333;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 16px;
             width: 90%;
             max-width: 500px;
-            animation: slideIn 0.3s ease;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            animation: modalSlideIn 0.3s ease;
         }
         
-        @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
         
         .br-modal-header {
-            padding: 20px;
-            border-bottom: 1px solid #333;
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
         .br-modal-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             color: #fff;
         }
@@ -367,11 +519,15 @@
             background: none;
             border: none;
             color: #fff;
-            font-size: 24px;
+            font-size: 28px;
             cursor: pointer;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: background 0.2s;
         }
         
         .br-modal-close:hover {
@@ -379,125 +535,118 @@
         }
         
         .br-modal-body {
-            padding: 20px;
+            padding: 24px;
         }
         
         .br-form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         
         .br-label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: #fff;
-            font-weight: bold;
+            font-weight: 600;
             font-size: 14px;
         }
         
         .br-select, .br-input {
             width: 100%;
-            padding: 10px;
-            background: #1a1a1a;
-            color: #fff;
-            border: 1px solid #333;
+            padding: 10px 12px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.2);
             border-radius: 8px;
+            color: #fff;
             font-size: 14px;
+            transition: all 0.2s;
         }
         
         .br-select:focus, .br-input:focus {
             outline: none;
-            border-color: #FF69B4;
+            border-color: #9b59b6;
+            background: rgba(0,0,0,0.6);
+        }
+        
+        .br-select option {
+            background: #1a1a2e;
         }
         
         .br-hint {
-            margin-top: 5px;
-            font-size: 11px;
-            color: #888;
-        }
-        
-        .br-divider {
-            height: 1px;
-            background: #333;
-            margin: 20px 0;
+            display: block;
+            margin-top: 6px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
         }
         
         .br-modal-footer {
-            padding: 20px;
-            border-top: 1px solid #333;
+            padding: 16px 24px;
+            border-top: 1px solid rgba(255,255,255,0.1);
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
+            gap: 12px;
         }
         
         .br-btn {
-            padding: 8px 16px;
+            padding: 8px 20px;
             border: none;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: bold;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.2s;
         }
         
         .br-btn-primary {
-            background: linear-gradient(135deg, #FF69B4, #FF1493);
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
             color: #fff;
         }
         
+        .br-btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4);
+        }
+        
         .br-btn-secondary {
-            background: #333;
+            background: rgba(255,255,255,0.1);
             color: #fff;
         }
         
         .br-btn-secondary:hover {
-            background: #444;
+            background: rgba(255,255,255,0.2);
         }
         
-        .br-notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #FF69B4, #FF1493);
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 13px;
-            z-index: 2147483647;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
+        .bgButtonTheme {
+            background: #1a1a1a;
+            color: #ffffff;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 6px 8px;
+            margin: 2px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 40px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .br-notification.show {
-            transform: translateX(0);
-        }
-        
-        .br-customize-btn {
-            background: linear-gradient(135deg, #FF69B4, #FF1493) !important;
-            border: none !important;
+        .bgButtonTheme:hover {
+            background: #2a2a2a;
+            border-color: #9b59b6;
         }
     `;
-    document.head.appendChild(style);
-    
-    // Загружаем настройки
-    loadSavedSettings();
-    
-    // Пытаемся добавить кнопку сразу
-    setTimeout(() => {
-        addCustomizeButton();
-    }, 500);
-    
-    // Следим за изменениями на странице
-    const observer = new MutationObserver(() => {
-        addCustomizeButton();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-    
-    // Также пробуем добавить через 2 секунды (на случай если основной скрипт медленный)
-    setTimeout(() => {
-        addCustomizeButton();
-    }, 2000);
-    
-    setTimeout(() => {
-        addCustomizeButton();
-    }, 5000);
-    
+    document.head.appendChild(modalStyles);
+
+    // Инициализация
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSavedSettings();
+            addThemeButton();
+        });
+    } else {
+        loadSavedSettings();
+        addThemeButton();
+    }
 })();
