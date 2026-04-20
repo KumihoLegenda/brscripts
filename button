@@ -330,15 +330,13 @@
                 return saved ? JSON.parse(saved) : [31, 32, 33, 34, 35];
             }
 
-            // --- Функция для создания кнопок (как во втором скрипте) ---
+            // --- Функция для создания кнопок ---
             function createButtonsContainer() {
                 const container = document.createElement('div');
                 container.className = 'bgButtonsContainer';
 
-                // Получаем выбранные серверы
                 const selectedIds = getSelectedServers();
                 
-                // Функция создания кнопки
                 const createButton = (text, link, color = '#2563eb', isGlow = false) => {
                     const btn = document.createElement('button');
                     btn.textContent = text;
@@ -356,7 +354,6 @@
                     return btn;
                 };
                 
-                // Добавляем кнопки ЖБТ для выбранных серверов
                 selectedIds.forEach(id => {
                     const serverData = DATA_TECH_COMPLAINT[id - 1];
                     if (serverData) {
@@ -365,7 +362,6 @@
                     }
                 });
                 
-                // Добавляем кнопки ТР для выбранных серверов
                 selectedIds.forEach(id => {
                     const serverData = DATA_TECH[id - 1];
                     if (serverData) {
@@ -374,7 +370,6 @@
                     }
                 });
                 
-                // Добавляем кнопки ЖБИ для выбранных серверов
                 selectedIds.forEach(id => {
                     const serverData = DATA_PLAYER_COMPLAINT[id - 1];
                     if (serverData) {
@@ -383,11 +378,9 @@
                     }
                 });
                 
-                // Кнопка ОПС
                 const opsBtn = createButton('ОПС', OPS_LINK.href, OPS_LINK.color, OPS_LINK.glow);
                 container.appendChild(opsBtn);
                 
-                // Кнопка IP
                 const ipBtn = document.createElement('button');
                 ipBtn.textContent = 'IP';
                 ipBtn.className = 'bgButton';
@@ -395,7 +388,6 @@
                 ipBtn.addEventListener('click', openIPModal);
                 container.appendChild(ipBtn);
                 
-                // Кнопка настроек
                 const settingsBtn = document.createElement('button');
                 settingsBtn.textContent = '⚙️';
                 settingsBtn.className = 'bgButton';
@@ -408,15 +400,14 @@
             }
 
             function initializeScript() {
-                // Всегда добавляем кнопки навигации в .pageContent (как во втором скрипте)
                 const pageContent = document.querySelector(".pageContent");
-                if (pageContent) {
+                if (pageContent && !document.querySelector('.bgButtonsContainer')) {
                     const buttonsContainer = createButtonsContainer();
                     pageContent.appendChild(buttonsContainer);
                 }
             }
             
-            // --- Функция открытия настроек (обновленная сетка) ---
+            // --- Функция открытия настроек (ДВЕ КОЛОНКИ) ---
             function openSettings() {
                 let overlay = document.querySelector('.fnp-modal-overlay');
                 if(!overlay) {
@@ -437,7 +428,6 @@
                     overlay.querySelector('#fnp-save').onclick = () => {
                         const checked = Array.from(overlay.querySelectorAll('input:checked')).map(el => +el.value).sort((a,b)=>a-b);
                         localStorage.setItem(STORAGE_PREFIX + 'servers', JSON.stringify(checked));
-                        // Обновляем кнопки
                         const oldContainer = document.querySelector('.bgButtonsContainer');
                         if (oldContainer) oldContainer.remove();
                         const pageContent = document.querySelector(".pageContent");
@@ -453,7 +443,6 @@
                 body.innerHTML = '';
                 const current = getSelectedServers();
                 
-                // Обновленная сетка: две колонки, формат "номер | название"
                 for (let i = 1; i <= SERVER_LIST.length; i++) {
                     const server = SERVER_LIST[i-1];
                     const lbl = document.createElement('label');
@@ -468,7 +457,7 @@
                 setTimeout(() => overlay.classList.add('open'), 10);
             }
             
-            // --- Стили (обновленные: сетка в две колонки) ---
+            // --- СТИЛИ (с двумя колонками) ---
             const style = document.createElement('style');
             style.textContent = `
                 .bgButton {
@@ -515,7 +504,7 @@
                     display: none;
                 }
 
-                /* Стили для модального окна настроек - ОБНОВЛЕННЫЕ (две колонки) */
+                /* Стили для модального окна настроек - ДВЕ КОЛОНКИ */
                 .fnp-modal-overlay {
                     position: fixed;
                     top: 0;
@@ -558,16 +547,9 @@
                 .fnp-modal-body {
                     padding: 15px;
                     overflow-y: auto;
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
+                    display: grid !important;
+                    grid-template-columns: repeat(2, 1fr) !important;
                     gap: 8px;
-                }
-                .fnp-modal-footer {
-                    padding: 15px;
-                    border-top: 1px solid #333;
-                    display: flex;
-                    justify-content: flex-end;
-                    gap: 10px;
                 }
                 .fnp-checkbox-label {
                     display: flex;
@@ -581,12 +563,16 @@
                     color: #ccc;
                     font-size: 11px;
                     border: 1px solid #333;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
                 .fnp-checkbox-label:hover {
                     background: #2a2a2a;
                 }
                 .fnp-checkbox-label input {
                     accent-color: #2563eb;
+                    flex-shrink: 0;
                 }
                 .fnp-checkbox-label.checked {
                     border-color: #2563eb;
@@ -851,7 +837,7 @@
                     background-color: #0069a4;
                 }
                 
-                /* Мобильная версия - горизонтальный скролл */
+                /* Мобильная версия */
                 @media (max-width: 768px) {
                     .bgButton {
                         min-width: 48px;
@@ -874,7 +860,7 @@
                         border-bottom: none;
                     }
                     .fnp-modal-body {
-                        grid-template-columns: 1fr;
+                        grid-template-columns: 1fr !important;
                     }
                 }
                 
