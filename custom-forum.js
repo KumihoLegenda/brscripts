@@ -1,22 +1,22 @@
 // ==UserScript==
 // @name         BR Theme & Background Manager (Full)
 // @namespace    http://tampermonkey.net/
-// @version      3.2
-// @description  Полноценные темы оформления форума + смена фона (РАБОТАЕТ НА ВСЕХ СТРАНИЦАХ)
+// @version      4.0
+// @description  Полноценные темы оформления форума + смена фона (РАБОТАЕТ НА ВСЕХ СТРАНИЦАХ БЕЗ КОНФЛИКТОВ)
 // @match        https://forum.blackrussia.online/*
 // @grant        none
+// @run-at       document-start
 // ==/UserScript==
 
 (function() {
     'use strict';
 
     // Уникальный идентификатор для этого скрипта
-    const SCRIPT_ID = 'br-theme-manager-full-v3';
+    const SCRIPT_ID = 'br-theme-manager-full-v4';
     
-    if (document.body.getAttribute(`data-${SCRIPT_ID}`)) {
+    if (document.body && document.body.getAttribute(`data-${SCRIPT_ID}`)) {
         return;
     }
-    document.body.setAttribute(`data-${SCRIPT_ID}`, 'true');
 
     const STORAGE_THEME = 'br_selected_theme_v3';
     const STORAGE_BG = 'br_custom_background_v3';
@@ -35,7 +35,7 @@
         { id: 'dark-knight', name: '🦇 Тёмный рыцарь', accent: '#1a1a2e', accentGlow: '#2d2d44', accentRgb: '26, 26, 46' }
     ];
 
-    // Функция генерации полного CSS темы (ПОЛНАЯ ВЕРСИЯ с полупрозрачными эффектами)
+    // Функция генерации полного CSS темы
     function generateThemeCSS(accent, accentGlow, accentRgb) {
         return `
             :root {
@@ -56,7 +56,6 @@
                 z-index: -5;
             }
 
-            /* Основные блоки */
             .p-body, .p-body-inner, .p-body-content, .p-body-main { background: transparent !important; }
             .block, .block-outer { background: transparent !important; border: none !important; }
             .block-container {
@@ -78,7 +77,6 @@
             .block-body { background: transparent !important; }
             .block-footer { background: rgba(0,0,0,0.15) !important; border-top: 1px solid rgba(255,255,255,0.05) !important; }
 
-            /* Навигация */
             .p-nav {
                 background: rgba(10, 14, 20, 0.95) !important;
                 border-bottom: 1px solid var(--border-color) !important;
@@ -86,14 +84,12 @@
             .p-nav-list .p-navEl.is-selected { color: var(--theme-accent) !important; }
             .p-nav-list .p-navEl:hover { color: var(--theme-accent-glow) !important; }
 
-            /* Элементы списка */
             .node, .node-body, .node-extra, .node-stats, .node-meta { background: transparent !important; }
             .node-body:hover, .node:hover > .node-body { background: var(--hover-bg) !important; }
             .structItem, .structItem-cell { background: transparent !important; }
             .structItem { border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
             .structItem:hover { background: var(--hover-bg) !important; }
 
-            /* Сообщения */
             .message {
                 background: rgba(20, 25, 35, 0.5) !important;
                 border: 1px solid rgba(255,255,255,0.05) !important;
@@ -104,7 +100,6 @@
             .message-user, .message-userDetails, .message-attribution { background: transparent !important; }
             .message-userArrow { display: none !important; }
 
-            /* Формы и кнопки */
             .formButtonGroup, .formSubmitRow { background: transparent !important; }
             .formRow { background: transparent !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
             input[type="text"], input[type="password"], input[type="email"], input[type="search"],
@@ -133,7 +128,6 @@
                 background-color: var(--theme-accent) !important;
             }
 
-            /* Меню и выпадашки */
             .menu, .menu-content {
                 background: var(--glass-dark) !important;
                 border: 1px solid var(--border-color) !important;
@@ -144,7 +138,6 @@
             .menu-row:hover, .menu-linkRow:hover { background: var(--hover-bg) !important; }
             .menu-linkRow.is-selected { color: var(--theme-accent) !important; }
 
-            /* Вкладки */
             .tabs, .tabs-tab { background: transparent !important; }
             .tabs-tab { color: var(--theme-accent) !important; }
             .tabs-tab.is-active {
@@ -154,13 +147,11 @@
             }
             .block-tabHeader .tabs-tab:hover { color: var(--theme-accent-glow) !important; }
 
-            /* Бейджи и индикаторы */
             .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after {
                 background: var(--theme-accent) !important;
             }
             .message-newIndicator { background: var(--theme-accent) !important; }
 
-            /* Блоки кода и цитаты */
             .bbCodeBlock {
                 background: rgba(10, 15, 25, 0.6) !important;
                 border-left: 2px solid var(--theme-accent) !important;
@@ -174,7 +165,6 @@
             .messageNotice { border-left: 2px solid var(--theme-accent) !important; }
             .messageNotice:before { color: var(--theme-accent) !important; }
 
-            /* Пагинация */
             .pageNav, .pageNav-main { background: transparent !important; }
             .pageNav-page, .pageNav-jump {
                 background: rgba(20, 30, 45, 0.5) !important;
@@ -187,7 +177,6 @@
                 border-color: var(--theme-accent) !important;
             }
 
-            /* Футер */
             .p-footer { background: transparent !important; border: none !important; }
             .p-footer-inner {
                 background: rgba(8, 12, 18, 0.95) !important;
@@ -195,16 +184,10 @@
             }
             .p-footer a { color: var(--theme-accent) !important; }
 
-            /* Панель инструментов редактора */
             .fr-toolbar { border-top: 1px solid var(--theme-accent) !important; }
-
-            /* Скролл-кнопка */
             .button.button--scroll { background: linear-gradient(var(--theme-accent), var(--theme-accent)) !important; }
-
-            /* Сайдбар */
             .p-body-sidebar .block-container { background: var(--glass-dark) !important; }
 
-            /* Профиль пользователя */
             .memberHeader-avatar .avatar {
                 border: 2px solid var(--theme-accent) !important;
                 box-shadow: 0 0 20px var(--theme-accent) !important;
@@ -215,7 +198,6 @@
         `;
     }
 
-    // Тема "Тёмный рыцарь" (черная гамма с полупрозрачными эффектами)
     function generateDarkKnightCSS() {
         return `
             :root {
@@ -236,7 +218,6 @@
                 z-index: -5;
             }
 
-            /* Основные блоки */
             .p-body, .p-body-inner, .p-body-content, .p-body-main { background: transparent !important; }
             .block, .block-outer { background: transparent !important; border: none !important; }
             .block-container {
@@ -258,7 +239,6 @@
             .block-body { background: transparent !important; }
             .block-footer { background: rgba(0,0,0,0.2) !important; border-top: 1px solid rgba(45,45,68,0.3) !important; }
 
-            /* Навигация */
             .p-nav {
                 background: rgba(8, 8, 12, 0.98) !important;
                 border-bottom: 1px solid var(--border-color) !important;
@@ -266,14 +246,12 @@
             .p-nav-list .p-navEl.is-selected { color: #8888aa !important; }
             .p-nav-list .p-navEl:hover { color: #aaaacc !important; }
 
-            /* Элементы списка */
             .node, .node-body, .node-extra, .node-stats, .node-meta { background: transparent !important; }
             .node-body:hover, .node:hover > .node-body { background: var(--hover-bg) !important; }
             .structItem, .structItem-cell { background: transparent !important; }
             .structItem { border-bottom: 1px solid rgba(45,45,68,0.3) !important; }
             .structItem:hover { background: var(--hover-bg) !important; }
 
-            /* Сообщения */
             .message {
                 background: rgba(15, 15, 22, 0.6) !important;
                 border: 1px solid rgba(45,45,68,0.4) !important;
@@ -284,7 +262,6 @@
             .message-user, .message-userDetails, .message-attribution { background: transparent !important; }
             .message-userArrow { display: none !important; }
 
-            /* Формы и кнопки */
             .formButtonGroup, .formSubmitRow { background: transparent !important; }
             .formRow { background: transparent !important; border-bottom: 1px solid rgba(45,45,68,0.3) !important; }
             input[type="text"], input[type="password"], input[type="email"], input[type="search"],
@@ -313,7 +290,6 @@
                 background-color: #2a2a3e !important;
             }
 
-            /* Меню и выпадашки */
             .menu, .menu-content {
                 background: rgba(10, 10, 15, 0.98) !important;
                 border: 1px solid rgba(45,45,68,0.5) !important;
@@ -324,7 +300,6 @@
             .menu-row:hover, .menu-linkRow:hover { background: var(--hover-bg) !important; }
             .menu-linkRow.is-selected { color: #8888aa !important; }
 
-            /* Вкладки */
             .tabs, .tabs-tab { background: transparent !important; }
             .tabs-tab { color: #8888aa !important; }
             .tabs-tab.is-active {
@@ -334,13 +309,11 @@
             }
             .block-tabHeader .tabs-tab:hover { color: #aaaacc !important; }
 
-            /* Бейджи и индикаторы */
             .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after {
                 background: #2a2a3e !important;
             }
             .message-newIndicator { background: #2a2a3e !important; }
 
-            /* Блоки кода и цитаты */
             .bbCodeBlock {
                 background: rgba(8, 8, 12, 0.8) !important;
                 border-left: 2px solid #444466 !important;
@@ -354,7 +327,6 @@
             .messageNotice { border-left: 2px solid #444466 !important; }
             .messageNotice:before { color: #8888aa !important; }
 
-            /* Пагинация */
             .pageNav, .pageNav-main { background: transparent !important; }
             .pageNav-page, .pageNav-jump {
                 background: rgba(15, 15, 22, 0.6) !important;
@@ -367,7 +339,6 @@
                 border-color: #555577 !important;
             }
 
-            /* Футер */
             .p-footer { background: transparent !important; border: none !important; }
             .p-footer-inner {
                 background: rgba(8, 8, 12, 0.98) !important;
@@ -375,16 +346,10 @@
             }
             .p-footer a { color: #8888aa !important; }
 
-            /* Панель инструментов редактора */
             .fr-toolbar { border-top: 1px solid #444466 !important; }
-
-            /* Скролл-кнопка */
             .button.button--scroll { background: linear-gradient(#2a2a3e, #1a1a2e) !important; }
-
-            /* Сайдбар */
             .p-body-sidebar .block-container { background: var(--glass-dark) !important; }
 
-            /* Профиль пользователя */
             .memberHeader-avatar .avatar {
                 border: 2px solid #444466 !important;
                 box-shadow: 0 0 20px rgba(68,68,102,0.5) !important;
@@ -402,10 +367,10 @@
     }
 
     function applyTheme(themeId) {
-        let styleElement = document.getElementById('br-theme-styles-v3');
+        let styleElement = document.getElementById('br-theme-styles-v4');
         if (!styleElement) {
             styleElement = document.createElement('style');
-            styleElement.id = 'br-theme-styles-v3';
+            styleElement.id = 'br-theme-styles-v4';
             document.head.appendChild(styleElement);
         }
         const theme = themes.find(t => t.id === themeId);
@@ -414,10 +379,10 @@
     }
 
     function applyBackground(bgUrl) {
-        let bgStyle = document.getElementById('br-bg-styles-v3');
+        let bgStyle = document.getElementById('br-bg-styles-v4');
         if (!bgStyle) {
             bgStyle = document.createElement('style');
-            bgStyle.id = 'br-bg-styles-v3';
+            bgStyle.id = 'br-bg-styles-v4';
             document.head.appendChild(bgStyle);
         }
         if (bgUrl && bgUrl.trim() !== '') {
@@ -437,47 +402,47 @@
     }
 
     function openThemeModal() {
-        let modal = document.getElementById('br-theme-modal-v3');
+        let modal = document.getElementById('br-theme-modal-v4');
         if (modal) {
             modal.classList.add('open');
             return;
         }
 
         modal = document.createElement('div');
-        modal.id = 'br-theme-modal-v3';
-        modal.className = 'br-modal';
+        modal.id = 'br-theme-modal-v4';
+        modal.className = 'br-modal-v4';
         modal.innerHTML = `
-            <div class="br-modal-content">
-                <div class="br-modal-header">
-                    <div class="br-modal-title">🎨 Полное оформление форума</div>
-                    <button class="br-modal-close">&times;</button>
+            <div class="br-modal-content-v4">
+                <div class="br-modal-header-v4">
+                    <div class="br-modal-title-v4">🎨 Полное оформление форума</div>
+                    <button class="br-modal-close-v4">&times;</button>
                 </div>
-                <div class="br-modal-body">
-                    <div class="br-form-group">
-                        <label class="br-label">Выберите тему оформления:</label>
-                        <select id="br-theme-select" class="br-select">${themes.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}</select>
+                <div class="br-modal-body-v4">
+                    <div class="br-form-group-v4">
+                        <label class="br-label-v4">Выберите тему оформления:</label>
+                        <select id="br-theme-select-v4" class="br-select-v4">${themes.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}</select>
                     </div>
-                    <div class="br-form-group">
-                        <label class="br-label">Фоновое изображение (опционально):</label>
-                        <input type="text" id="br-bg-input" class="br-input" placeholder="https://example.com/background.jpg">
-                        <small class="br-hint">Прямая ссылка на изображение (JPG, PNG, GIF)</small>
+                    <div class="br-form-group-v4">
+                        <label class="br-label-v4">Фоновое изображение (опционально):</label>
+                        <input type="text" id="br-bg-input-v4" class="br-input-v4" placeholder="https://example.com/background.jpg">
+                        <small class="br-hint-v4">Прямая ссылка на изображение (JPG, PNG, GIF)</small>
                     </div>
                 </div>
-                <div class="br-modal-footer">
-                    <button class="br-btn br-btn-secondary" id="br-cancel">Отмена</button>
-                    <button class="br-btn br-btn-primary" id="br-save">Сохранить</button>
+                <div class="br-modal-footer-v4">
+                    <button class="br-btn-v4 br-btn-secondary-v4" id="br-cancel-v4">Отмена</button>
+                    <button class="br-btn-v4 br-btn-primary-v4" id="br-save-v4">Сохранить</button>
                 </div>
             </div>
         `;
 
-        const themeSelect = modal.querySelector('#br-theme-select');
-        const bgInput = modal.querySelector('#br-bg-input');
+        const themeSelect = modal.querySelector('#br-theme-select-v4');
+        const bgInput = modal.querySelector('#br-bg-input-v4');
         themeSelect.value = localStorage.getItem(STORAGE_THEME) || 'none';
         bgInput.value = localStorage.getItem(STORAGE_BG) || '';
 
-        modal.querySelector('.br-modal-close').onclick = () => { modal.classList.remove('open'); setTimeout(() => modal.remove(), 300); };
-        modal.querySelector('#br-cancel').onclick = () => { modal.classList.remove('open'); setTimeout(() => modal.remove(), 300); };
-        modal.querySelector('#br-save').onclick = () => {
+        modal.querySelector('.br-modal-close-v4').onclick = () => { modal.classList.remove('open'); setTimeout(() => modal.remove(), 300); };
+        modal.querySelector('#br-cancel-v4').onclick = () => { modal.classList.remove('open'); setTimeout(() => modal.remove(), 300); };
+        modal.querySelector('#br-save-v4').onclick = () => {
             applyTheme(themeSelect.value);
             applyBackground(bgInput.value.trim());
             modal.classList.remove('open');
@@ -490,127 +455,150 @@
         setTimeout(() => modal.classList.add('open'), 10);
     }
 
-    // ========== СОЗДАНИЕ КНОПКИ 🖼 (ВСЕГДА ВИДИМА НА ЛЮБОЙ СТРАНИЦЕ) ==========
+    // ========== СОЗДАНИЕ КНОПКИ (АГРЕССИВНЫЙ МЕТОД) ==========
+    let buttonCreated = false;
+    
     function createButton() {
-        // Удаляем старую кнопку, если есть
-        const oldBtn = document.getElementById('br-theme-button-v3');
-        if (oldBtn) oldBtn.remove();
+        if (buttonCreated) return;
         
-        // Создаём плавающую кнопку в правом верхнем углу
+        // Проверяем, существует ли уже кнопка
+        if (document.getElementById('br-theme-button-v4')) {
+            buttonCreated = true;
+            return;
+        }
+        
+        // Создаём плавающую кнопку
         const btn = document.createElement('div');
-        btn.id = 'br-theme-button-v3';
-        btn.innerHTML = '🖼';
+        btn.id = 'br-theme-button-v4';
+        btn.innerHTML = '🎨';
         btn.title = 'Полное оформление форума';
         btn.style.cssText = `
             position: fixed;
-            top: 80px;
+            bottom: 20px;
             right: 20px;
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            border: 2px solid #9b59b6;
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
             border-radius: 50%;
             color: white;
-            font-size: 24px;
+            font-size: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 999999;
+            z-index: 2147483647;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             transition: all 0.3s ease;
             font-family: Arial, sans-serif;
+            opacity: 0;
+            pointer-events: none;
         `;
         
         btn.onmouseenter = () => {
             btn.style.transform = 'scale(1.1)';
-            btn.style.boxShadow = '0 6px 20px rgba(155, 89, 182, 0.5)';
-            btn.style.borderColor = '#c27bd6';
+            btn.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.5)';
         };
         
         btn.onmouseleave = () => {
             btn.style.transform = 'scale(1)';
             btn.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
-            btn.style.borderColor = '#9b59b6';
         };
         
-        btn.onclick = openThemeModal;
+        btn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openThemeModal();
+        };
         
         document.body.appendChild(btn);
+        buttonCreated = true;
+        
+        // Плавное появление кнопки
+        setTimeout(() => {
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = 'auto';
+        }, 100);
     }
 
-    // Стили модального окна
+    // Стили модального окна (уникальные имена классов, чтобы не конфликтовать)
     const modalStyle = document.createElement('style');
     modalStyle.textContent = `
-        .br-modal {
+        .br-modal-v4 {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); z-index: 2147483648;
             display: flex; align-items: center; justify-content: center;
             opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-        .br-modal.open { opacity: 1; visibility: visible; }
-        .br-modal-content {
+        .br-modal-v4.open { opacity: 1; visibility: visible; }
+        .br-modal-content-v4 {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
             width: 90%; max-width: 500px; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            animation: modalSlideIn 0.3s ease;
+            animation: modalSlideInV4 0.3s ease;
         }
-        @keyframes modalSlideIn {
+        @keyframes modalSlideInV4 {
             from { transform: translateY(-30px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
-        .br-modal-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .br-modal-title { font-size: 20px; font-weight: bold; color: #fff; }
-        .br-modal-close { background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: background 0.2s; }
-        .br-modal-close:hover { background: rgba(255,255,255,0.1); }
-        .br-modal-body { padding: 24px; }
-        .br-form-group { margin-bottom: 24px; }
-        .br-label { display: block; margin-bottom: 8px; color: #fff; font-weight: 600; font-size: 14px; }
-        .br-select, .br-input { width: 100%; padding: 10px 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; font-size: 14px; box-sizing: border-box; }
-        .br-select:focus, .br-input:focus { outline: none; border-color: #9b59b6; background: rgba(0,0,0,0.6); }
-        .br-select option { background: #1a1a2e; }
-        .br-hint { display: block; margin-top: 6px; font-size: 12px; color: rgba(255,255,255,0.5); }
-        .br-modal-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 12px; }
-        .br-btn { padding: 8px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        .br-btn-primary { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: #fff; }
-        .br-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4); }
-        .br-btn-secondary { background: rgba(255,255,255,0.1); color: #fff; }
-        .br-btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        .br-modal-header-v4 { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .br-modal-title-v4 { font-size: 20px; font-weight: bold; color: #fff; }
+        .br-modal-close-v4 { background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: background 0.2s; }
+        .br-modal-close-v4:hover { background: rgba(255,255,255,0.1); }
+        .br-modal-body-v4 { padding: 24px; }
+        .br-form-group-v4 { margin-bottom: 24px; }
+        .br-label-v4 { display: block; margin-bottom: 8px; color: #fff; font-weight: 600; font-size: 14px; }
+        .br-select-v4, .br-input-v4 { width: 100%; padding: 10px 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; font-size: 14px; box-sizing: border-box; }
+        .br-select-v4:focus, .br-input-v4:focus { outline: none; border-color: #9b59b6; background: rgba(0,0,0,0.6); }
+        .br-select-v4 option { background: #1a1a2e; }
+        .br-hint-v4 { display: block; margin-top: 6px; font-size: 12px; color: rgba(255,255,255,0.5); }
+        .br-modal-footer-v4 { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 12px; }
+        .br-btn-v4 { padding: 8px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .br-btn-primary-v4 { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: #fff; }
+        .br-btn-primary-v4:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4); }
+        .br-btn-secondary-v4 { background: rgba(255,255,255,0.1); color: #fff; }
+        .br-btn-secondary-v4:hover { background: rgba(255,255,255,0.2); }
         
-        /* Адаптация для мобильных устройств */
         @media (max-width: 768px) {
-            #br-theme-button-v3 {
-                width: 44px !important;
-                height: 44px !important;
-                font-size: 20px !important;
-                top: 70px !important;
-                right: 10px !important;
+            #br-theme-button-v4 {
+                width: 48px !important;
+                height: 48px !important;
+                font-size: 24px !important;
+                bottom: 15px !important;
+                right: 15px !important;
             }
         }
     `;
     document.head.appendChild(modalStyle);
 
     // ========== ЗАПУСК ==========
-    // Загружаем сохранённые настройки темы и фона
+    // Загружаем сохранённые настройки
     loadSavedSettings();
 
-    // Функция для создания кнопки с проверкой готовности DOM
-    const initButton = () => {
+    // Функция для ожидания появления body
+    function waitForBody() {
         if (document.body) {
+            // Отмечаем скрипт как выполненный
+            if (document.body.getAttribute(`data-${SCRIPT_ID}`)) {
+                return;
+            }
+            document.body.setAttribute(`data-${SCRIPT_ID}`, 'true');
+            
+            // Создаём кнопку
             createButton();
+            
+            // Наблюдатель на случай удаления кнопки
+            const observer = new MutationObserver(() => {
+                if (!document.getElementById('br-theme-button-v4')) {
+                    buttonCreated = false;
+                    createButton();
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
         } else {
-            document.addEventListener('DOMContentLoaded', createButton);
+            setTimeout(waitForBody, 50);
         }
-    };
-
-    // Запускаем создание кнопки (работает на всех страницах, включая главную)
-    initButton();
-
-    // Следим, чтобы кнопка всегда была на месте (если вдруг исчезнет из-за динамических изменений)
-    const observer = new MutationObserver(() => {
-        if (!document.getElementById('br-theme-button-v3')) {
-            createButton();
-        }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    }
+    
+    waitForBody();
 })();
