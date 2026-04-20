@@ -30,9 +30,18 @@
       ],
       "enabledDefault": true
     },
+        {
+      "id": "custom-forum",
+      "name": "Форум | Кастомизация оформления (НОВОЕ)",
+      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/custom-forum.js",
+      "matches": [
+        "https://forum.blackrussia.online/threads/*"
+      ],
+      "enabledDefault": true
+    },
     {
       "id": "forumtech",
-      "name": "Форум | Скрипт для специалистов",
+      "name": "Форум | Ответы для специалистов",
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forum-tech.js",
       "matches": [
         "https://forum.blackrussia.online/threads/*"
@@ -41,7 +50,7 @@
     },
     {
       "id": "forumtech-old",
-      "name": "Форум | Скрипт для специалистов (OLD)",
+      "name": "Форум | Ответы для специалистов (OLD)",
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forum-tech-old.js",
       "matches": [
         "https://forum.blackrussia.online/threads/*"
@@ -50,7 +59,7 @@
     },
     {
       "id": "forumkts",
-      "name": "Форум | Скрипт для КТС/ЗКТС" ,
+      "name": "Форум | Ответы для КТС/ЗКТС" ,
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/forum-kts",
       "matches": [
         "https://forum.blackrussia.online/*"
