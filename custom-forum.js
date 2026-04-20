@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         BR Theme & Background Manager (Full)
 // @namespace    http://tampermonkey.net/
-// @version      2.2
-// @description  Полноценные темы оформления форума + смена фона
+// @version      3.1
+// @description  Полноценные темы оформления форума + смена фона (РАБОТАЕТ НА ВСЕХ СТРАНИЦАХ)
 // @match        https://forum.blackrussia.online/*
 // @grant        none
 // ==/UserScript==
@@ -11,30 +11,31 @@
     'use strict';
 
     // Уникальный идентификатор для этого скрипта
-    const SCRIPT_ID = 'br-theme-manager-full';
+    const SCRIPT_ID = 'br-theme-manager-full-v3';
     
     if (document.body.getAttribute(`data-${SCRIPT_ID}`)) {
         return;
     }
     document.body.setAttribute(`data-${SCRIPT_ID}`, 'true');
 
-    const STORAGE_THEME = 'br_selected_theme_v2';
-    const STORAGE_BG = 'br_custom_background_v2';
+    const STORAGE_THEME = 'br_selected_theme_v3';
+    const STORAGE_BG = 'br_custom_background_v3';
 
     // ========== ПОЛНЫЕ ТЕМЫ ОФОРМЛЕНИЯ ФОРУМА ==========
     const themes = [
         { id: 'none', name: '🌙 Стандартная тема', css: '' },
-        { id: 'neon-orange', name: '🔥 Неоново-оранжевый', accent: '#FF4500', accentGlow: '#ff6a2e', accentRgb: '255, 69, 0', css: generateThemeCSS('#FF4500', '#ff6a2e', '255, 69, 0') },
-        { id: 'cyber-blue', name: '💙 Кибер-синий', accent: '#00BFFF', accentGlow: '#4dc3ff', accentRgb: '0, 191, 255', css: generateThemeCSS('#00BFFF', '#4dc3ff', '0, 191, 255') },
-        { id: 'neon-green', name: '💚 Неоново-зеленый', accent: '#39FF14', accentGlow: '#6eff4d', accentRgb: '57, 255, 20', css: generateThemeCSS('#39FF14', '#6eff4d', '57, 255, 20') },
-        { id: 'royal-purple', name: '👑 Королевский пурпурный', accent: '#9b59b6', accentGlow: '#c27bd6', accentRgb: '155, 89, 182', css: generateThemeCSS('#9b59b6', '#c27bd6', '155, 89, 182') },
-        { id: 'hot-pink', name: '💖 Горячий розовый', accent: '#FF69B4', accentGlow: '#ff8dc9', accentRgb: '255, 105, 180', css: generateThemeCSS('#FF69B4', '#ff8dc9', '255, 105, 180') },
-        { id: 'golden', name: '⭐ Золотой', accent: '#FFD700', accentGlow: '#ffe44d', accentRgb: '255, 215, 0', css: generateThemeCSS('#FFD700', '#ffe44d', '255, 215, 0') },
-        { id: 'crimson-red', name: '❤️ Багровый красный', accent: '#DC143C', accentGlow: '#ff3355', accentRgb: '220, 20, 60', css: generateThemeCSS('#DC143C', '#ff3355', '220, 20, 60') },
-        { id: 'teal', name: '🐚 Бирюзовый', accent: '#00CED1', accentGlow: '#33e5e8', accentRgb: '0, 206, 209', css: generateThemeCSS('#00CED1', '#33e5e8', '0, 206, 209') },
-        { id: 'dark-knight', name: '🦇 Тёмный рыцарь', css: generateDarkKnightCSS() }
+        { id: 'neon-orange', name: '🔥 Неоновый Оранжевый', accent: '#FF4500', accentGlow: '#ff6a2e', accentRgb: '255, 69, 0' },
+        { id: 'cyber-blue', name: '💙 Кибер-Синий', accent: '#00BFFF', accentGlow: '#4dc3ff', accentRgb: '0, 191, 255' },
+        { id: 'neon-green', name: '💚 Неоново-Зеленый', accent: '#39FF14', accentGlow: '#6eff4d', accentRgb: '57, 255, 20' },
+        { id: 'royal-purple', name: '👑 Королевский Пурпурный', accent: '#9b59b6', accentGlow: '#c27bd6', accentRgb: '155, 89, 182' },
+        { id: 'hot-pink', name: '💖 Горячий Розовый', accent: '#FF69B4', accentGlow: '#ff8dc9', accentRgb: '255, 105, 180' },
+        { id: 'golden', name: '⭐ Золотой', accent: '#FFD700', accentGlow: '#ffe44d', accentRgb: '255, 215, 0' },
+        { id: 'crimson-red', name: '❤️ Багровый Красный', accent: '#DC143C', accentGlow: '#ff3355', accentRgb: '220, 20, 60' },
+        { id: 'teal', name: '🐚 Бирюзовый', accent: '#00CED1', accentGlow: '#33e5e8', accentRgb: '0, 206, 209' },
+        { id: 'dark-knight', name: '🦇 Тёмный рыцарь', accent: '#1a1a2e', accentGlow: '#2d2d44', accentRgb: '26, 26, 46' }
     ];
 
+    // Функция генерации полного CSS темы (ПОЛНАЯ ВЕРСИЯ с полупрозрачными эффектами)
     function generateThemeCSS(accent, accentGlow, accentRgb) {
         return `
             :root {
@@ -55,6 +56,7 @@
                 z-index: -5;
             }
 
+            /* Основные блоки */
             .p-body, .p-body-inner, .p-body-content, .p-body-main { background: transparent !important; }
             .block, .block-outer { background: transparent !important; border: none !important; }
             .block-container {
@@ -75,17 +77,23 @@
             .block-filterBar { background: rgba(0,0,0,0.2) !important; border-bottom: none !important; }
             .block-body { background: transparent !important; }
             .block-footer { background: rgba(0,0,0,0.15) !important; border-top: 1px solid rgba(255,255,255,0.05) !important; }
+
+            /* Навигация */
             .p-nav {
                 background: rgba(10, 14, 20, 0.95) !important;
                 border-bottom: 1px solid var(--border-color) !important;
             }
             .p-nav-list .p-navEl.is-selected { color: var(--theme-accent) !important; }
             .p-nav-list .p-navEl:hover { color: var(--theme-accent-glow) !important; }
+
+            /* Элементы списка */
             .node, .node-body, .node-extra, .node-stats, .node-meta { background: transparent !important; }
             .node-body:hover, .node:hover > .node-body { background: var(--hover-bg) !important; }
             .structItem, .structItem-cell { background: transparent !important; }
             .structItem { border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
             .structItem:hover { background: var(--hover-bg) !important; }
+
+            /* Сообщения */
             .message {
                 background: rgba(20, 25, 35, 0.5) !important;
                 border: 1px solid rgba(255,255,255,0.05) !important;
@@ -95,6 +103,8 @@
             .message-inner, .message-cell, .message-content, .message-userContent,
             .message-user, .message-userDetails, .message-attribution { background: transparent !important; }
             .message-userArrow { display: none !important; }
+
+            /* Формы и кнопки */
             .formButtonGroup, .formSubmitRow { background: transparent !important; }
             .formRow { background: transparent !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
             input[type="text"], input[type="password"], input[type="email"], input[type="search"],
@@ -122,6 +132,8 @@
                 background: var(--theme-accent) !important;
                 background-color: var(--theme-accent) !important;
             }
+
+            /* Меню и выпадашки */
             .menu, .menu-content {
                 background: var(--glass-dark) !important;
                 border: 1px solid var(--border-color) !important;
@@ -131,6 +143,8 @@
             .menu-row, .menu-linkRow { background: transparent !important; }
             .menu-row:hover, .menu-linkRow:hover { background: var(--hover-bg) !important; }
             .menu-linkRow.is-selected { color: var(--theme-accent) !important; }
+
+            /* Вкладки */
             .tabs, .tabs-tab { background: transparent !important; }
             .tabs-tab { color: var(--theme-accent) !important; }
             .tabs-tab.is-active {
@@ -139,10 +153,14 @@
                 color: var(--theme-accent) !important;
             }
             .block-tabHeader .tabs-tab:hover { color: var(--theme-accent-glow) !important; }
+
+            /* Бейджи и индикаторы */
             .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after {
                 background: var(--theme-accent) !important;
             }
             .message-newIndicator { background: var(--theme-accent) !important; }
+
+            /* Блоки кода и цитаты */
             .bbCodeBlock {
                 background: rgba(10, 15, 25, 0.6) !important;
                 border-left: 2px solid var(--theme-accent) !important;
@@ -155,6 +173,8 @@
             }
             .messageNotice { border-left: 2px solid var(--theme-accent) !important; }
             .messageNotice:before { color: var(--theme-accent) !important; }
+
+            /* Пагинация */
             .pageNav, .pageNav-main { background: transparent !important; }
             .pageNav-page, .pageNav-jump {
                 background: rgba(20, 30, 45, 0.5) !important;
@@ -166,15 +186,25 @@
                 background: rgba(${accentRgb}, 0.5) !important;
                 border-color: var(--theme-accent) !important;
             }
+
+            /* Футер */
             .p-footer { background: transparent !important; border: none !important; }
             .p-footer-inner {
                 background: rgba(8, 12, 18, 0.95) !important;
                 border-top: 1px solid var(--border-color) !important;
             }
             .p-footer a { color: var(--theme-accent) !important; }
+
+            /* Панель инструментов редактора */
             .fr-toolbar { border-top: 1px solid var(--theme-accent) !important; }
+
+            /* Скролл-кнопка */
             .button.button--scroll { background: linear-gradient(var(--theme-accent), var(--theme-accent)) !important; }
+
+            /* Сайдбар */
             .p-body-sidebar .block-container { background: var(--glass-dark) !important; }
+
+            /* Профиль пользователя */
             .memberHeader-avatar .avatar {
                 border: 2px solid var(--theme-accent) !important;
                 box-shadow: 0 0 20px var(--theme-accent) !important;
@@ -185,6 +215,7 @@
         `;
     }
 
+    // Тема "Тёмный рыцарь" (черная гамма с полупрозрачными эффектами)
     function generateDarkKnightCSS() {
         return `
             :root {
@@ -204,6 +235,8 @@
                 background: radial-gradient(circle at top, #14141e 0%, #0a0a0f 100%);
                 z-index: -5;
             }
+
+            /* Основные блоки */
             .p-body, .p-body-inner, .p-body-content, .p-body-main { background: transparent !important; }
             .block, .block-outer { background: transparent !important; border: none !important; }
             .block-container {
@@ -224,17 +257,23 @@
             .block-filterBar { background: rgba(0,0,0,0.3) !important; border-bottom: none !important; }
             .block-body { background: transparent !important; }
             .block-footer { background: rgba(0,0,0,0.2) !important; border-top: 1px solid rgba(45,45,68,0.3) !important; }
+
+            /* Навигация */
             .p-nav {
                 background: rgba(8, 8, 12, 0.98) !important;
                 border-bottom: 1px solid var(--border-color) !important;
             }
             .p-nav-list .p-navEl.is-selected { color: #8888aa !important; }
             .p-nav-list .p-navEl:hover { color: #aaaacc !important; }
+
+            /* Элементы списка */
             .node, .node-body, .node-extra, .node-stats, .node-meta { background: transparent !important; }
             .node-body:hover, .node:hover > .node-body { background: var(--hover-bg) !important; }
             .structItem, .structItem-cell { background: transparent !important; }
             .structItem { border-bottom: 1px solid rgba(45,45,68,0.3) !important; }
             .structItem:hover { background: var(--hover-bg) !important; }
+
+            /* Сообщения */
             .message {
                 background: rgba(15, 15, 22, 0.6) !important;
                 border: 1px solid rgba(45,45,68,0.4) !important;
@@ -244,6 +283,8 @@
             .message-inner, .message-cell, .message-content, .message-userContent,
             .message-user, .message-userDetails, .message-attribution { background: transparent !important; }
             .message-userArrow { display: none !important; }
+
+            /* Формы и кнопки */
             .formButtonGroup, .formSubmitRow { background: transparent !important; }
             .formRow { background: transparent !important; border-bottom: 1px solid rgba(45,45,68,0.3) !important; }
             input[type="text"], input[type="password"], input[type="email"], input[type="search"],
@@ -271,6 +312,8 @@
                 background: #2a2a3e !important;
                 background-color: #2a2a3e !important;
             }
+
+            /* Меню и выпадашки */
             .menu, .menu-content {
                 background: rgba(10, 10, 15, 0.98) !important;
                 border: 1px solid rgba(45,45,68,0.5) !important;
@@ -280,6 +323,8 @@
             .menu-row, .menu-linkRow { background: transparent !important; }
             .menu-row:hover, .menu-linkRow:hover { background: var(--hover-bg) !important; }
             .menu-linkRow.is-selected { color: #8888aa !important; }
+
+            /* Вкладки */
             .tabs, .tabs-tab { background: transparent !important; }
             .tabs-tab { color: #8888aa !important; }
             .tabs-tab.is-active {
@@ -288,10 +333,14 @@
                 color: #aaaacc !important;
             }
             .block-tabHeader .tabs-tab:hover { color: #aaaacc !important; }
+
+            /* Бейджи и индикаторы */
             .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after {
                 background: #2a2a3e !important;
             }
             .message-newIndicator { background: #2a2a3e !important; }
+
+            /* Блоки кода и цитаты */
             .bbCodeBlock {
                 background: rgba(8, 8, 12, 0.8) !important;
                 border-left: 2px solid #444466 !important;
@@ -304,6 +353,8 @@
             }
             .messageNotice { border-left: 2px solid #444466 !important; }
             .messageNotice:before { color: #8888aa !important; }
+
+            /* Пагинация */
             .pageNav, .pageNav-main { background: transparent !important; }
             .pageNav-page, .pageNav-jump {
                 background: rgba(15, 15, 22, 0.6) !important;
@@ -315,15 +366,25 @@
                 background: rgba(55,55,78,0.6) !important;
                 border-color: #555577 !important;
             }
+
+            /* Футер */
             .p-footer { background: transparent !important; border: none !important; }
             .p-footer-inner {
                 background: rgba(8, 8, 12, 0.98) !important;
                 border-top: 1px solid var(--border-color) !important;
             }
             .p-footer a { color: #8888aa !important; }
+
+            /* Панель инструментов редактора */
             .fr-toolbar { border-top: 1px solid #444466 !important; }
+
+            /* Скролл-кнопка */
             .button.button--scroll { background: linear-gradient(#2a2a3e, #1a1a2e) !important; }
+
+            /* Сайдбар */
             .p-body-sidebar .block-container { background: var(--glass-dark) !important; }
+
+            /* Профиль пользователя */
             .memberHeader-avatar .avatar {
                 border: 2px solid #444466 !important;
                 box-shadow: 0 0 20px rgba(68,68,102,0.5) !important;
@@ -334,23 +395,29 @@
         `;
     }
 
+    function getThemeCSS(theme) {
+        if (theme.id === 'none') return '';
+        if (theme.id === 'dark-knight') return generateDarkKnightCSS();
+        return generateThemeCSS(theme.accent, theme.accentGlow, theme.accentRgb);
+    }
+
     function applyTheme(themeId) {
-        let styleElement = document.getElementById('br-theme-styles-v2');
+        let styleElement = document.getElementById('br-theme-styles-v3');
         if (!styleElement) {
             styleElement = document.createElement('style');
-            styleElement.id = 'br-theme-styles-v2';
+            styleElement.id = 'br-theme-styles-v3';
             document.head.appendChild(styleElement);
         }
         const theme = themes.find(t => t.id === themeId);
-        styleElement.textContent = (theme && theme.id !== 'none') ? theme.css : '';
+        styleElement.textContent = theme ? getThemeCSS(theme) : '';
         localStorage.setItem(STORAGE_THEME, themeId);
     }
 
     function applyBackground(bgUrl) {
-        let bgStyle = document.getElementById('br-bg-styles-v2');
+        let bgStyle = document.getElementById('br-bg-styles-v3');
         if (!bgStyle) {
             bgStyle = document.createElement('style');
-            bgStyle.id = 'br-bg-styles-v2';
+            bgStyle.id = 'br-bg-styles-v3';
             document.head.appendChild(bgStyle);
         }
         if (bgUrl && bgUrl.trim() !== '') {
@@ -370,14 +437,14 @@
     }
 
     function openThemeModal() {
-        let modal = document.getElementById('br-theme-modal-v2');
+        let modal = document.getElementById('br-theme-modal-v3');
         if (modal) {
             modal.classList.add('open');
             return;
         }
 
         modal = document.createElement('div');
-        modal.id = 'br-theme-modal-v2';
+        modal.id = 'br-theme-modal-v3';
         modal.className = 'br-modal';
         modal.innerHTML = `
             <div class="br-modal-content">
@@ -423,47 +490,56 @@
         setTimeout(() => modal.classList.add('open'), 10);
     }
 
-    // ========== КНОПКА С ЭМОДЗИ 🖼 (КАК ВО ВТОРОМ СКРИПТЕ) ==========
-    function addButton() {
-        // Ищем контейнер с кнопками (созданный первым скриптом)
-        let container = document.querySelector('.bgButtonsContainer');
+    // ========== СОЗДАНИЕ КНОПКИ 🖼 (ВСЕГДА ВИДИМА) ==========
+    function createButton() {
+        // Удаляем старую кнопку, если есть
+        const oldBtn = document.getElementById('br-theme-button-v3');
+        if (oldBtn) oldBtn.remove();
         
-        if (!container) {
-            // Если контейнера нет - пробуем найти .pageContent и создаем свой контейнер
-            const pageContent = document.querySelector('.pageContent');
-            if (pageContent) {
-                let newContainer = document.querySelector('.bgButtonsContainer-custom');
-                if (!newContainer) {
-                    newContainer = document.createElement('div');
-                    newContainer.className = 'bgButtonsContainer bgButtonsContainer-custom';
-                    newContainer.style.cssText = 'display: flex; gap: 2px; flex-wrap: wrap; padding: 5px 0; margin-bottom: 10px;';
-                    pageContent.insertBefore(newContainer, pageContent.firstChild);
-                }
-                container = newContainer;
-            } else {
-                setTimeout(addButton, 500);
-                return;
-            }
-        }
-        
-        // Проверяем, есть ли уже наша кнопка (по уникальному ID)
-        if (document.getElementById('br-theme-button-full')) {
-            return;
-        }
-        
-        // Создаем кнопку с эмодзи 🖼 (как во втором скрипте)
-        const btn = document.createElement('button');
-        btn.id = 'br-theme-button-full';
-        btn.textContent = '🖼';
-        btn.className = 'bgButton';
-        btn.style.cssText = 'border-bottom: 2px solid #9b59b6; font-size: 14px;';
+        // Создаём плавающую кнопку в правом верхнем углу
+        const btn = document.createElement('div');
+        btn.id = 'br-theme-button-v3';
+        btn.innerHTML = '🖼';
         btn.title = 'Полное оформление форума';
+        btn.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #9b59b6;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 999999;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            font-family: Arial, sans-serif;
+        `;
+        
+        btn.onmouseenter = () => {
+            btn.style.transform = 'scale(1.1)';
+            btn.style.boxShadow = '0 6px 20px rgba(155, 89, 182, 0.5)';
+            btn.style.borderColor = '#c27bd6';
+        };
+        
+        btn.onmouseleave = () => {
+            btn.style.transform = 'scale(1)';
+            btn.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+            btn.style.borderColor = '#9b59b6';
+        };
+        
         btn.onclick = openThemeModal;
         
-        container.appendChild(btn);
+        document.body.appendChild(btn);
     }
 
-    // Стили модального окна (без конфликта с первым скриптом)
+    // Стили модального окна
     const modalStyle = document.createElement('style');
     modalStyle.textContent = `
         .br-modal {
@@ -500,22 +576,34 @@
         .br-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4); }
         .br-btn-secondary { background: rgba(255,255,255,0.1); color: #fff; }
         .br-btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        
+        /* Адаптация для мобильных устройств */
+        @media (max-width: 768px) {
+            #br-theme-button-v3 {
+                width: 44px !important;
+                height: 44px !important;
+                font-size: 20px !important;
+                top: 70px !important;
+                right: 10px !important;
+            }
+        }
     `;
     document.head.appendChild(modalStyle);
 
     // Запуск
     loadSavedSettings();
 
+    // Добавляем кнопку сразу после загрузки DOM
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', addButton);
+        document.addEventListener('DOMContentLoaded', createButton);
     } else {
-        addButton();
+        createButton();
     }
-
-    // Следим за изменениями (на случай если контейнер пересоздадут)
+    
+    // Следим, чтобы кнопка всегда была на месте (если вдруг исчезнет)
     const observer = new MutationObserver(() => {
-        if (!document.getElementById('br-theme-button-full')) {
-            addButton();
+        if (!document.getElementById('br-theme-button-v3')) {
+            createButton();
         }
     });
     observer.observe(document.body, { childList: true, subtree: true });
