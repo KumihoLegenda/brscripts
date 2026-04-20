@@ -114,8 +114,8 @@
                 { text: 'PODOLSK (87)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-podolsk.3817/', color: '#8B008B' },
                 { text: 'MAGADAN (88)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-magadan.3912/', color: '#8B008B' },
                 { text: 'CHEREPOVETS (89)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-cherepovets.3978/', color: '#8B008B' },
-                { text: 'NORILSK (90)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-norilsk.3985//', color: '#8B008B' },
-                { text: 'ASTANA (91)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-astana.4021//', color: '#8B008B' },
+                { text: 'NORILSK (90)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-norilsk.3985/', color: '#8B008B' },
+                { text: 'ASTANA (91)', link: 'https://forum.blackrussia.online/forums/Технический-раздел-astana.4021/', color: '#8B008B' },
             ];
 
             const DATA_TECH_COMPLAINT = [
@@ -154,7 +154,7 @@
                 { text: 'ARZAMAS (33)', link: 'https://forum.blackrussia.online/forums/Сервер-№33-arzamas.1501/', color: '#0000CD' },
                 { text: 'NOVOSIBIRSK (34)', link: 'https://forum.blackrussia.online/forums/Сервер-№34-novosibirsk.1543/', color: '#0000CD' },
                 { text: 'GROZNY (35)', link: 'https://forum.blackrussia.online/forums/Сервер-№35-grozny.1585/', color: '#0000CD' },
-                { text: 'SARATOV (36)', link: 'https://forum.blackrussia.online/forums/Сервер-№36-grozny.1585/', color: '#0000CD' },
+                { text: 'SARATOV (36)', link: 'https://forum.blackrussia.online/forums/Сервер-№36-saratov.1627/', color: '#0000CD' },
                 { text: 'OMSK (37)', link: 'https://forum.blackrussia.online/forums/Сервер-№37-omsk.1669/', color: '#0000CD' },
                 { text: 'IRKUTSK (38)', link: 'https://forum.blackrussia.online/forums/Сервер-№38-irkutsk.1711/', color: '#0000CD' },
                 { text: 'VOLGOGRAD (39)', link: 'https://forum.blackrussia.online/forums/Сервер-№39-volgograd.1757/', color: '#0000CD' },
