@@ -32,7 +32,7 @@
     },
         {
       "id": "custom-forum",
-      "name": "Форум | Кастомизация оформления (НОВОЕ)",
+      "name": "Форум | Кастомизация оформления (В РАЗРАБОТКЕ)",
       "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/custom-forum.js",
       "matches": [
         "https://forum.blackrussia.online/threads/*"
