@@ -443,6 +443,7 @@
                 body.innerHTML = '';
                 const current = getSelectedServers();
                 
+                // ДВЕ КОЛОНКИ - точно как в первом скрипте
                 for (let i = 1; i <= SERVER_LIST.length; i++) {
                     const server = SERVER_LIST[i-1];
                     const lbl = document.createElement('label');
@@ -457,7 +458,7 @@
                 setTimeout(() => overlay.classList.add('open'), 10);
             }
             
-            // --- СТИЛИ (с двумя колонками) ---
+            // --- СТИЛИ (с двумя колонками - копия из первого скрипта) ---
             const style = document.createElement('style');
             style.textContent = `
                 .bgButton {
@@ -504,7 +505,7 @@
                     display: none;
                 }
 
-                /* Стили для модального окна настроек - ДВЕ КОЛОНКИ */
+                /* Стили для модального окна настроек - ДВЕ КОЛОНКИ (как в первом скрипте) */
                 .fnp-modal-overlay {
                     position: fixed;
                     top: 0;
@@ -547,9 +548,16 @@
                 .fnp-modal-body {
                     padding: 15px;
                     overflow-y: auto;
-                    display: grid !important;
-                    grid-template-columns: repeat(2, 1fr) !important;
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
                     gap: 8px;
+                }
+                .fnp-modal-footer {
+                    padding: 15px;
+                    border-top: 1px solid #333;
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 10px;
                 }
                 .fnp-checkbox-label {
                     display: flex;
@@ -563,16 +571,12 @@
                     color: #ccc;
                     font-size: 11px;
                     border: 1px solid #333;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
                 }
                 .fnp-checkbox-label:hover {
                     background: #2a2a2a;
                 }
                 .fnp-checkbox-label input {
                     accent-color: #2563eb;
-                    flex-shrink: 0;
                 }
                 .fnp-checkbox-label.checked {
                     border-color: #2563eb;
@@ -860,7 +864,7 @@
                         border-bottom: none;
                     }
                     .fnp-modal-body {
-                        grid-template-columns: 1fr !important;
+                        grid-template-columns: 1fr;
                     }
                 }
                 
@@ -874,7 +878,7 @@
             `;
             document.head.appendChild(style);
             
-            // --- Функции для работы с IP ---
+            // --- Функции для работы с IP (без изменений) ---
             function openIPModal() {
                 let modal = document.getElementById('ipModal');
                 if (!modal) {
