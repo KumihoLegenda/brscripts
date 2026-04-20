@@ -311,7 +311,7 @@
                 .fnm-mover-menu.show { opacity: 1; visibility: visible; transform: scale(1); pointer-events: auto; }
                 .fnm-mover-menu::-webkit-scrollbar { width: 4px; }
                 .fnm-mover-menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
-                .fnm-mover-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+                .fnm-mover-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
                 .fnm-mover-link { 
                     display: flex; 
                     align-items: center; 
