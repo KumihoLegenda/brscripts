@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BR Theme & Background Manager (Full)
 // @namespace    http://tampermonkey.net/
-// @version      3.2
+// @version      3.1
 // @description  Полноценные темы оформления форума + смена фона (РАБОТАЕТ НА ВСЕХ СТРАНИЦАХ)
 // @match        https://forum.blackrussia.online/*
 // @grant        none
@@ -10,16 +10,16 @@
 (function() {
     'use strict';
 
-    // Уникальный идентификатор для этого скрипта (изменен для совместимости)
-    const SCRIPT_ID = 'br-theme-manager-full-v4';
+    // Уникальный идентификатор для этого скрипта
+    const SCRIPT_ID = 'br-theme-manager-full-v3';
 
     if (document.body.getAttribute(`data-${SCRIPT_ID}`)) {
         return;
     }
     document.body.setAttribute(`data-${SCRIPT_ID}`, 'true');
 
-    const STORAGE_THEME = 'br_selected_theme_v4';
-    const STORAGE_BG = 'br_custom_background_v4';
+    const STORAGE_THEME = 'br_selected_theme_v3';
+    const STORAGE_BG = 'br_custom_background_v3';
 
     // ========== ПОЛНЫЕ ТЕМЫ ОФОРМЛЕНИЯ ФОРУМА ==========
     const themes = [
@@ -402,10 +402,10 @@
     }
 
     function applyTheme(themeId) {
-        let styleElement = document.getElementById('br-theme-styles-v4');
+        let styleElement = document.getElementById('br-theme-styles-v3');
         if (!styleElement) {
             styleElement = document.createElement('style');
-            styleElement.id = 'br-theme-styles-v4';
+            styleElement.id = 'br-theme-styles-v3';
             document.head.appendChild(styleElement);
         }
         const theme = themes.find(t => t.id === themeId);
@@ -414,14 +414,14 @@
     }
 
     function applyBackground(bgUrl) {
-        let bgStyle = document.getElementById('br-bg-styles-v4');
+        let bgStyle = document.getElementById('br-bg-styles-v3');
         if (!bgStyle) {
             bgStyle = document.createElement('style');
-            bgStyle.id = 'br-bg-styles-v4';
+            bgStyle.id = 'br-bg-styles-v3';
             document.head.appendChild(bgStyle);
         }
         if (bgUrl && bgUrl.trim() !== '') {
-            bgStyle.textContent = `body { background-image: url("${bgUrl}") !important; background-attachment: fixed !important; background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; } body::before { background: rgba(0,0,0,0.6) !important; }`;
+            bgStyle.textContent = `body { background-image: url("${bgUrl}"); background-attachment: fixed; background-size: cover; background-position: center; background-repeat: no-repeat; } body::before { background: rgba(0,0,0,0.6) !important; }`;
             localStorage.setItem(STORAGE_BG, bgUrl);
         } else {
             bgStyle.textContent = '';
@@ -437,47 +437,47 @@
     }
 
     function openThemeModal() {
-        let modal = document.getElementById('br-theme-modal-v4');
+        let modal = document.getElementById('br-theme-modal-v3');
         if (modal) {
             modal.classList.add('open');
             return;
         }
 
         modal = document.createElement('div');
-        modal.id = 'br-theme-modal-v4';
-        modal.className = 'br-modal-v4';
+        modal.id = 'br-theme-modal-v3';
+        modal.className = 'br-modal';
         modal.innerHTML = `
-            <div class="br-modal-content-v4">
-                <div class="br-modal-header-v4">
-                    <div class="br-modal-title-v4">🎨 Полное оформление форума</div>
-                    <button class="br-modal-close-v4">&times;</button>
+            <div class="br-modal-content">
+                <div class="br-modal-header">
+                    <div class="br-modal-title">🎨 Полное оформление форума</div>
+                    <button class="br-modal-close">&times;</button>
                 </div>
-                <div class="br-modal-body-v4">
-                    <div class="br-form-group-v4">
-                        <label class="br-label-v4">Выберите тему оформления:</label>
-                        <select id="br-theme-select-v4" class="br-select-v4">${themes.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}</select>
+                <div class="br-modal-body">
+                    <div class="br-form-group">
+                        <label class="br-label">Выберите тему оформления:</label>
+                        <select id="br-theme-select" class="br-select">${themes.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}</select>
                     </div>
-                    <div class="br-form-group-v4">
-                        <label class="br-label-v4">Фоновое изображение (опционально):</label>
-                        <input type="text" id="br-bg-input-v4" class="br-input-v4" placeholder="https://example.com/background.jpg">
-                        <small class="br-hint-v4">Прямая ссылка на изображение (JPG, PNG, GIF)</small>
+                    <div class="br-form-group">
+                        <label class="br-label">Фоновое изображение (опционально):</label>
+                        <input type="text" id="br-bg-input" class="br-input" placeholder="https://example.com/background.jpg">
+                        <small class="br-hint">Прямая ссылка на изображение (JPG, PNG, GIF)</small>
                     </div>
                 </div>
-                <div class="br-modal-footer-v4">
-                    <button class="br-btn-v4 br-btn-secondary-v4" id="br-cancel-v4">Отмена</button>
-                    <button class="br-btn-v4 br-btn-primary-v4" id="br-save-v4">Сохранить</button>
+                <div class="br-modal-footer">
+                    <button class="br-btn br-btn-secondary" id="br-cancel">Отмена</button>
+                    <button class="br-btn br-btn-primary" id="br-save">Сохранить</button>
                 </div>
             </div>
         `;
 
-        const themeSelect = modal.querySelector('#br-theme-select-v4');
-        const bgInput = modal.querySelector('#br-bg-input-v4');
+        const themeSelect = modal.querySelector('#br-theme-select');
+        const bgInput = modal.querySelector('#br-bg-input');
         themeSelect.value = localStorage.getItem(STORAGE_THEME) || 'none';
         bgInput.value = localStorage.getItem(STORAGE_BG) || '';
 
-        modal.querySelector('.br-modal-close-v4').onclick = () => { modal.classList.remove('open'); setTimeout(() => modal.remove(), 300); };
-        modal.querySelector('#br-cancel-v4').onclick = () => { modal.classList.remove('open'); setTimeout(() => modal.remove(), 300); };
-        modal.querySelector('#br-save-v4').onclick = () => {
+        modal.querySelector('.br-modal-close').onclick = () => { modal.classList.remove('open'); setTimeout(() => modal.remove(), 300); };
+        modal.querySelector('#br-cancel').onclick = () => { modal.classList.remove('open'); setTimeout(() => modal.remove(), 300); };
+        modal.querySelector('#br-save').onclick = () => {
             applyTheme(themeSelect.value);
             applyBackground(bgInput.value.trim());
             modal.classList.remove('open');
@@ -490,37 +490,36 @@
         setTimeout(() => modal.classList.add('open'), 10);
     }
 
-    // ========== СОЗДАНИЕ КНОПКИ (ИСПРАВЛЕННЫЙ Z-INDEX) ==========
+    // ========== СОЗДАНИЕ КНОПКИ 🖼 (ВСЕГДА ВИДИМА) ==========
     function createButton() {
         // Удаляем старую кнопку, если есть
-        const oldBtn = document.getElementById('br-theme-button-v4');
+        const oldBtn = document.getElementById('br-theme-button-v3');
         if (oldBtn) oldBtn.remove();
 
-        // Создаём плавающую кнопку - используем тот же z-index что и у других скриптов
+        // Создаём плавающую кнопку в правом верхнем углу
         const btn = document.createElement('div');
-        btn.id = 'br-theme-button-v4';
-        btn.innerHTML = '🎨';
+        btn.id = 'br-theme-button-v3';
+        btn.innerHTML = '🖼';
         btn.title = 'Полное оформление форума';
         btn.style.cssText = `
-            position: fixed !important;
-            top: 140px !important;
-            right: 20px !important;
-            width: 48px !important;
-            height: 48px !important;
-            background: linear-gradient(135deg, #1a1a2e, #16213e) !important;
-            border: 2px solid #9b59b6 !important;
-            border-radius: 50% !important;
-            color: white !important;
-            font-size: 24px !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            cursor: pointer !important;
-            z-index: 2147483640 !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
-            transition: all 0.3s ease !important;
-            font-family: Arial, sans-serif !important;
-            backdrop-filter: blur(4px) !important;
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #9b59b6;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 999999;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            font-family: Arial, sans-serif;
         `;
 
         btn.onmouseenter = () => {
@@ -540,51 +539,51 @@
         document.body.appendChild(btn);
     }
 
-    // Стили модального окна (с уникальными классами, чтобы не конфликтовать)
+    // Стили модального окна
     const modalStyle = document.createElement('style');
     modalStyle.textContent = `
-        .br-modal-v4 {
+        .br-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 2147483649;
+            background: rgba(0,0,0,0.85); z-index: 2147483648;
             display: flex; align-items: center; justify-content: center;
             opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-        .br-modal-v4.open { opacity: 1; visibility: visible; }
-        .br-modal-content-v4 {
+        .br-modal.open { opacity: 1; visibility: visible; }
+        .br-modal-content {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
             width: 90%; max-width: 500px; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            animation: modalSlideInV4 0.3s ease;
+            animation: modalSlideIn 0.3s ease;
         }
-        @keyframes modalSlideInV4 {
+        @keyframes modalSlideIn {
             from { transform: translateY(-30px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
-        .br-modal-header-v4 { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .br-modal-title-v4 { font-size: 20px; font-weight: bold; color: #fff; }
-        .br-modal-close-v4 { background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: background 0.2s; }
-        .br-modal-close-v4:hover { background: rgba(255,255,255,0.1); }
-        .br-modal-body-v4 { padding: 24px; }
-        .br-form-group-v4 { margin-bottom: 24px; }
-        .br-label-v4 { display: block; margin-bottom: 8px; color: #fff; font-weight: 600; font-size: 14px; }
-        .br-select-v4, .br-input-v4 { width: 100%; padding: 10px 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; font-size: 14px; box-sizing: border-box; }
-        .br-select-v4:focus, .br-input-v4:focus { outline: none; border-color: #9b59b6; background: rgba(0,0,0,0.6); }
-        .br-select-v4 option { background: #1a1a2e; }
-        .br-hint-v4 { display: block; margin-top: 6px; font-size: 12px; color: rgba(255,255,255,0.5); }
-        .br-modal-footer-v4 { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 12px; }
-        .br-btn-v4 { padding: 8px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        .br-btn-primary-v4 { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: #fff; }
-        .br-btn-primary-v4:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4); }
-        .br-btn-secondary-v4 { background: rgba(255,255,255,0.1); color: #fff; }
-        .br-btn-secondary-v4:hover { background: rgba(255,255,255,0.2); }
+        .br-modal-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .br-modal-title { font-size: 20px; font-weight: bold; color: #fff; }
+        .br-modal-close { background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: background 0.2s; }
+        .br-modal-close:hover { background: rgba(255,255,255,0.1); }
+        .br-modal-body { padding: 24px; }
+        .br-form-group { margin-bottom: 24px; }
+        .br-label { display: block; margin-bottom: 8px; color: #fff; font-weight: 600; font-size: 14px; }
+        .br-select, .br-input { width: 100%; padding: 10px 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; font-size: 14px; box-sizing: border-box; }
+        .br-select:focus, .br-input:focus { outline: none; border-color: #9b59b6; background: rgba(0,0,0,0.6); }
+        .br-select option { background: #1a1a2e; }
+        .br-hint { display: block; margin-top: 6px; font-size: 12px; color: rgba(255,255,255,0.5); }
+        .br-modal-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 12px; }
+        .br-btn { padding: 8px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .br-btn-primary { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: #fff; }
+        .br-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4); }
+        .br-btn-secondary { background: rgba(255,255,255,0.1); color: #fff; }
+        .br-btn-secondary:hover { background: rgba(255,255,255,0.2); }
 
         /* Адаптация для мобильных устройств */
         @media (max-width: 768px) {
-            #br-theme-button-v4 {
+            #br-theme-button-v3 {
                 width: 44px !important;
                 height: 44px !important;
                 font-size: 20px !important;
-                top: 130px !important;
+                top: 70px !important;
                 right: 10px !important;
             }
         }
@@ -594,19 +593,17 @@
     // Запуск
     loadSavedSettings();
 
-    // Добавляем кнопку сразу после загрузки DOM с небольшой задержкой (чтобы другие скрипты успели инициализироваться)
+    // Добавляем кнопку сразу после загрузки DOM
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(createButton, 500);
-        });
+        document.addEventListener('DOMContentLoaded', createButton);
     } else {
-        setTimeout(createButton, 500);
+        createButton();
     }
 
     // Следим, чтобы кнопка всегда была на месте (если вдруг исчезнет)
     const observer = new MutationObserver(() => {
-        if (!document.getElementById('br-theme-button-v4')) {
-            setTimeout(createButton, 100);
+        if (!document.getElementById('br-theme-button-v3')) {
+            createButton();
         }
     });
     observer.observe(document.body, { childList: true, subtree: true });
