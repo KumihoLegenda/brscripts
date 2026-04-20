@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         BR Theme & Background Manager (Full)
 // @namespace    http://tampermonkey.net/
-// @version      2.4
-// @description  Полноценные темы оформления форума + смена фона (работает на всех страницах)
+// @version      2.2
+// @description  Полноценные темы оформления форума + смена фона
 // @match        https://forum.blackrussia.online/*
 // @grant        none
 // ==/UserScript==
@@ -423,115 +423,47 @@
         setTimeout(() => modal.classList.add('open'), 10);
     }
 
-    // ========== ДОБАВЛЕНИЕ КНОПКИ В НАВИГАЦИОННУЮ ПАНЕЛЬ (РАБОТАЕТ НА ВСЕХ СТРАНИЦАХ) ==========
-    function addButtonToNavigation() {
-        // Проверяем, есть ли уже наша кнопка
+    // ========== КНОПКА С ЭМОДЗИ 🖼 (КАК ВО ВТОРОМ СКРИПТЕ) ==========
+    function addButton() {
+        // Ищем контейнер с кнопками (созданный первым скриптом)
+        let container = document.querySelector('.bgButtonsContainer');
+        
+        if (!container) {
+            // Если контейнера нет - пробуем найти .pageContent и создаем свой контейнер
+            const pageContent = document.querySelector('.pageContent');
+            if (pageContent) {
+                let newContainer = document.querySelector('.bgButtonsContainer-custom');
+                if (!newContainer) {
+                    newContainer = document.createElement('div');
+                    newContainer.className = 'bgButtonsContainer bgButtonsContainer-custom';
+                    newContainer.style.cssText = 'display: flex; gap: 2px; flex-wrap: wrap; padding: 5px 0; margin-bottom: 10px;';
+                    pageContent.insertBefore(newContainer, pageContent.firstChild);
+                }
+                container = newContainer;
+            } else {
+                setTimeout(addButton, 500);
+                return;
+            }
+        }
+        
+        // Проверяем, есть ли уже наша кнопка (по уникальному ID)
         if (document.getElementById('br-theme-button-full')) {
             return;
         }
         
-        // Ищем контейнер навигации (есть на всех страницах)
-        let navContainer = document.querySelector('.p-nav-list');
+        // Создаем кнопку с эмодзи 🖼 (как во втором скрипте)
+        const btn = document.createElement('button');
+        btn.id = 'br-theme-button-full';
+        btn.textContent = '🖼';
+        btn.className = 'bgButton';
+        btn.style.cssText = 'border-bottom: 2px solid #9b59b6; font-size: 14px;';
+        btn.title = 'Полное оформление форума';
+        btn.onclick = openThemeModal;
         
-        if (!navContainer) {
-            // Пробуем другие возможные контейнеры
-            navContainer = document.querySelector('.p-nav-inner .p-nav-list');
-        }
-        
-        if (!navContainer) {
-            // Если навигации нет, пробуем добавить в правую часть навигационной панели
-            const navRight = document.querySelector('.p-nav-opposite');
-            if (navRight) {
-                navContainer = navRight;
-            }
-        }
-        
-        if (!navContainer) {
-            // Последняя попытка - ищем любую навигационную панель
-            navContainer = document.querySelector('.p-nav');
-        }
-        
-        if (navContainer) {
-            // Создаём кнопку
-            const btn = document.createElement('a');
-            btn.id = 'br-theme-button-full';
-            btn.textContent = '🖼';
-            btn.href = 'javascript:void(0)';
-            btn.title = 'Полное оформление форума';
-            btn.style.cssText = `
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                background: rgba(155, 89, 182, 0.2);
-                border: 1px solid rgba(155, 89, 182, 0.5);
-                border-radius: 4px;
-                padding: 6px 12px;
-                margin-left: 10px;
-                font-size: 16px;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                text-decoration: none;
-                color: #fff;
-            `;
-            btn.onmouseenter = () => {
-                btn.style.background = 'rgba(155, 89, 182, 0.4)';
-                btn.style.borderColor = 'rgba(155, 89, 182, 0.8)';
-            };
-            btn.onmouseleave = () => {
-                btn.style.background = 'rgba(155, 89, 182, 0.2)';
-                btn.style.borderColor = 'rgba(155, 89, 182, 0.5)';
-            };
-            btn.onclick = openThemeModal;
-            
-            // Добавляем в конец навигации
-            if (navContainer.tagName === 'UL') {
-                const li = document.createElement('li');
-                li.appendChild(btn);
-                navContainer.appendChild(li);
-            } else {
-                navContainer.appendChild(btn);
-            }
-            
-            return;
-        }
-        
-        // Если навигация не найдена, создаём плавающую кнопку
-        const floatingBtn = document.createElement('div');
-        floatingBtn.id = 'br-theme-button-full';
-        floatingBtn.innerHTML = '🖼';
-        floatingBtn.title = 'Полное оформление форума';
-        floatingBtn.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            border: 1px solid rgba(155, 89, 182, 0.5);
-            border-radius: 50%;
-            color: white;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 9999;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
-        `;
-        floatingBtn.onmouseenter = () => {
-            floatingBtn.style.transform = 'scale(1.1)';
-            floatingBtn.style.boxShadow = '0 6px 20px rgba(155, 89, 182, 0.4)';
-        };
-        floatingBtn.onmouseleave = () => {
-            floatingBtn.style.transform = 'scale(1)';
-            floatingBtn.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
-        };
-        floatingBtn.onclick = openThemeModal;
-        document.body.appendChild(floatingBtn);
+        container.appendChild(btn);
     }
 
-    // Стили модального окна
+    // Стили модального окна (без конфликта с первым скриптом)
     const modalStyle = document.createElement('style');
     modalStyle.textContent = `
         .br-modal {
@@ -574,21 +506,16 @@
     // Запуск
     loadSavedSettings();
 
-    // Функция для добавления кнопки с задержкой (ждём загрузки DOM)
-    function init() {
-        addButtonToNavigation();
-    }
-    
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', addButton);
     } else {
-        init();
+        addButton();
     }
-    
-    // Следим за изменениями (на случай если навигация появится позже)
+
+    // Следим за изменениями (на случай если контейнер пересоздадут)
     const observer = new MutationObserver(() => {
         if (!document.getElementById('br-theme-button-full')) {
-            addButtonToNavigation();
+            addButton();
         }
     });
     observer.observe(document.body, { childList: true, subtree: true });
