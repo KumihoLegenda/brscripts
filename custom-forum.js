@@ -1,610 +1,561 @@
 // ==UserScript==
-// @name         BR Theme & Background Manager (Full)
+// @name         Crystal Dark Theme Toggle
 // @namespace    http://tampermonkey.net/
-// @version      3.1
-// @description  Полноценные темы оформления форума + смена фона (РАБОТАЕТ НА ВСЕХ СТРАНИЦАХ)
+// @version      1.0
+// @description  Включает/выключает тёмную тему с прозрачными обводками на всём форуме
+// @author       Based on request
 // @match        https://forum.blackrussia.online/*
-// @grant        none
+// @grant        GM_getValue
+// @grant        GM_setValue
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    // Уникальный идентификатор для этого скрипта
-    const SCRIPT_ID = 'br-theme-manager-full-v3';
-    
-    if (document.body.getAttribute(`data-${SCRIPT_ID}`)) {
+    // --- Предотвращение конфликтов с другими скриптами ---
+    if (window.__crystalDarkThemeLoaded) {
         return;
     }
-    document.body.setAttribute(`data-${SCRIPT_ID}`, 'true');
+    window.__crystalDarkThemeLoaded = true;
 
-    const STORAGE_THEME = 'br_selected_theme_v3';
-    const STORAGE_BG = 'br_custom_background_v3';
+    const STORAGE_KEY = 'crystalDarkThemeEnabled';
+    let isEnabled = false;
 
-    // ========== ПОЛНЫЕ ТЕМЫ ОФОРМЛЕНИЯ ФОРУМА ==========
-    const themes = [
-        { id: 'none', name: '🌙 Стандартная тема', css: '' },
-        { id: 'neon-orange', name: '🔥 Неоновый Оранжевый', accent: '#FF4500', accentGlow: '#ff6a2e', accentRgb: '255, 69, 0' },
-        { id: 'cyber-blue', name: '💙 Кибер-Синий', accent: '#00BFFF', accentGlow: '#4dc3ff', accentRgb: '0, 191, 255' },
-        { id: 'neon-green', name: '💚 Неоново-Зеленый', accent: '#39FF14', accentGlow: '#6eff4d', accentRgb: '57, 255, 20' },
-        { id: 'royal-purple', name: '👑 Королевский Пурпурный', accent: '#9b59b6', accentGlow: '#c27bd6', accentRgb: '155, 89, 182' },
-        { id: 'hot-pink', name: '💖 Горячий Розовый', accent: '#FF69B4', accentGlow: '#ff8dc9', accentRgb: '255, 105, 180' },
-        { id: 'golden', name: '⭐ Золотой', accent: '#FFD700', accentGlow: '#ffe44d', accentRgb: '255, 215, 0' },
-        { id: 'crimson-red', name: '❤️ Багровый Красный', accent: '#DC143C', accentGlow: '#ff3355', accentRgb: '220, 20, 60' },
-        { id: 'teal', name: '🐚 Бирюзовый', accent: '#00CED1', accentGlow: '#33e5e8', accentRgb: '0, 206, 209' },
-        { id: 'dark-knight', name: '🦇 Тёмный рыцарь', accent: '#1a1a2e', accentGlow: '#2d2d44', accentRgb: '26, 26, 46' }
-    ];
-
-    // Функция генерации полного CSS темы (ПОЛНАЯ ВЕРСИЯ с полупрозрачными эффектами)
-    function generateThemeCSS(accent, accentGlow, accentRgb) {
-        return `
-            :root {
-                --theme-accent: ${accent};
-                --theme-accent-glow: ${accentGlow};
-                --theme-accent-rgb: ${accentRgb};
-                --glass-dark: rgba(11, 17, 26, 0.95);
-                --glass-light: rgba(20, 30, 45, 0.6);
-                --border-color: rgba(${accentRgb}, 0.3);
-                --text-main: #dbe4eb;
-                --hover-bg: rgba(${accentRgb}, 0.08);
-            }
-
-            html, body { background-color: #05080c !important; color: var(--text-main) !important; }
-            body::before {
-                content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: radial-gradient(circle at top, #15202b 0%, #05080c 100%);
-                z-index: -5;
-            }
-
-            /* Основные блоки */
-            .p-body, .p-body-inner, .p-body-content, .p-body-main { background: transparent !important; }
-            .block, .block-outer { background: transparent !important; border: none !important; }
-            .block-container {
-                background: var(--glass-dark) !important;
-                border: 1px solid var(--border-color) !important;
-                border-radius: 12px !important;
-                box-shadow: 0 5px 25px rgba(0,0,0,0.4) !important;
-                overflow: hidden !important;
-            }
-            .block-header, .block-minorHeader {
-                background: transparent !important;
-                border-bottom: 1px solid rgba(255,255,255,0.05) !important;
-                color: #fff !important;
-                padding: 15px !important;
-                text-shadow: 0 0 10px rgba(${accentRgb}, 0.4);
-            }
-            .block-header a, .block-minorHeader a { color: #fff !important; }
-            .block-filterBar { background: rgba(0,0,0,0.2) !important; border-bottom: none !important; }
-            .block-body { background: transparent !important; }
-            .block-footer { background: rgba(0,0,0,0.15) !important; border-top: 1px solid rgba(255,255,255,0.05) !important; }
-
-            /* Навигация */
-            .p-nav {
-                background: rgba(10, 14, 20, 0.95) !important;
-                border-bottom: 1px solid var(--border-color) !important;
-            }
-            .p-nav-list .p-navEl.is-selected { color: var(--theme-accent) !important; }
-            .p-nav-list .p-navEl:hover { color: var(--theme-accent-glow) !important; }
-
-            /* Элементы списка */
-            .node, .node-body, .node-extra, .node-stats, .node-meta { background: transparent !important; }
-            .node-body:hover, .node:hover > .node-body { background: var(--hover-bg) !important; }
-            .structItem, .structItem-cell { background: transparent !important; }
-            .structItem { border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
-            .structItem:hover { background: var(--hover-bg) !important; }
-
-            /* Сообщения */
-            .message {
-                background: rgba(20, 25, 35, 0.5) !important;
-                border: 1px solid rgba(255,255,255,0.05) !important;
-                border-radius: 8px !important;
-                margin-bottom: 10px !important;
-            }
-            .message-inner, .message-cell, .message-content, .message-userContent,
-            .message-user, .message-userDetails, .message-attribution { background: transparent !important; }
-            .message-userArrow { display: none !important; }
-
-            /* Формы и кнопки */
-            .formButtonGroup, .formSubmitRow { background: transparent !important; }
-            .formRow { background: transparent !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
-            input[type="text"], input[type="password"], input[type="email"], input[type="search"],
-            input[type="number"], input[type="url"], textarea, select, .input {
-                background: rgba(15, 20, 30, 0.8) !important;
-                border: 1px solid var(--border-color) !important;
-                color: var(--text-main) !important;
-                border-radius: 6px !important;
-            }
-            input:focus, textarea:focus, select:focus {
-                border-color: var(--theme-accent) !important;
-                box-shadow: 0 0 8px rgba(${accentRgb}, 0.3) !important;
-            }
-            .button, button, input[type="submit"], input[type="button"] {
-                background: rgba(${accentRgb}, 0.3) !important;
-                border: 1px solid var(--border-color) !important;
-                color: #fff !important;
-                border-radius: 6px !important;
-            }
-            .button:hover, button:hover { background: rgba(${accentRgb}, 0.5) !important; }
-            .button--primary, .button.button--primary {
-                background: rgba(${accentRgb}, 0.6) !important;
-            }
-            .button.button--cta {
-                background: var(--theme-accent) !important;
-                background-color: var(--theme-accent) !important;
-            }
-
-            /* Меню и выпадашки */
-            .menu, .menu-content {
-                background: var(--glass-dark) !important;
-                border: 1px solid var(--border-color) !important;
-                border-radius: 8px !important;
-                box-shadow: 0 5px 20px rgba(0,0,0,0.5) !important;
-            }
-            .menu-row, .menu-linkRow { background: transparent !important; }
-            .menu-row:hover, .menu-linkRow:hover { background: var(--hover-bg) !important; }
-            .menu-linkRow.is-selected { color: var(--theme-accent) !important; }
-
-            /* Вкладки */
-            .tabs, .tabs-tab { background: transparent !important; }
-            .tabs-tab { color: var(--theme-accent) !important; }
-            .tabs-tab.is-active {
-                background: rgba(${accentRgb}, 0.2) !important;
-                border-bottom-color: var(--theme-accent) !important;
-                color: var(--theme-accent) !important;
-            }
-            .block-tabHeader .tabs-tab:hover { color: var(--theme-accent-glow) !important; }
-
-            /* Бейджи и индикаторы */
-            .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after {
-                background: var(--theme-accent) !important;
-            }
-            .message-newIndicator { background: var(--theme-accent) !important; }
-
-            /* Блоки кода и цитаты */
-            .bbCodeBlock {
-                background: rgba(10, 15, 25, 0.6) !important;
-                border-left: 2px solid var(--theme-accent) !important;
-                border-radius: 8px !important;
-            }
-            .bbCodeBlock-title {
-                background: transparent !important;
-                border-bottom: 1px solid rgba(255,255,255,0.05) !important;
-                color: var(--theme-accent) !important;
-            }
-            .messageNotice { border-left: 2px solid var(--theme-accent) !important; }
-            .messageNotice:before { color: var(--theme-accent) !important; }
-
-            /* Пагинация */
-            .pageNav, .pageNav-main { background: transparent !important; }
-            .pageNav-page, .pageNav-jump {
-                background: rgba(20, 30, 45, 0.5) !important;
-                border: 1px solid rgba(255,255,255,0.1) !important;
-                border-radius: 4px !important;
-            }
-            .pageNav-page:hover, .pageNav-jump:hover { background: rgba(${accentRgb}, 0.3) !important; }
-            .pageNav-page.pageNav-page--current {
-                background: rgba(${accentRgb}, 0.5) !important;
-                border-color: var(--theme-accent) !important;
-            }
-
-            /* Футер */
-            .p-footer { background: transparent !important; border: none !important; }
-            .p-footer-inner {
-                background: rgba(8, 12, 18, 0.95) !important;
-                border-top: 1px solid var(--border-color) !important;
-            }
-            .p-footer a { color: var(--theme-accent) !important; }
-
-            /* Панель инструментов редактора */
-            .fr-toolbar { border-top: 1px solid var(--theme-accent) !important; }
-
-            /* Скролл-кнопка */
-            .button.button--scroll { background: linear-gradient(var(--theme-accent), var(--theme-accent)) !important; }
-
-            /* Сайдбар */
-            .p-body-sidebar .block-container { background: var(--glass-dark) !important; }
-
-            /* Профиль пользователя */
-            .memberHeader-avatar .avatar {
-                border: 2px solid var(--theme-accent) !important;
-                box-shadow: 0 0 20px var(--theme-accent) !important;
-            }
-            .memberHeader-name .username {
-                text-shadow: 0 0 10px rgba(${accentRgb}, 0.8), 0 0 20px rgba(${accentRgb}, 0.4) !important;
-            }
-        `;
-    }
-
-    // Тема "Тёмный рыцарь" (черная гамма с полупрозрачными эффектами)
-    function generateDarkKnightCSS() {
-        return `
-            :root {
-                --theme-accent: #1a1a2e;
-                --theme-accent-glow: #2d2d44;
-                --theme-accent-rgb: 26, 26, 46;
-                --glass-dark: rgba(8, 8, 12, 0.98);
-                --glass-light: rgba(15, 15, 22, 0.8);
-                --border-color: rgba(45, 45, 68, 0.5);
-                --text-main: #b8b8c8;
-                --hover-bg: rgba(45, 45, 68, 0.15);
-            }
-
-            html, body { background-color: #0a0a0f !important; color: var(--text-main) !important; }
-            body::before {
-                content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: radial-gradient(circle at top, #14141e 0%, #0a0a0f 100%);
-                z-index: -5;
-            }
-
-            /* Основные блоки */
-            .p-body, .p-body-inner, .p-body-content, .p-body-main { background: transparent !important; }
-            .block, .block-outer { background: transparent !important; border: none !important; }
-            .block-container {
-                background: var(--glass-dark) !important;
-                border: 1px solid var(--border-color) !important;
-                border-radius: 12px !important;
-                box-shadow: 0 5px 25px rgba(0,0,0,0.6) !important;
-                overflow: hidden !important;
-            }
-            .block-header, .block-minorHeader {
-                background: linear-gradient(135deg, rgba(20,20,30,0.9), rgba(15,15,22,0.95)) !important;
-                border-bottom: 1px solid rgba(45,45,68,0.5) !important;
-                color: #c8c8d8 !important;
-                padding: 15px !important;
-                text-shadow: 0 0 10px rgba(0,0,0,0.5);
-            }
-            .block-header a, .block-minorHeader a { color: #c8c8d8 !important; }
-            .block-filterBar { background: rgba(0,0,0,0.3) !important; border-bottom: none !important; }
-            .block-body { background: transparent !important; }
-            .block-footer { background: rgba(0,0,0,0.2) !important; border-top: 1px solid rgba(45,45,68,0.3) !important; }
-
-            /* Навигация */
-            .p-nav {
-                background: rgba(8, 8, 12, 0.98) !important;
-                border-bottom: 1px solid var(--border-color) !important;
-            }
-            .p-nav-list .p-navEl.is-selected { color: #8888aa !important; }
-            .p-nav-list .p-navEl:hover { color: #aaaacc !important; }
-
-            /* Элементы списка */
-            .node, .node-body, .node-extra, .node-stats, .node-meta { background: transparent !important; }
-            .node-body:hover, .node:hover > .node-body { background: var(--hover-bg) !important; }
-            .structItem, .structItem-cell { background: transparent !important; }
-            .structItem { border-bottom: 1px solid rgba(45,45,68,0.3) !important; }
-            .structItem:hover { background: var(--hover-bg) !important; }
-
-            /* Сообщения */
-            .message {
-                background: rgba(15, 15, 22, 0.6) !important;
-                border: 1px solid rgba(45,45,68,0.4) !important;
-                border-radius: 8px !important;
-                margin-bottom: 10px !important;
-            }
-            .message-inner, .message-cell, .message-content, .message-userContent,
-            .message-user, .message-userDetails, .message-attribution { background: transparent !important; }
-            .message-userArrow { display: none !important; }
-
-            /* Формы и кнопки */
-            .formButtonGroup, .formSubmitRow { background: transparent !important; }
-            .formRow { background: transparent !important; border-bottom: 1px solid rgba(45,45,68,0.3) !important; }
-            input[type="text"], input[type="password"], input[type="email"], input[type="search"],
-            input[type="number"], input[type="url"], textarea, select, .input {
-                background: rgba(10, 10, 15, 0.9) !important;
-                border: 1px solid rgba(45,45,68,0.5) !important;
-                color: var(--text-main) !important;
-                border-radius: 6px !important;
-            }
-            input:focus, textarea:focus, select:focus {
-                border-color: #555577 !important;
-                box-shadow: 0 0 8px rgba(85,85,119,0.3) !important;
-            }
-            .button, button, input[type="submit"], input[type="button"] {
-                background: rgba(45,45,68,0.5) !important;
-                border: 1px solid rgba(85,85,119,0.4) !important;
-                color: #c8c8d8 !important;
-                border-radius: 6px !important;
-            }
-            .button:hover, button:hover { background: rgba(45,45,68,0.7) !important; }
-            .button--primary, .button.button--primary {
-                background: rgba(55,55,78,0.7) !important;
-            }
-            .button.button--cta {
-                background: #2a2a3e !important;
-                background-color: #2a2a3e !important;
-            }
-
-            /* Меню и выпадашки */
-            .menu, .menu-content {
-                background: rgba(10, 10, 15, 0.98) !important;
-                border: 1px solid rgba(45,45,68,0.5) !important;
-                border-radius: 8px !important;
-                box-shadow: 0 5px 20px rgba(0,0,0,0.7) !important;
-            }
-            .menu-row, .menu-linkRow { background: transparent !important; }
-            .menu-row:hover, .menu-linkRow:hover { background: var(--hover-bg) !important; }
-            .menu-linkRow.is-selected { color: #8888aa !important; }
-
-            /* Вкладки */
-            .tabs, .tabs-tab { background: transparent !important; }
-            .tabs-tab { color: #8888aa !important; }
-            .tabs-tab.is-active {
-                background: rgba(55,55,78,0.3) !important;
-                border-bottom-color: #555577 !important;
-                color: #aaaacc !important;
-            }
-            .block-tabHeader .tabs-tab:hover { color: #aaaacc !important; }
-
-            /* Бейджи и индикаторы */
-            .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after {
-                background: #2a2a3e !important;
-            }
-            .message-newIndicator { background: #2a2a3e !important; }
-
-            /* Блоки кода и цитаты */
-            .bbCodeBlock {
-                background: rgba(8, 8, 12, 0.8) !important;
-                border-left: 2px solid #444466 !important;
-                border-radius: 8px !important;
-            }
-            .bbCodeBlock-title {
-                background: transparent !important;
-                border-bottom: 1px solid rgba(45,45,68,0.3) !important;
-                color: #8888aa !important;
-            }
-            .messageNotice { border-left: 2px solid #444466 !important; }
-            .messageNotice:before { color: #8888aa !important; }
-
-            /* Пагинация */
-            .pageNav, .pageNav-main { background: transparent !important; }
-            .pageNav-page, .pageNav-jump {
-                background: rgba(15, 15, 22, 0.6) !important;
-                border: 1px solid rgba(45,45,68,0.4) !important;
-                border-radius: 4px !important;
-            }
-            .pageNav-page:hover, .pageNav-jump:hover { background: rgba(45,45,68,0.5) !important; }
-            .pageNav-page.pageNav-page--current {
-                background: rgba(55,55,78,0.6) !important;
-                border-color: #555577 !important;
-            }
-
-            /* Футер */
-            .p-footer { background: transparent !important; border: none !important; }
-            .p-footer-inner {
-                background: rgba(8, 8, 12, 0.98) !important;
-                border-top: 1px solid var(--border-color) !important;
-            }
-            .p-footer a { color: #8888aa !important; }
-
-            /* Панель инструментов редактора */
-            .fr-toolbar { border-top: 1px solid #444466 !important; }
-
-            /* Скролл-кнопка */
-            .button.button--scroll { background: linear-gradient(#2a2a3e, #1a1a2e) !important; }
-
-            /* Сайдбар */
-            .p-body-sidebar .block-container { background: var(--glass-dark) !important; }
-
-            /* Профиль пользователя */
-            .memberHeader-avatar .avatar {
-                border: 2px solid #444466 !important;
-                box-shadow: 0 0 20px rgba(68,68,102,0.5) !important;
-            }
-            .memberHeader-name .username {
-                text-shadow: 0 0 10px rgba(68,68,102,0.6), 0 0 20px rgba(68,68,102,0.3) !important;
-            }
-        `;
-    }
-
-    function getThemeCSS(theme) {
-        if (theme.id === 'none') return '';
-        if (theme.id === 'dark-knight') return generateDarkKnightCSS();
-        return generateThemeCSS(theme.accent, theme.accentGlow, theme.accentRgb);
-    }
-
-    function applyTheme(themeId) {
-        let styleElement = document.getElementById('br-theme-styles-v3');
-        if (!styleElement) {
-            styleElement = document.createElement('style');
-            styleElement.id = 'br-theme-styles-v3';
-            document.head.appendChild(styleElement);
-        }
-        const theme = themes.find(t => t.id === themeId);
-        styleElement.textContent = theme ? getThemeCSS(theme) : '';
-        localStorage.setItem(STORAGE_THEME, themeId);
-    }
-
-    function applyBackground(bgUrl) {
-        let bgStyle = document.getElementById('br-bg-styles-v3');
-        if (!bgStyle) {
-            bgStyle = document.createElement('style');
-            bgStyle.id = 'br-bg-styles-v3';
-            document.head.appendChild(bgStyle);
-        }
-        if (bgUrl && bgUrl.trim() !== '') {
-            bgStyle.textContent = `body { background-image: url("${bgUrl}"); background-attachment: fixed; background-size: cover; background-position: center; background-repeat: no-repeat; } body::before { background: rgba(0,0,0,0.6) !important; }`;
-            localStorage.setItem(STORAGE_BG, bgUrl);
-        } else {
-            bgStyle.textContent = '';
-            localStorage.removeItem(STORAGE_BG);
-        }
-    }
-
-    function loadSavedSettings() {
-        const savedTheme = localStorage.getItem(STORAGE_THEME);
-        if (savedTheme && savedTheme !== 'none') applyTheme(savedTheme);
-        const savedBg = localStorage.getItem(STORAGE_BG);
-        if (savedBg) applyBackground(savedBg);
-    }
-
-    function openThemeModal() {
-        let modal = document.getElementById('br-theme-modal-v3');
-        if (modal) {
-            modal.classList.add('open');
-            return;
+    // --- Стили тёмной темы (кристально-прозрачные обводки) ---
+    const darkThemeCSS = `
+        /* Глобальный фон и основной контент */
+        body,
+        .p-body,
+        .p-body-inner,
+        .p-body-main,
+        .p-body-content,
+        .block-container,
+        .block,
+        .block-body,
+        .block-row,
+        .block-footer,
+        .block-header,
+        .block-filterBar,
+        .message,
+        .message-inner,
+        .message-cell,
+        .message-user,
+        .message-content,
+        .message-attribution,
+        .message-body,
+        .bbWrapper,
+        .bbCodeBlock,
+        .bbCodeBlock-title,
+        .bbCodeBlock-content,
+        .bbTable,
+        .table,
+        .table-responsive,
+        .contentRow,
+        .contentRow-main,
+        .contentRow-figure,
+        .contentRow-lesser,
+        .contentRow-mute,
+        .structItem,
+        .structItem-container,
+        .structItem-cell,
+        .structItem-title,
+        .structItem-startDate,
+        .structItem-status,
+        .structItem-pageJump,
+        .node,
+        .node-body,
+        .node-title,
+        .node-description,
+        .node-stats,
+        .node-extra,
+        .node-meta,
+        .node-icon,
+        .node-main,
+        .node-info,
+        .p-nav,
+        .p-nav-inner,
+        .p-nav-list,
+        .p-navgroup,
+        .p-navgroup-link,
+        .p-sectionLinks,
+        .p-sectionLinks-inner,
+        .p-breadcrumbs,
+        .p-breadcrumbs li,
+        .p-breadcrumbs a,
+        .p-footer,
+        .p-footer-inner,
+        .footer-row,
+        .footer-legal,
+        .footer-copyright,
+        .offCanvasMenu,
+        .offCanvasMenu-content,
+        .menu,
+        .menu-content,
+        .menu-row,
+        .menu-header,
+        .menu-footer,
+        .tooltip,
+        .tooltip-content,
+        .overlay,
+        .overlay-container,
+        .dialog,
+        .dialog-content,
+        .formRow,
+        .formRow-title,
+        .formRow-field,
+        .formRow-controls,
+        .input,
+        .input-group,
+        .button,
+        .button--link,
+        .button--cta,
+        .button--primary,
+        .button--icon,
+        .button--icon--reply,
+        .button--icon--write,
+        .button--icon--share,
+        .button--icon--bookmark,
+        .button--icon--report,
+        .button--icon--edit,
+        .button--icon--delete,
+        .button--icon--ip,
+        .button--icon--warning,
+        .button--icon--spam,
+        .button--icon--lock,
+        .button--icon--unlock,
+        .button--icon--sticky,
+        .button--icon--unsticky,
+        .button--icon--move,
+        .button--icon--merge,
+        .button--icon--approve,
+        .button--icon--unapprove,
+        .quickReply,
+        .quickReply-content,
+        .fr-box,
+        .fr-toolbar,
+        .fr-wrapper,
+        .fr-element,
+        .fr-view,
+        .p-title,
+        .p-title-value,
+        .p-description,
+        .pairs,
+        .pairs--plain,
+        .pairs--inline,
+        .pairs--justified,
+        .reactionsBar,
+        .reaction,
+        .reaction-text,
+        .actionBar,
+        .actionBar-set,
+        .actionBar-action,
+        .pageNav,
+        .pageNav-jump,
+        .pageNav-page,
+        .filterBar,
+        .filterBar-filter,
+        .selectMenu,
+        .selectMenu-row,
+        .tabs,
+        .tabs-tab,
+        .tabPanes,
+        .tabPane,
+        .sidebar,
+        .block--category,
+        .block--category .block-container,
+        .block--category .block-header,
+        .block--category .block-body,
+        .p-footer-default,
+        .pairs--plain dt,
+        .pairs--plain dd,
+        .message-name,
+        .message-userTitle,
+        .message-userExtras,
+        .message-userExtra,
+        .message-staffPost,
+        .message-signature,
+        .message-lastEdit,
+        .message-lastEdit,
+        .message-newIndicator,
+        .message-notices,
+        .message-notice,
+        .bbCodeQuote,
+        .bbCodeQuote .attribution,
+        .bbCodeQuote .quote-container,
+        .bbCodeSpoiler,
+        .bbCodeSpoiler-button,
+        .bbCodeSpoiler-content,
+        .bbImage,
+        .bbMediaWrapper,
+        .bbMediaJustifier,
+        .attachmentList,
+        .attachment,
+        .attachment-thumb,
+        .attachment-name,
+        .attachment-icon {
+            background: transparent !important;
+            background-color: transparent !important;
         }
 
-        modal = document.createElement('div');
-        modal.id = 'br-theme-modal-v3';
-        modal.className = 'br-modal';
-        modal.innerHTML = `
-            <div class="br-modal-content">
-                <div class="br-modal-header">
-                    <div class="br-modal-title">🎨 Полное оформление форума</div>
-                    <button class="br-modal-close">&times;</button>
-                </div>
-                <div class="br-modal-body">
-                    <div class="br-form-group">
-                        <label class="br-label">Выберите тему оформления:</label>
-                        <select id="br-theme-select" class="br-select">${themes.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}</select>
-                    </div>
-                    <div class="br-form-group">
-                        <label class="br-label">Фоновое изображение (опционально):</label>
-                        <input type="text" id="br-bg-input" class="br-input" placeholder="https://example.com/background.jpg">
-                        <small class="br-hint">Прямая ссылка на изображение (JPG, PNG, GIF)</small>
-                    </div>
-                </div>
-                <div class="br-modal-footer">
-                    <button class="br-btn br-btn-secondary" id="br-cancel">Отмена</button>
-                    <button class="br-btn br-btn-primary" id="br-save">Сохранить</button>
-                </div>
-            </div>
-        `;
+        /* Основные цвета текста и фона */
+        html,
+        body,
+        .p-body-wrapper,
+        .p-body-main,
+        .p-body-content {
+            background: #0a0a0c !important;
+        }
 
-        const themeSelect = modal.querySelector('#br-theme-select');
-        const bgInput = modal.querySelector('#br-bg-input');
-        themeSelect.value = localStorage.getItem(STORAGE_THEME) || 'none';
-        bgInput.value = localStorage.getItem(STORAGE_BG) || '';
+        /* Затемняем основные блоки с лёгким фоном */
+        .block-container,
+        .message,
+        .message-inner,
+        .message-cell.message-cell--main,
+        .structItem,
+        .node,
+        .p-nav,
+        .p-sectionLinks,
+        .menu-content,
+        .dialog-content,
+        .quickReply-content,
+        .fr-toolbar,
+        .fr-wrapper {
+            background: rgba(18, 18, 22, 0.85) !important;
+            backdrop-filter: blur(2px) !important;
+        }
 
-        modal.querySelector('.br-modal-close').onclick = () => { modal.classList.remove('open'); setTimeout(() => modal.remove(), 300); };
-        modal.querySelector('#br-cancel').onclick = () => { modal.classList.remove('open'); setTimeout(() => modal.remove(), 300); };
-        modal.querySelector('#br-save').onclick = () => {
-            applyTheme(themeSelect.value);
-            applyBackground(bgInput.value.trim());
-            modal.classList.remove('open');
-            setTimeout(() => modal.remove(), 300);
-        };
+        /* Кристальные обводки */
+        .block-container,
+        .message,
+        .structItem,
+        .node,
+        .p-nav,
+        .p-sectionLinks,
+        .menu-content,
+        .dialog-content,
+        .quickReply-content,
+        .fr-toolbar,
+        .fr-wrapper,
+        .button,
+        .input,
+        .filterBar,
+        .tabs-tab,
+        .pageNav-page,
+        .actionBar-action,
+        .reactionsBar {
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+        }
 
-        modal.onclick = (e) => { if (e.target === modal) { modal.classList.remove('open'); setTimeout(() => modal.remove(), 300); } };
+        /* Убираем лишние двойные границы */
+        .message-inner,
+        .structItem-container,
+        .node-body,
+        .p-nav-inner,
+        .p-sectionLinks-inner {
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+        }
 
-        document.body.appendChild(modal);
-        setTimeout(() => modal.classList.add('open'), 10);
-    }
+        /* Цвета текста и ссылок */
+        body,
+        .p-body-content,
+        .message-content,
+        .bbWrapper,
+        .structItem-title,
+        .node-title,
+        .p-title-value,
+        .p-description,
+        .pairs--plain dt,
+        .pairs--plain dd,
+        .message-name,
+        .message-userTitle,
+        .message-userExtras,
+        .message-signature,
+        .contentRow-title,
+        .contentRow-lesser,
+        .contentRow-mute,
+        .menu-row,
+        .dialog-content,
+        .formRow-title,
+        .input,
+        .button,
+        .button--link,
+        .actionBar-action,
+        .pageNav-page,
+        .tabs-tab,
+        .filterBar-filter,
+        .p-navgroup-link,
+        .p-breadcrumbs a,
+        .footer-legal,
+        .footer-copyright {
+            color: #e8e8ed !important;
+        }
 
-    // ========== СОЗДАНИЕ КНОПКИ 🖼 (ВСЕГДА ВИДИМА) ==========
-    function createButton() {
-        // Удаляем старую кнопку, если есть
-        const oldBtn = document.getElementById('br-theme-button-v3');
-        if (oldBtn) oldBtn.remove();
+        /* Ссылки */
+        a,
+        .structItem-title a,
+        .node-title a,
+        .contentRow-title a,
+        .p-navgroup-link,
+        .p-breadcrumbs a,
+        .button--link {
+            color: #8bb9fe !important;
+            transition: color 0.2s ease;
+        }
+
+        a:hover,
+        .structItem-title a:hover,
+        .node-title a:hover,
+        .contentRow-title a:hover,
+        .p-navgroup-link:hover,
+        .p-breadcrumbs a:hover {
+            color: #c0dbff !important;
+            text-shadow: 0 0 8px rgba(139, 185, 254, 0.3);
+        }
+
+        /* Заголовки и важные элементы */
+        .p-title-value,
+        .block-header,
+        .message-name,
+        .structItem-title,
+        .node-title {
+            font-weight: 600 !important;
+            color: #ffffff !important;
+        }
+
+        /* Вторичный текст */
+        .pairs--plain dd,
+        .message-userExtras,
+        .message-attribution,
+        .structItem-startDate,
+        .structItem-status,
+        .node-stats,
+        .node-extra,
+        .footer-legal,
+        .footer-copyright,
+        .contentRow-lesser,
+        .contentRow-mute {
+            color: #9a9aa8 !important;
+        }
+
+        /* Поля ввода */
+        .input,
+        .fr-element.fr-view,
+        .fr-box.fr-basic .fr-element {
+            background: rgba(30, 30, 35, 0.9) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #e8e8ed !important;
+        }
+
+        .input:focus,
+        .fr-element.fr-view:focus {
+            border-color: #8bb9fe !important;
+            box-shadow: 0 0 0 2px rgba(139, 185, 254, 0.2) !important;
+            outline: none;
+        }
+
+        /* Кнопки */
+        .button,
+        .button--primary,
+        .button--cta,
+        .button--icon--reply,
+        .button--icon--write,
+        .actionBar-action,
+        .pageNav-page {
+            background: rgba(40, 40, 48, 0.9) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            transition: all 0.2s ease;
+        }
+
+        .button:hover,
+        .button--primary:hover,
+        .button--cta:hover,
+        .actionBar-action:hover,
+        .pageNav-page:hover {
+            background: rgba(60, 60, 72, 0.9) !important;
+            border-color: rgba(139, 185, 254, 0.5) !important;
+            transform: translateY(-1px);
+        }
+
+        /* Реакции и лайки */
+        .reactionsBar {
+            background: rgba(25, 25, 30, 0.7) !important;
+        }
+
+        .reaction {
+            filter: brightness(0.9);
+        }
+
+        /* Цитаты и спойлеры */
+        .bbCodeQuote,
+        .bbCodeSpoiler {
+            background: rgba(25, 25, 32, 0.7) !important;
+            border-left: 3px solid #8bb9fe !important;
+            border-radius: 8px !important;
+        }
+
+        .bbCodeQuote .attribution,
+        .bbCodeSpoiler-button {
+            background: rgba(35, 35, 42, 0.8) !important;
+            color: #c0dbff !important;
+        }
+
+        /* Полосы прокрутки (для современных браузеров) */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(20, 20, 25, 0.6);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 185, 254, 0.4);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 185, 254, 0.6);
+        }
+
+        /* Специфические элементы XenForo */
+        .p-nav-list .p-navEl a,
+        .p-navgroup .p-navgroup-link {
+            color: #e8e8ed !important;
+        }
+
+        .p-nav-list .p-navEl.is-selected a {
+            color: #8bb9fe !important;
+            border-bottom-color: #8bb9fe !important;
+        }
+
+        /* Сообщения автора темы */
+        .message--highlighted .message-cell {
+            background: rgba(139, 185, 254, 0.08) !important;
+        }
+
+        /* Уведомления */
+        .alert,
+        .notices,
+        .notice {
+            background: rgba(30, 30, 38, 0.95) !important;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 12px !important;
+        }
+    `;
+
+    // --- Создание кнопки-переключателя ---
+    function createToggleButton() {
+        const button = document.createElement('div');
+        button.id = 'crystal-dark-toggle';
+        button.innerHTML = '🎨';
+        button.setAttribute('aria-label', 'Toggle Crystal Dark Theme');
+        button.title = isEnabled ? 'Выключить тёмную тему' : 'Включить тёмную тему';
         
-        // Создаём плавающую кнопку в правом верхнем углу
-        const btn = document.createElement('div');
-        btn.id = 'br-theme-button-v3';
-        btn.innerHTML = '🖼';
-        btn.title = 'Полное оформление форума';
-        btn.style.cssText = `
+        // Стили кнопки
+        button.style.cssText = `
             position: fixed;
-            top: 80px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            border: 2px solid #9b59b6;
+            bottom: 20px;
+            left: 20px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            color: white;
+            background: rgba(30, 30, 35, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            color: ${isEnabled ? '#8bb9fe' : '#e8e8ed'};
             font-size: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 999999;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 2147483647;
             transition: all 0.3s ease;
-            font-family: Arial, sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
         `;
         
-        btn.onmouseenter = () => {
-            btn.style.transform = 'scale(1.1)';
-            btn.style.boxShadow = '0 6px 20px rgba(155, 89, 182, 0.5)';
-            btn.style.borderColor = '#c27bd6';
-        };
+        // Эффекты при наведении
+        button.addEventListener('mouseenter', () => {
+            button.style.transform = 'scale(1.05)';
+            button.style.background = 'rgba(50, 50, 60, 0.95)';
+            button.style.borderColor = 'rgba(139, 185, 254, 0.5)';
+        });
         
-        btn.onmouseleave = () => {
-            btn.style.transform = 'scale(1)';
-            btn.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
-            btn.style.borderColor = '#9b59b6';
-        };
+        button.addEventListener('mouseleave', () => {
+            button.style.transform = 'scale(1)';
+            button.style.background = 'rgba(30, 30, 35, 0.9)';
+            button.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        });
         
-        btn.onclick = openThemeModal;
+        // Обработчик клика
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleTheme();
+        });
         
-        document.body.appendChild(btn);
-    }
-
-    // Стили модального окна
-    const modalStyle = document.createElement('style');
-    modalStyle.textContent = `
-        .br-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 2147483648;
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-        .br-modal.open { opacity: 1; visibility: visible; }
-        .br-modal-content {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
-            width: 90%; max-width: 500px; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            animation: modalSlideIn 0.3s ease;
-        }
-        @keyframes modalSlideIn {
-            from { transform: translateY(-30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .br-modal-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .br-modal-title { font-size: 20px; font-weight: bold; color: #fff; }
-        .br-modal-close { background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: background 0.2s; }
-        .br-modal-close:hover { background: rgba(255,255,255,0.1); }
-        .br-modal-body { padding: 24px; }
-        .br-form-group { margin-bottom: 24px; }
-        .br-label { display: block; margin-bottom: 8px; color: #fff; font-weight: 600; font-size: 14px; }
-        .br-select, .br-input { width: 100%; padding: 10px 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; font-size: 14px; box-sizing: border-box; }
-        .br-select:focus, .br-input:focus { outline: none; border-color: #9b59b6; background: rgba(0,0,0,0.6); }
-        .br-select option { background: #1a1a2e; }
-        .br-hint { display: block; margin-top: 6px; font-size: 12px; color: rgba(255,255,255,0.5); }
-        .br-modal-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 12px; }
-        .br-btn { padding: 8px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        .br-btn-primary { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: #fff; }
-        .br-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4); }
-        .br-btn-secondary { background: rgba(255,255,255,0.1); color: #fff; }
-        .br-btn-secondary:hover { background: rgba(255,255,255,0.2); }
-        
-        /* Адаптация для мобильных устройств */
-        @media (max-width: 768px) {
-            #br-theme-button-v3 {
-                width: 44px !important;
-                height: 44px !important;
-                font-size: 20px !important;
-                top: 70px !important;
-                right: 10px !important;
-            }
-        }
-    `;
-    document.head.appendChild(modalStyle);
-
-    // Запуск
-    loadSavedSettings();
-
-    // Добавляем кнопку сразу после загрузки DOM
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', createButton);
-    } else {
-        createButton();
+        return button;
     }
     
-    // Следим, чтобы кнопка всегда была на месте (если вдруг исчезнет)
-    const observer = new MutationObserver(() => {
-        if (!document.getElementById('br-theme-button-v3')) {
-            createButton();
+    // --- Включение/выключение темы ---
+    let styleElement = null;
+    
+    function applyTheme() {
+        if (!styleElement) {
+            styleElement = document.createElement('style');
+            styleElement.id = 'crystal-dark-theme-style';
+            styleElement.textContent = darkThemeCSS;
+            document.head.appendChild(styleElement);
         }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+        styleElement.disabled = !isEnabled;
+        
+        // Обновляем цвет кнопки
+        const toggleBtn = document.getElementById('crystal-dark-toggle');
+        if (toggleBtn) {
+            toggleBtn.style.color = isEnabled ? '#8bb9fe' : '#e8e8ed';
+            toggleBtn.title = isEnabled ? 'Выключить тёмную тему' : 'Включить тёмную тему';
+        }
+        
+        // Добавляем класс к body для дополнительных стилей (если нужно)
+        if (isEnabled) {
+            document.body.classList.add('crystal-dark-active');
+        } else {
+            document.body.classList.remove('crystal-dark-active');
+        }
+    }
+    
+    function toggleTheme() {
+        isEnabled = !isEnabled;
+        GM_setValue(STORAGE_KEY, isEnabled);
+        applyTheme();
+    }
+    
+    // --- Инициализация ---
+    function init() {
+        // Загружаем сохранённое состояние
+        const savedState = GM_getValue(STORAGE_KEY);
+        isEnabled = savedState !== undefined ? savedState : true; // По умолчанию включено
+        
+        // Применяем тему
+        applyTheme();
+        
+        // Добавляем кнопку на страницу
+        const button = createToggleButton();
+        document.body.appendChild(button);
+    }
+    
+    // Запускаем скрипт после полной загрузки DOM
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+    
 })();
