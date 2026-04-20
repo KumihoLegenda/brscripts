@@ -1,9 +1,8 @@
 // ==UserScript==
-// @name         BR Theme & Background Manager
+// @name         BR Theme & Background Manager (Full)
 // @namespace    http://tampermonkey.net/
-// @version      1.2
-// @description  Добавляет кнопку для смены темы и фона форума Black Russia
-// @author       Custom Script
+// @version      2.2
+// @description  Полноценные темы оформления форума + смена фона
 // @match        https://forum.blackrussia.online/*
 // @grant        none
 // ==/UserScript==
@@ -11,32 +10,335 @@
 (function() {
     'use strict';
 
-    if (document.body.getAttribute('data-br-theme-manager')) {
+    // Уникальный идентификатор для этого скрипта
+    const SCRIPT_ID = 'br-theme-manager-full';
+    
+    if (document.body.getAttribute(`data-${SCRIPT_ID}`)) {
         return;
     }
-    document.body.setAttribute('data-br-theme-manager', 'true');
+    document.body.setAttribute(`data-${SCRIPT_ID}`, 'true');
 
-    const STORAGE_THEME = 'br_selected_theme';
-    const STORAGE_BG = 'br_custom_background';
+    const STORAGE_THEME = 'br_selected_theme_v2';
+    const STORAGE_BG = 'br_custom_background_v2';
 
+    // ========== ПОЛНЫЕ ТЕМЫ ОФОРМЛЕНИЯ ФОРУМА ==========
     const themes = [
-        { id: 'none', name: 'Без темы', css: '' },
-        { id: 'neon-orange', name: '🔥 Неоновый Оранжевый', css: `.block.block--category .block-header { text-shadow: 0 0 1px rgba(255, 69, 0, 0.7); } .menu-tabHeader .tabs-tab.is-active { border-color: #FF4500; } .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #FF4500; } .tabs-tab { color: #FF4500; } .blockLink.is-selected { color: #FF4500; border-left: 2px solid #FF4500; } .block-tabHeader .tabs-tab:hover { color: #FF4500; } .button.button--primary, a.button.button--primary { background: linear-gradient(#FF4500, #FF4500); } .menu-linkRow.is-selected, .menu-linkRow:hover { color: #FF4500; } .fr-toolbar { border-top: 1px solid #FF4500; } .block-tabHeader .tabs-tab.is-active { color: #FF4500; border-color: #FF4500; } .messageNotice { border-left: 2px solid #FF4500; } .messageNotice:before { color: #FF4500; } .bbCodeBlock { border-left: 2px solid #FF4500; } .bbCodeBlock-title { color: #FF4500; } .button.button--scroll { background: linear-gradient(#FF4500, #FF4500); } .message-newIndicator { background: #FF4500; } .p-nav-list .p-navEl.is-selected { color: #FF4500; } .button.button--cta { background: #FF4500; background-color: #FF4500; }` },
-        { id: 'cyber-blue', name: '💙 Кибер-Синий', css: `.block.block--category .block-header { text-shadow: 0 0 1px rgba(0, 191, 255, 0.7); } .menu-tabHeader .tabs-tab.is-active { border-color: #00BFFF; } .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #00BFFF; } .tabs-tab { color: #00BFFF; } .blockLink.is-selected { color: #00BFFF; border-left: 2px solid #00BFFF; } .block-tabHeader .tabs-tab:hover { color: #00BFFF; } .button.button--primary { background: linear-gradient(#00BFFF, #00BFFF); } .menu-linkRow.is-selected, .menu-linkRow:hover { color: #00BFFF; } .fr-toolbar { border-top: 1px solid #00BFFF; } .block-tabHeader .tabs-tab.is-active { color: #00BFFF; border-color: #00BFFF; } .messageNotice { border-left: 2px solid #00BFFF; } .bbCodeBlock { border-left: 2px solid #00BFFF; } .bbCodeBlock-title { color: #00BFFF; } .button.button--scroll { background: linear-gradient(#00BFFF, #00BFFF); } .message-newIndicator { background: #00BFFF; } .p-nav-list .p-navEl.is-selected { color: #00BFFF; } .button.button--cta { background: #00BFFF; background-color: #00BFFF; }` },
-        { id: 'neon-green', name: '💚 Неоново-Зеленый', css: `.block.block--category .block-header { text-shadow: 0 0 1px rgba(57, 255, 20, 0.7); } .menu-tabHeader .tabs-tab.is-active { border-color: #39FF14; } .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #39FF14; } .tabs-tab { color: #39FF14; } .blockLink.is-selected { color: #39FF14; border-left: 2px solid #39FF14; } .block-tabHeader .tabs-tab:hover { color: #39FF14; } .button.button--primary { background: linear-gradient(#39FF14, #39FF14); } .menu-linkRow.is-selected, .menu-linkRow:hover { color: #39FF14; } .fr-toolbar { border-top: 1px solid #39FF14; } .block-tabHeader .tabs-tab.is-active { color: #39FF14; border-color: #39FF14; } .messageNotice { border-left: 2px solid #39FF14; } .bbCodeBlock { border-left: 2px solid #39FF14; } .bbCodeBlock-title { color: #39FF14; } .button.button--scroll { background: linear-gradient(#39FF14, #39FF14); } .message-newIndicator { background: #39FF14; } .p-nav-list .p-navEl.is-selected { color: #39FF14; } .button.button--cta { background: #39FF14; background-color: #39FF14; }` },
-        { id: 'royal-purple', name: '👑 Королевский Пурпурный', css: `.block.block--category .block-header { text-shadow: 0 0 1px rgba(138, 43, 226, 0.7); } .menu-tabHeader .tabs-tab.is-active { border-color: #8A2BE2; } .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #8A2BE2; } .tabs-tab { color: #8A2BE2; } .blockLink.is-selected { color: #8A2BE2; border-left: 2px solid #8A2BE2; } .block-tabHeader .tabs-tab:hover { color: #8A2BE2; } .button.button--primary { background: linear-gradient(#8A2BE2, #8A2BE2); } .menu-linkRow.is-selected, .menu-linkRow:hover { color: #8A2BE2; } .fr-toolbar { border-top: 1px solid #8A2BE2; } .block-tabHeader .tabs-tab.is-active { color: #8A2BE2; border-color: #8A2BE2; } .messageNotice { border-left: 2px solid #8A2BE2; } .bbCodeBlock { border-left: 2px solid #8A2BE2; } .bbCodeBlock-title { color: #8A2BE2; } .button.button--scroll { background: linear-gradient(#8A2BE2, #8A2BE2); } .message-newIndicator { background: #8A2BE2; } .p-nav-list .p-navEl.is-selected { color: #8A2BE2; } .button.button--cta { background: #8A2BE2; background-color: #8A2BE2; }` },
-        { id: 'hot-pink', name: '💖 Горячий Розовый', css: `.block.block--category .block-header { text-shadow: 0 0 1px rgba(255, 105, 180, 0.7); } .menu-tabHeader .tabs-tab.is-active { border-color: #FF69B4; } .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #FF69B4; } .tabs-tab { color: #FF69B4; } .blockLink.is-selected { color: #FF69B4; border-left: 2px solid #FF69B4; } .block-tabHeader .tabs-tab:hover { color: #FF69B4; } .button.button--primary { background: linear-gradient(#FF69B4, #FF69B4); } .menu-linkRow.is-selected, .menu-linkRow:hover { color: #FF69B4; } .fr-toolbar { border-top: 1px solid #FF69B4; } .block-tabHeader .tabs-tab.is-active { color: #FF69B4; border-color: #FF69B4; } .messageNotice { border-left: 2px solid #FF69B4; } .bbCodeBlock { border-left: 2px solid #FF69B4; } .bbCodeBlock-title { color: #FF69B4; } .button.button--scroll { background: linear-gradient(#FF69B4, #FF69B4); } .message-newIndicator { background: #FF69B4; } .p-nav-list .p-navEl.is-selected { color: #FF69B4; } .button.button--cta { background: #FF69B4; background-color: #FF69B4; }` },
-        { id: 'golden', name: '⭐ Золотой', css: `.block.block--category .block-header { text-shadow: 0 0 1px rgba(255, 215, 0, 0.7); } .menu-tabHeader .tabs-tab.is-active { border-color: #FFD700; } .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #FFD700; } .tabs-tab { color: #FFD700; } .blockLink.is-selected { color: #FFD700; border-left: 2px solid #FFD700; } .block-tabHeader .tabs-tab:hover { color: #FFD700; } .button.button--primary { background: linear-gradient(#FFD700, #FFD700); } .menu-linkRow.is-selected, .menu-linkRow:hover { color: #FFD700; } .fr-toolbar { border-top: 1px solid #FFD700; } .block-tabHeader .tabs-tab.is-active { color: #FFD700; border-color: #FFD700; } .messageNotice { border-left: 2px solid #FFD700; } .bbCodeBlock { border-left: 2px solid #FFD700; } .bbCodeBlock-title { color: #FFD700; } .button.button--scroll { background: linear-gradient(#FFD700, #FFD700); } .message-newIndicator { background: #FFD700; } .p-nav-list .p-navEl.is-selected { color: #FFD700; } .button.button--cta { background: #FFD700; background-color: #FFD700; }` },
-        { id: 'crimson-red', name: '❤️ Багровый Красный', css: `.block.block--category .block-header { text-shadow: 0 0 1px rgba(220, 20, 60, 0.7); } .menu-tabHeader .tabs-tab.is-active { border-color: #DC143C; } .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #DC143C; } .tabs-tab { color: #DC143C; } .blockLink.is-selected { color: #DC143C; border-left: 2px solid #DC143C; } .block-tabHeader .tabs-tab:hover { color: #DC143C; } .button.button--primary { background: linear-gradient(#DC143C, #DC143C); } .menu-linkRow.is-selected, .menu-linkRow:hover { color: #DC143C; } .fr-toolbar { border-top: 1px solid #DC143C; } .block-tabHeader .tabs-tab.is-active { color: #DC143C; border-color: #DC143C; } .messageNotice { border-left: 2px solid #DC143C; } .bbCodeBlock { border-left: 2px solid #DC143C; } .bbCodeBlock-title { color: #DC143C; } .button.button--scroll { background: linear-gradient(#DC143C, #DC143C); } .message-newIndicator { background: #DC143C; } .p-nav-list .p-navEl.is-selected { color: #DC143C; } .button.button--cta { background: #DC143C; background-color: #DC143C; }` },
-        { id: 'teal', name: '🐚 Бирюзовый', css: `.block.block--category .block-header { text-shadow: 0 0 1px rgba(0, 206, 209, 0.7); } .menu-tabHeader .tabs-tab.is-active { border-color: #00CED1; } .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after { background: #00CED1; } .tabs-tab { color: #00CED1; } .blockLink.is-selected { color: #00CED1; border-left: 2px solid #00CED1; } .block-tabHeader .tabs-tab:hover { color: #00CED1; } .button.button--primary { background: linear-gradient(#00CED1, #00CED1); } .menu-linkRow.is-selected, .menu-linkRow:hover { color: #00CED1; } .fr-toolbar { border-top: 1px solid #00CED1; } .block-tabHeader .tabs-tab.is-active { color: #00CED1; border-color: #00CED1; } .messageNotice { border-left: 2px solid #00CED1; } .bbCodeBlock { border-left: 2px solid #00CED1; } .bbCodeBlock-title { color: #00CED1; } .button.button--scroll { background: linear-gradient(#00CED1, #00CED1); } .message-newIndicator { background: #00CED1; } .p-nav-list .p-navEl.is-selected { color: #00CED1; } .button.button--cta { background: #00CED1; background-color: #00CED1; }` },
-        { id: 'rainbow', name: '🌈 Радужный', css: `.block.block--category .block-header { text-shadow: 0 0 2px rgba(255,0,0,0.7); } .tabs-tab { color: #ff6b6b; } .blockLink.is-selected { color: #ff6b6b; border-left: 2px solid #ff6b6b; } .block-tabHeader .tabs-tab:hover { color: #ff6b6b; } .button.button--primary { background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); } .menu-linkRow.is-selected, .menu-linkRow:hover { color: #ff6b6b; } .block-tabHeader .tabs-tab.is-active { color: #ff6b6b; border-color: #ff6b6b; } .messageNotice { border-left: 2px solid #ff6b6b; } .bbCodeBlock { border-left: 2px solid #ff6b6b; } .bbCodeBlock-title { color: #ff6b6b; } .button.button--scroll { background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); } .message-newIndicator { background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); } .p-nav-list .p-navEl.is-selected { color: #ff6b6b; } .button.button--cta { background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); border-color: transparent; }` }
+        { id: 'none', name: '🌙 Стандартная тема', css: '' },
+        { id: 'neon-orange', name: '🔥 Неоновый Оранжевый', accent: '#FF4500', accentGlow: '#ff6a2e', accentRgb: '255, 69, 0', css: generateThemeCSS('#FF4500', '#ff6a2e', '255, 69, 0') },
+        { id: 'cyber-blue', name: '💙 Кибер-Синий', accent: '#00BFFF', accentGlow: '#4dc3ff', accentRgb: '0, 191, 255', css: generateThemeCSS('#00BFFF', '#4dc3ff', '0, 191, 255') },
+        { id: 'neon-green', name: '💚 Неоново-Зеленый', accent: '#39FF14', accentGlow: '#6eff4d', accentRgb: '57, 255, 20', css: generateThemeCSS('#39FF14', '#6eff4d', '57, 255, 20') },
+        { id: 'royal-purple', name: '👑 Королевский Пурпурный', accent: '#9b59b6', accentGlow: '#c27bd6', accentRgb: '155, 89, 182', css: generateThemeCSS('#9b59b6', '#c27bd6', '155, 89, 182') },
+        { id: 'hot-pink', name: '💖 Горячий Розовый', accent: '#FF69B4', accentGlow: '#ff8dc9', accentRgb: '255, 105, 180', css: generateThemeCSS('#FF69B4', '#ff8dc9', '255, 105, 180') },
+        { id: 'golden', name: '⭐ Золотой', accent: '#FFD700', accentGlow: '#ffe44d', accentRgb: '255, 215, 0', css: generateThemeCSS('#FFD700', '#ffe44d', '255, 215, 0') },
+        { id: 'crimson-red', name: '❤️ Багровый Красный', accent: '#DC143C', accentGlow: '#ff3355', accentRgb: '220, 20, 60', css: generateThemeCSS('#DC143C', '#ff3355', '220, 20, 60') },
+        { id: 'teal', name: '🐚 Бирюзовый', accent: '#00CED1', accentGlow: '#33e5e8', accentRgb: '0, 206, 209', css: generateThemeCSS('#00CED1', '#33e5e8', '0, 206, 209') },
+        { id: 'dark-knight', name: '🦇 Тёмный рыцарь', css: generateDarkKnightCSS() }
     ];
 
+    function generateThemeCSS(accent, accentGlow, accentRgb) {
+        return `
+            :root {
+                --theme-accent: ${accent};
+                --theme-accent-glow: ${accentGlow};
+                --theme-accent-rgb: ${accentRgb};
+                --glass-dark: rgba(11, 17, 26, 0.95);
+                --glass-light: rgba(20, 30, 45, 0.6);
+                --border-color: rgba(${accentRgb}, 0.3);
+                --text-main: #dbe4eb;
+                --hover-bg: rgba(${accentRgb}, 0.08);
+            }
+
+            html, body { background-color: #05080c !important; color: var(--text-main) !important; }
+            body::before {
+                content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: radial-gradient(circle at top, #15202b 0%, #05080c 100%);
+                z-index: -5;
+            }
+
+            .p-body, .p-body-inner, .p-body-content, .p-body-main { background: transparent !important; }
+            .block, .block-outer { background: transparent !important; border: none !important; }
+            .block-container {
+                background: var(--glass-dark) !important;
+                border: 1px solid var(--border-color) !important;
+                border-radius: 12px !important;
+                box-shadow: 0 5px 25px rgba(0,0,0,0.4) !important;
+                overflow: hidden !important;
+            }
+            .block-header, .block-minorHeader {
+                background: transparent !important;
+                border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+                color: #fff !important;
+                padding: 15px !important;
+                text-shadow: 0 0 10px rgba(${accentRgb}, 0.4);
+            }
+            .block-header a, .block-minorHeader a { color: #fff !important; }
+            .block-filterBar { background: rgba(0,0,0,0.2) !important; border-bottom: none !important; }
+            .block-body { background: transparent !important; }
+            .block-footer { background: rgba(0,0,0,0.15) !important; border-top: 1px solid rgba(255,255,255,0.05) !important; }
+            .p-nav {
+                background: rgba(10, 14, 20, 0.95) !important;
+                border-bottom: 1px solid var(--border-color) !important;
+            }
+            .p-nav-list .p-navEl.is-selected { color: var(--theme-accent) !important; }
+            .p-nav-list .p-navEl:hover { color: var(--theme-accent-glow) !important; }
+            .node, .node-body, .node-extra, .node-stats, .node-meta { background: transparent !important; }
+            .node-body:hover, .node:hover > .node-body { background: var(--hover-bg) !important; }
+            .structItem, .structItem-cell { background: transparent !important; }
+            .structItem { border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
+            .structItem:hover { background: var(--hover-bg) !important; }
+            .message {
+                background: rgba(20, 25, 35, 0.5) !important;
+                border: 1px solid rgba(255,255,255,0.05) !important;
+                border-radius: 8px !important;
+                margin-bottom: 10px !important;
+            }
+            .message-inner, .message-cell, .message-content, .message-userContent,
+            .message-user, .message-userDetails, .message-attribution { background: transparent !important; }
+            .message-userArrow { display: none !important; }
+            .formButtonGroup, .formSubmitRow { background: transparent !important; }
+            .formRow { background: transparent !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
+            input[type="text"], input[type="password"], input[type="email"], input[type="search"],
+            input[type="number"], input[type="url"], textarea, select, .input {
+                background: rgba(15, 20, 30, 0.8) !important;
+                border: 1px solid var(--border-color) !important;
+                color: var(--text-main) !important;
+                border-radius: 6px !important;
+            }
+            input:focus, textarea:focus, select:focus {
+                border-color: var(--theme-accent) !important;
+                box-shadow: 0 0 8px rgba(${accentRgb}, 0.3) !important;
+            }
+            .button, button, input[type="submit"], input[type="button"] {
+                background: rgba(${accentRgb}, 0.3) !important;
+                border: 1px solid var(--border-color) !important;
+                color: #fff !important;
+                border-radius: 6px !important;
+            }
+            .button:hover, button:hover { background: rgba(${accentRgb}, 0.5) !important; }
+            .button--primary, .button.button--primary {
+                background: rgba(${accentRgb}, 0.6) !important;
+            }
+            .button.button--cta {
+                background: var(--theme-accent) !important;
+                background-color: var(--theme-accent) !important;
+            }
+            .menu, .menu-content {
+                background: var(--glass-dark) !important;
+                border: 1px solid var(--border-color) !important;
+                border-radius: 8px !important;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.5) !important;
+            }
+            .menu-row, .menu-linkRow { background: transparent !important; }
+            .menu-row:hover, .menu-linkRow:hover { background: var(--hover-bg) !important; }
+            .menu-linkRow.is-selected { color: var(--theme-accent) !important; }
+            .tabs, .tabs-tab { background: transparent !important; }
+            .tabs-tab { color: var(--theme-accent) !important; }
+            .tabs-tab.is-active {
+                background: rgba(${accentRgb}, 0.2) !important;
+                border-bottom-color: var(--theme-accent) !important;
+                color: var(--theme-accent) !important;
+            }
+            .block-tabHeader .tabs-tab:hover { color: var(--theme-accent-glow) !important; }
+            .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after {
+                background: var(--theme-accent) !important;
+            }
+            .message-newIndicator { background: var(--theme-accent) !important; }
+            .bbCodeBlock {
+                background: rgba(10, 15, 25, 0.6) !important;
+                border-left: 2px solid var(--theme-accent) !important;
+                border-radius: 8px !important;
+            }
+            .bbCodeBlock-title {
+                background: transparent !important;
+                border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+                color: var(--theme-accent) !important;
+            }
+            .messageNotice { border-left: 2px solid var(--theme-accent) !important; }
+            .messageNotice:before { color: var(--theme-accent) !important; }
+            .pageNav, .pageNav-main { background: transparent !important; }
+            .pageNav-page, .pageNav-jump {
+                background: rgba(20, 30, 45, 0.5) !important;
+                border: 1px solid rgba(255,255,255,0.1) !important;
+                border-radius: 4px !important;
+            }
+            .pageNav-page:hover, .pageNav-jump:hover { background: rgba(${accentRgb}, 0.3) !important; }
+            .pageNav-page.pageNav-page--current {
+                background: rgba(${accentRgb}, 0.5) !important;
+                border-color: var(--theme-accent) !important;
+            }
+            .p-footer { background: transparent !important; border: none !important; }
+            .p-footer-inner {
+                background: rgba(8, 12, 18, 0.95) !important;
+                border-top: 1px solid var(--border-color) !important;
+            }
+            .p-footer a { color: var(--theme-accent) !important; }
+            .fr-toolbar { border-top: 1px solid var(--theme-accent) !important; }
+            .button.button--scroll { background: linear-gradient(var(--theme-accent), var(--theme-accent)) !important; }
+            .p-body-sidebar .block-container { background: var(--glass-dark) !important; }
+            .memberHeader-avatar .avatar {
+                border: 2px solid var(--theme-accent) !important;
+                box-shadow: 0 0 20px var(--theme-accent) !important;
+            }
+            .memberHeader-name .username {
+                text-shadow: 0 0 10px rgba(${accentRgb}, 0.8), 0 0 20px rgba(${accentRgb}, 0.4) !important;
+            }
+        `;
+    }
+
+    function generateDarkKnightCSS() {
+        return `
+            :root {
+                --theme-accent: #1a1a2e;
+                --theme-accent-glow: #2d2d44;
+                --theme-accent-rgb: 26, 26, 46;
+                --glass-dark: rgba(8, 8, 12, 0.98);
+                --glass-light: rgba(15, 15, 22, 0.8);
+                --border-color: rgba(45, 45, 68, 0.5);
+                --text-main: #b8b8c8;
+                --hover-bg: rgba(45, 45, 68, 0.15);
+            }
+
+            html, body { background-color: #0a0a0f !important; color: var(--text-main) !important; }
+            body::before {
+                content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: radial-gradient(circle at top, #14141e 0%, #0a0a0f 100%);
+                z-index: -5;
+            }
+            .p-body, .p-body-inner, .p-body-content, .p-body-main { background: transparent !important; }
+            .block, .block-outer { background: transparent !important; border: none !important; }
+            .block-container {
+                background: var(--glass-dark) !important;
+                border: 1px solid var(--border-color) !important;
+                border-radius: 12px !important;
+                box-shadow: 0 5px 25px rgba(0,0,0,0.6) !important;
+                overflow: hidden !important;
+            }
+            .block-header, .block-minorHeader {
+                background: linear-gradient(135deg, rgba(20,20,30,0.9), rgba(15,15,22,0.95)) !important;
+                border-bottom: 1px solid rgba(45,45,68,0.5) !important;
+                color: #c8c8d8 !important;
+                padding: 15px !important;
+                text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            }
+            .block-header a, .block-minorHeader a { color: #c8c8d8 !important; }
+            .block-filterBar { background: rgba(0,0,0,0.3) !important; border-bottom: none !important; }
+            .block-body { background: transparent !important; }
+            .block-footer { background: rgba(0,0,0,0.2) !important; border-top: 1px solid rgba(45,45,68,0.3) !important; }
+            .p-nav {
+                background: rgba(8, 8, 12, 0.98) !important;
+                border-bottom: 1px solid var(--border-color) !important;
+            }
+            .p-nav-list .p-navEl.is-selected { color: #8888aa !important; }
+            .p-nav-list .p-navEl:hover { color: #aaaacc !important; }
+            .node, .node-body, .node-extra, .node-stats, .node-meta { background: transparent !important; }
+            .node-body:hover, .node:hover > .node-body { background: var(--hover-bg) !important; }
+            .structItem, .structItem-cell { background: transparent !important; }
+            .structItem { border-bottom: 1px solid rgba(45,45,68,0.3) !important; }
+            .structItem:hover { background: var(--hover-bg) !important; }
+            .message {
+                background: rgba(15, 15, 22, 0.6) !important;
+                border: 1px solid rgba(45,45,68,0.4) !important;
+                border-radius: 8px !important;
+                margin-bottom: 10px !important;
+            }
+            .message-inner, .message-cell, .message-content, .message-userContent,
+            .message-user, .message-userDetails, .message-attribution { background: transparent !important; }
+            .message-userArrow { display: none !important; }
+            .formButtonGroup, .formSubmitRow { background: transparent !important; }
+            .formRow { background: transparent !important; border-bottom: 1px solid rgba(45,45,68,0.3) !important; }
+            input[type="text"], input[type="password"], input[type="email"], input[type="search"],
+            input[type="number"], input[type="url"], textarea, select, .input {
+                background: rgba(10, 10, 15, 0.9) !important;
+                border: 1px solid rgba(45,45,68,0.5) !important;
+                color: var(--text-main) !important;
+                border-radius: 6px !important;
+            }
+            input:focus, textarea:focus, select:focus {
+                border-color: #555577 !important;
+                box-shadow: 0 0 8px rgba(85,85,119,0.3) !important;
+            }
+            .button, button, input[type="submit"], input[type="button"] {
+                background: rgba(45,45,68,0.5) !important;
+                border: 1px solid rgba(85,85,119,0.4) !important;
+                color: #c8c8d8 !important;
+                border-radius: 6px !important;
+            }
+            .button:hover, button:hover { background: rgba(45,45,68,0.7) !important; }
+            .button--primary, .button.button--primary {
+                background: rgba(55,55,78,0.7) !important;
+            }
+            .button.button--cta {
+                background: #2a2a3e !important;
+                background-color: #2a2a3e !important;
+            }
+            .menu, .menu-content {
+                background: rgba(10, 10, 15, 0.98) !important;
+                border: 1px solid rgba(45,45,68,0.5) !important;
+                border-radius: 8px !important;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.7) !important;
+            }
+            .menu-row, .menu-linkRow { background: transparent !important; }
+            .menu-row:hover, .menu-linkRow:hover { background: var(--hover-bg) !important; }
+            .menu-linkRow.is-selected { color: #8888aa !important; }
+            .tabs, .tabs-tab { background: transparent !important; }
+            .tabs-tab { color: #8888aa !important; }
+            .tabs-tab.is-active {
+                background: rgba(55,55,78,0.3) !important;
+                border-bottom-color: #555577 !important;
+                color: #aaaacc !important;
+            }
+            .block-tabHeader .tabs-tab:hover { color: #aaaacc !important; }
+            .badge.badge--highlighted, .badgeContainer.badgeContainer--highlighted:after {
+                background: #2a2a3e !important;
+            }
+            .message-newIndicator { background: #2a2a3e !important; }
+            .bbCodeBlock {
+                background: rgba(8, 8, 12, 0.8) !important;
+                border-left: 2px solid #444466 !important;
+                border-radius: 8px !important;
+            }
+            .bbCodeBlock-title {
+                background: transparent !important;
+                border-bottom: 1px solid rgba(45,45,68,0.3) !important;
+                color: #8888aa !important;
+            }
+            .messageNotice { border-left: 2px solid #444466 !important; }
+            .messageNotice:before { color: #8888aa !important; }
+            .pageNav, .pageNav-main { background: transparent !important; }
+            .pageNav-page, .pageNav-jump {
+                background: rgba(15, 15, 22, 0.6) !important;
+                border: 1px solid rgba(45,45,68,0.4) !important;
+                border-radius: 4px !important;
+            }
+            .pageNav-page:hover, .pageNav-jump:hover { background: rgba(45,45,68,0.5) !important; }
+            .pageNav-page.pageNav-page--current {
+                background: rgba(55,55,78,0.6) !important;
+                border-color: #555577 !important;
+            }
+            .p-footer { background: transparent !important; border: none !important; }
+            .p-footer-inner {
+                background: rgba(8, 8, 12, 0.98) !important;
+                border-top: 1px solid var(--border-color) !important;
+            }
+            .p-footer a { color: #8888aa !important; }
+            .fr-toolbar { border-top: 1px solid #444466 !important; }
+            .button.button--scroll { background: linear-gradient(#2a2a3e, #1a1a2e) !important; }
+            .p-body-sidebar .block-container { background: var(--glass-dark) !important; }
+            .memberHeader-avatar .avatar {
+                border: 2px solid #444466 !important;
+                box-shadow: 0 0 20px rgba(68,68,102,0.5) !important;
+            }
+            .memberHeader-name .username {
+                text-shadow: 0 0 10px rgba(68,68,102,0.6), 0 0 20px rgba(68,68,102,0.3) !important;
+            }
+        `;
+    }
+
     function applyTheme(themeId) {
-        let styleElement = document.getElementById('br-theme-styles');
+        let styleElement = document.getElementById('br-theme-styles-v2');
         if (!styleElement) {
             styleElement = document.createElement('style');
-            styleElement.id = 'br-theme-styles';
+            styleElement.id = 'br-theme-styles-v2';
             document.head.appendChild(styleElement);
         }
         const theme = themes.find(t => t.id === themeId);
@@ -45,14 +347,14 @@
     }
 
     function applyBackground(bgUrl) {
-        let bgStyle = document.getElementById('br-bg-styles');
+        let bgStyle = document.getElementById('br-bg-styles-v2');
         if (!bgStyle) {
             bgStyle = document.createElement('style');
-            bgStyle.id = 'br-bg-styles';
+            bgStyle.id = 'br-bg-styles-v2';
             document.head.appendChild(bgStyle);
         }
         if (bgUrl && bgUrl.trim() !== '') {
-            bgStyle.textContent = `body { background-image: url("${bgUrl}"); background-attachment: fixed; background-size: cover; background-position: center; background-repeat: no-repeat; } .p-nav, .block-container, .p-footer, .button.button--cta, .buttonGroup, .pageNav-main, .tabPanes, .menu-content, .overlay, span[class="hScroller-scroll is-calculated"], .block-minorHeader { opacity: 0.95; }`;
+            bgStyle.textContent = `body { background-image: url("${bgUrl}"); background-attachment: fixed; background-size: cover; background-position: center; background-repeat: no-repeat; } body::before { background: rgba(0,0,0,0.6) !important; }`;
             localStorage.setItem(STORAGE_BG, bgUrl);
         } else {
             bgStyle.textContent = '';
@@ -68,30 +370,30 @@
     }
 
     function openThemeModal() {
-        let modal = document.getElementById('br-theme-modal');
+        let modal = document.getElementById('br-theme-modal-v2');
         if (modal) {
             modal.classList.add('open');
             return;
         }
-        
+
         modal = document.createElement('div');
-        modal.id = 'br-theme-modal';
+        modal.id = 'br-theme-modal-v2';
         modal.className = 'br-modal';
         modal.innerHTML = `
             <div class="br-modal-content">
                 <div class="br-modal-header">
-                    <div class="br-modal-title">🎨 Настройка темы и фона</div>
+                    <div class="br-modal-title">🎨 Полное оформление форума</div>
                     <button class="br-modal-close">&times;</button>
                 </div>
                 <div class="br-modal-body">
                     <div class="br-form-group">
-                        <label class="br-label">Выберите цветовую тему:</label>
+                        <label class="br-label">Выберите тему оформления:</label>
                         <select id="br-theme-select" class="br-select">${themes.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}</select>
                     </div>
                     <div class="br-form-group">
-                        <label class="br-label">URL адрес фонового изображения:</label>
+                        <label class="br-label">Фоновое изображение (опционально):</label>
                         <input type="text" id="br-bg-input" class="br-input" placeholder="https://example.com/background.jpg">
-                        <small class="br-hint">Вставьте прямую ссылку на изображение (JPG, PNG, GIF)</small>
+                        <small class="br-hint">Прямая ссылка на изображение (JPG, PNG, GIF)</small>
                     </div>
                 </div>
                 <div class="br-modal-footer">
@@ -100,12 +402,12 @@
                 </div>
             </div>
         `;
-        
+
         const themeSelect = modal.querySelector('#br-theme-select');
         const bgInput = modal.querySelector('#br-bg-input');
         themeSelect.value = localStorage.getItem(STORAGE_THEME) || 'none';
         bgInput.value = localStorage.getItem(STORAGE_BG) || '';
-        
+
         modal.querySelector('.br-modal-close').onclick = () => { modal.classList.remove('open'); setTimeout(() => modal.remove(), 300); };
         modal.querySelector('#br-cancel').onclick = () => { modal.classList.remove('open'); setTimeout(() => modal.remove(), 300); };
         modal.querySelector('#br-save').onclick = () => {
@@ -114,22 +416,22 @@
             modal.classList.remove('open');
             setTimeout(() => modal.remove(), 300);
         };
+
         modal.onclick = (e) => { if (e.target === modal) { modal.classList.remove('open'); setTimeout(() => modal.remove(), 300); } };
-        
+
         document.body.appendChild(modal);
         setTimeout(() => modal.classList.add('open'), 10);
     }
 
-    // ========== ГЛАВНАЯ ФУНКЦИЯ - ДОБАВЛЯЕМ КНОПКУ ==========
+    // ========== КНОПКА С ЭМОДЗИ 🖼 (КАК ВО ВТОРОМ СКРИПТЕ) ==========
     function addButton() {
-        // Ищем контейнер с кнопками
+        // Ищем контейнер с кнопками (созданный первым скриптом)
         let container = document.querySelector('.bgButtonsContainer');
         
         if (!container) {
             // Если контейнера нет - пробуем найти .pageContent и создаем свой контейнер
             const pageContent = document.querySelector('.pageContent');
             if (pageContent) {
-                // Создаем свой контейнер, если его нет
                 let newContainer = document.querySelector('.bgButtonsContainer-custom');
                 if (!newContainer) {
                     newContainer = document.createElement('div');
@@ -139,33 +441,31 @@
                 }
                 container = newContainer;
             } else {
-                // Если нет ни того, ни другого - пробуем снова через секунду
                 setTimeout(addButton, 500);
                 return;
             }
         }
         
-        // Проверяем, есть ли уже наша кнопка
-        if (document.getElementById('br-theme-button')) {
+        // Проверяем, есть ли уже наша кнопка (по уникальному ID)
+        if (document.getElementById('br-theme-button-full')) {
             return;
         }
         
-        // Создаем кнопку
+        // Создаем кнопку с эмодзи 🖼 (как во втором скрипте)
         const btn = document.createElement('button');
-        btn.id = 'br-theme-button';
+        btn.id = 'br-theme-button-full';
         btn.textContent = '🖼';
         btn.className = 'bgButton';
         btn.style.cssText = 'border-bottom: 2px solid #9b59b6; font-size: 14px;';
-        btn.title = 'Настройка темы и фона';
+        btn.title = 'Полное оформление форума';
         btn.onclick = openThemeModal;
         
         container.appendChild(btn);
-        console.log('[BR Theme] Кнопка 🖼 успешно добавлена!');
     }
 
-    // Добавляем стили для модального окна
-    const style = document.createElement('style');
-    style.textContent = `
+    // Стили модального окна (без конфликта с первым скриптом)
+    const modalStyle = document.createElement('style');
+    modalStyle.textContent = `
         .br-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); z-index: 2147483648;
@@ -201,21 +501,20 @@
         .br-btn-secondary { background: rgba(255,255,255,0.1); color: #fff; }
         .br-btn-secondary:hover { background: rgba(255,255,255,0.2); }
     `;
-    document.head.appendChild(style);
+    document.head.appendChild(modalStyle);
 
-    // Запускаем
+    // Запуск
     loadSavedSettings();
-    
-    // Пробуем добавить кнопку сразу
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', addButton);
     } else {
         addButton();
     }
-    
-    // Также следим за изменениями (на случай если контейнер пересоздадут)
+
+    // Следим за изменениями (на случай если контейнер пересоздадут)
     const observer = new MutationObserver(() => {
-        if (!document.getElementById('br-theme-button')) {
+        if (!document.getElementById('br-theme-button-full')) {
             addButton();
         }
     });
