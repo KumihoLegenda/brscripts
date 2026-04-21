@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         BR Panel (Thread Mover)
 // @namespace    http://tampermonkey.net/
-// @version      3.4
-// @description  Floating menu with thread mover (All servers 1-91) - Fixed transfer without prefix/sticky/close changes
+// @version      3.5
+// @description  Floating menu with thread mover (All servers 1-91) + Final response button
 // @author       Black Russia
 // @match        https://forum.blackrussia.online/*
 // @grant        none
@@ -133,6 +133,10 @@
             const techColor = '#8B008B';
             const techComplaintColor = '#0000CD';
             const playerComplaintColor = '#DC143C';
+            
+            // ID раздела "Заявки с окончательным ответом" (230)
+            const FINAL_RESPONSE_NODE_ID = 230;
+            const FINAL_RESPONSE_COLOR = '#10B981'; // Зеленый цвет для кнопки
 
             function getSelected() {
                 const saved = localStorage.getItem(STORAGE_PREFIX + 'servers');
@@ -207,6 +211,38 @@
                     });
                     menu.appendChild(playerComplaintGroup);
                 }
+
+                // === НОВАЯ КНОПКА: ЗАЯВКИ С ОКОНЧ. ОТВЕТОМ ===
+                const finalResponseBtn = document.createElement('div');
+                finalResponseBtn.className = 'fnm-mover-final-btn';
+                finalResponseBtn.innerHTML = 'Заявки с оконч. ответом';
+                finalResponseBtn.style.cssText = `
+                    margin: 5px 0;
+                    padding: 8px;
+                    background: rgba(16, 185, 129, 0.15);
+                    border: 1px solid ${FINAL_RESPONSE_COLOR};
+                    border-radius: 8px;
+                    color: ${FINAL_RESPONSE_COLOR};
+                    font-size: 11px;
+                    font-weight: bold;
+                    text-align: center;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                `;
+                finalResponseBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moveThreadOnly(FINAL_RESPONSE_NODE_ID);
+                });
+                finalResponseBtn.addEventListener('mouseenter', () => {
+                    finalResponseBtn.style.background = `rgba(16, 185, 129, 0.3)`;
+                    finalResponseBtn.style.color = '#fff';
+                });
+                finalResponseBtn.addEventListener('mouseleave', () => {
+                    finalResponseBtn.style.background = `rgba(16, 185, 129, 0.15)`;
+                    finalResponseBtn.style.color = FINAL_RESPONSE_COLOR;
+                });
+                menu.appendChild(finalResponseBtn);
+                // ========================================
 
                 const settingsBtn = document.createElement('div');
                 settingsBtn.className = 'fnm-mover-settings-btn';
@@ -403,7 +439,6 @@
             wrapper.className = 'fnm-mover-wrapper';
             const toggleBtn = document.createElement('div');
             toggleBtn.className = 'fnm-mover-toggle';
-            // Новый SVG с двумя стрелками в разные стороны
             toggleBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`;
             const menu = document.createElement('div');
             menu.className = 'fnm-mover-menu';
@@ -420,7 +455,6 @@
             let hasMoved = false;
 
             const updatePos = (x, y) => {
-                // Убираем ограничение справа - можно придвинуть вплотную к краю
                 pos.x = Math.min(Math.max(0, x), window.innerWidth - 48);
                 pos.y = Math.min(Math.max(0, y), window.innerHeight - 48);
                 toggleBtn.style.left = pos.x + 'px';
@@ -445,43 +479,3 @@
             toggleBtn.addEventListener('pointermove', (e) => {
                 if (!isDragging) return;
                 const dx = Math.abs(e.clientX - dragStartX);
-                const dy = Math.abs(e.clientY - dragStartY);
-                if (dx > 5 || dy > 5) {
-                    hasMoved = true;
-                }
-                updatePos(e.clientX - 24, e.clientY - 24);
-            });
-
-            toggleBtn.addEventListener('pointerup', (e) => {
-                isDragging = false;
-                toggleBtn.releasePointerCapture(e.pointerId);
-                toggleBtn.style.transition = 'all 0.3s';
-                toggleBtn.style.cursor = 'grab';
-                
-                // Сохраняем позицию без принудительного прижимания к краю
-                localStorage.setItem(STORAGE_PREFIX + 'pos', JSON.stringify(pos));
-                
-                // Проверяем, было ли движение или это просто клик
-                const dragDuration = Date.now() - dragStartTime;
-                const isClick = !hasMoved && dragDuration < 200;
-                
-                if (isClick) {
-                    const show = menu.classList.toggle('show');
-                    toggleBtn.classList.toggle('active', show);
-                    localStorage.setItem(STORAGE_PREFIX + 'state', show);
-                    if (show) updatePos(pos.x, pos.y);
-                }
-            });
-
-            // Инициализация позиции
-            updatePos(pos.x, pos.y);
-            renderMenu();
-            if (localStorage.getItem(STORAGE_PREFIX + 'state') === 'true') {
-                menu.classList.add('show');
-                toggleBtn.classList.add('active');
-            }
-        })();
-    } catch (e) {
-        console.error('[BR Mover] Error:', e);
-    }
-})();
