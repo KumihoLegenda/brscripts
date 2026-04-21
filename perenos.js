@@ -136,7 +136,7 @@
             
             // ID раздела "Заявки с окончательным ответом" (230)
             const FINAL_RESPONSE_NODE_ID = 230;
-            const FINAL_RESPONSE_COLOR = '#10B981'; // Зеленый цвет для кнопки
+            const FINAL_RESPONSE_COLOR = '#40E0D0'; // Зеленый цвет для кнопки
 
             function getSelected() {
                 const saved = localStorage.getItem(STORAGE_PREFIX + 'servers');
@@ -215,7 +215,7 @@
                 // === НОВАЯ КНОПКА: ЗАЯВКИ С ОКОНЧ. ОТВЕТОМ ===
                 const finalResponseBtn = document.createElement('div');
                 finalResponseBtn.className = 'fnm-mover-final-btn';
-                finalResponseBtn.innerHTML = 'Заявки с оконч. ответом';
+                finalResponseBtn.innerHTML = 'ЗАЯВКИ С ОКОНЧАТЕЛЬНЫМ ОТВЕТОМ';
                 finalResponseBtn.style.cssText = `
                     margin: 5px 0;
                     padding: 8px;
