@@ -479,3 +479,40 @@
             toggleBtn.addEventListener('pointermove', (e) => {
                 if (!isDragging) return;
                 const dx = Math.abs(e.clientX - dragStartX);
+                const dy = Math.abs(e.clientY - dragStartY);
+                if (dx > 5 || dy > 5) {
+                    hasMoved = true;
+                }
+                updatePos(e.clientX - 24, e.clientY - 24);
+            });
+
+            toggleBtn.addEventListener('pointerup', (e) => {
+                isDragging = false;
+                toggleBtn.releasePointerCapture(e.pointerId);
+                toggleBtn.style.transition = 'all 0.3s';
+                toggleBtn.style.cursor = 'grab';
+                
+                localStorage.setItem(STORAGE_PREFIX + 'pos', JSON.stringify(pos));
+                
+                const dragDuration = Date.now() - dragStartTime;
+                const isClick = !hasMoved && dragDuration < 200;
+                
+                if (isClick) {
+                    const show = menu.classList.toggle('show');
+                    toggleBtn.classList.toggle('active', show);
+                    localStorage.setItem(STORAGE_PREFIX + 'state', show);
+                    if (show) updatePos(pos.x, pos.y);
+                }
+            });
+
+            updatePos(pos.x, pos.y);
+            renderMenu();
+            if (localStorage.getItem(STORAGE_PREFIX + 'state') === 'true') {
+                menu.classList.add('show');
+                toggleBtn.classList.add('active');
+            }
+        })();
+    } catch (e) {
+        console.error('[BR Mover] Error:', e);
+    }
+})();
