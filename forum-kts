@@ -163,7 +163,7 @@
             content:
             "[CENTER][IMG width=695px]https://i.postimg.cc/mrhcH5vR/1621526767066.png[/IMG]<br>"+
             "[COLOR=rgb(209, 213, 216)][FONT=Arial][size=15px][CENTER]Доброго времени суток, уважаемый(-ая) {{ user.mention }}[/CENTER]<br><br>" +
-            '[CENTER][COLOR=rgb(209, 213, 216)][FONT=Arial][size=15px]Ваш аккаунт будет разблокирован в течении 24х часов.  [/CENTER]<br>' +
+            '[CENTER][COLOR=rgb(209, 213, 216)][FONT=Arial][size=15px]Ваш аккаунт будет разблокирован.  [/CENTER]<br>' +
             '[CENTER]Надеемся, что в процессе разблокировки никакое имущество не слетело в государство.[/CENTER]<br>' +
             '[CENTER]Если возникли проблемы с имуществом, пожалуйста, создайте новую тему для обсуждения компенсации. [/CENTER]<br>' +
             "[CENTER][IMG width=695px]https://i.postimg.cc/tgD5Xwhj/1618083711121.png[/IMG]<br>" +
