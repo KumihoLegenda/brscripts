@@ -74,13 +74,6 @@
       "enabledDefault": true
     },
     {
-      "id": "logs-check",
-      "name": "Логи | НЕ ВКЛЮЧАТЬ",
-      "matches": ["https://logs.blackrussia.online/gslogs/*"],
-      "url": "https://raw.githubusercontent.com/KumihoLegenda/brscripts/main/logs-check.js",
-      "enabledDefault": true
-    },
-    {
       "id": "set-tstart",
       "name": "Логи | Последняя блокировка/разблокировка",
       "matches": ["https://logs.blackrussia.online/gslogs/*"],
